@@ -12,7 +12,25 @@
 <body class="auth-body">
   <div class="shell-grid" aria-hidden="true"></div>
   <main class="admin-screen">
-    <section class="auth-card admin-card" aria-labelledby="auth-title">
+    <section class="auth-card admin-card admin-gate" id="adminGate" aria-labelledby="gate-title">
+      <a class="back-link" href="index.html">← На главную</a>
+      <div class="eyebrow">// admin gate</div>
+      <h1 id="gate-title">Вход</h1>
+      <p>
+        Для добавления конспектов нужен пароль администратора.
+      </p>
+
+      <form class="auth-form" id="gateForm">
+        <label>
+          <span>Пароль администратора</span>
+          <input id="gatePassword" name="adminPassword" type="password" placeholder="Введите пароль" autocomplete="current-password" required>
+        </label>
+        <button type="submit">Продолжить</button>
+      </form>
+      <div class="admin-status" id="gateStatus" aria-live="polite"></div>
+    </section>
+
+    <section class="auth-card admin-card" id="adminPanel" aria-labelledby="auth-title" hidden>
       <a class="back-link" href="index.html">← На главную</a>
       <div class="eyebrow">// github pull request flow</div>
       <h1 id="auth-title">Добавить конспект</h1>
@@ -22,10 +40,6 @@
       </p>
 
       <form class="auth-form admin-form" id="lectureForm">
-        <label>
-          <span>Пароль администратора</span>
-          <input name="adminPassword" type="password" placeholder="Пароль с сервера" autocomplete="current-password" required>
-        </label>
 
         <div class="form-grid">
           <label>
@@ -72,7 +86,7 @@
       <div class="admin-status" id="adminStatus" aria-live="polite"></div>
     </section>
 
-    <aside class="admin-preview" aria-label="Предпросмотр карточки">
+    <aside class="admin-preview" id="adminPreviewPane" aria-label="Предпросмотр карточки" hidden>
       <p class="section-kicker">Предпросмотр</p>
       <article class="lecture-card" id="lecturePreview"></article>
 

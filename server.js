@@ -35,6 +35,11 @@ const server = createServer(async (request, response) => {
       return;
     }
 
+    if (request.method === "POST" && url.pathname === "/api/admin/check-password") {
+      await checkAdminPassword(request, response);
+      return;
+    }
+
     if (request.method !== "GET" && request.method !== "HEAD") {
       sendJson(response, 405, { error: "Method not allowed" });
       return;
@@ -115,6 +120,23 @@ async function submitLecture(request, response) {
     prUrl: pr.html_url,
     branch: pr.head.ref
   });
+}
+
+async function checkAdminPassword(request, response) {
+  const configuredPassword = process.env.ADMIN_PASSWORD;
+  const providedPassword = request.headers["x-admin-password"];
+
+  if (!configuredPassword) {
+    sendJson(response, 503, { error: "ADMIN_PASSWORD is not configured" });
+    return;
+  }
+
+  if (providedPassword !== configuredPassword) {
+    sendJson(response, 401, { error: "Invalid admin password" });
+    return;
+  }
+
+  sendJson(response, 200, { ok: true });
 }
 
 function validateLecturePayload(payload) {

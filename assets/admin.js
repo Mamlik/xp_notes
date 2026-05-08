@@ -1,9 +1,45 @@
+const gate = document.querySelector("#adminGate");
+const gateForm = document.querySelector("#gateForm");
+const gatePassword = document.querySelector("#gatePassword");
+const gateStatus = document.querySelector("#gateStatus");
+const adminPanel = document.querySelector("#adminPanel");
+const adminPreviewPane = document.querySelector("#adminPreviewPane");
 const form = document.querySelector("#lectureForm");
 const fileInput = document.querySelector("#htmlFile");
 const preview = document.querySelector("#lecturePreview");
 const statusBox = document.querySelector("#adminStatus");
 
 let htmlContent = "";
+let adminPassword = "";
+
+gateForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const password = gatePassword.value;
+
+  setGateStatus("Проверяю пароль...", "info");
+
+  try {
+    const response = await fetch("/api/admin/check-password", {
+      method: "POST",
+      headers: {
+        "X-Admin-Password": password
+      }
+    });
+    const result = await response.json();
+
+    if (!response.ok || !result.ok) {
+      throw new Error(result.error || "Неверный пароль");
+    }
+
+    adminPassword = password;
+    gate.hidden = true;
+    adminPanel.hidden = false;
+    adminPreviewPane.hidden = false;
+    setGateStatus("", "");
+  } catch (error) {
+    setGateStatus(error.message, "error");
+  }
+});
 
 fileInput?.addEventListener("change", async () => {
   const file = fileInput.files?.[0];
@@ -24,7 +60,6 @@ form?.addEventListener("submit", async (event) => {
 
   const formData = new FormData(form);
   const file = fileInput.files?.[0];
-  const adminPassword = formData.get("adminPassword");
 
   if (!file || !htmlContent) {
     setStatus("Выберите HTML-файл конспекта.", "error");
@@ -64,6 +99,12 @@ form?.addEventListener("submit", async (event) => {
     setStatus(error.message, "error");
   }
 });
+
+function setGateStatus(message, type) {
+  if (!gateStatus) return;
+  gateStatus.className = type ? `admin-status admin-status--${type}` : "admin-status";
+  gateStatus.textContent = message;
+}
 
 function syncPreview() {
   if (!preview || !form) return;
