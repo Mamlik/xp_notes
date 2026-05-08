@@ -56,7 +56,7 @@ async function renderLectures() {
       const publishedLectures = (course.items || []).filter((lecture) => lecture.status === "published");
 
       if (publishedLectures.length === 0) {
-        grid.replaceChildren(createEmptyCourseCard(course));
+        grid.replaceChildren();
         return;
       }
 
@@ -79,17 +79,6 @@ async function renderLectures() {
     `;
     });
   }
-}
-
-function createEmptyCourseCard(course) {
-  const card = document.createElement("article");
-  card.className = "placeholder-card";
-  card.innerHTML = `
-    <span>planned</span>
-    <h3>Раздел готовится</h3>
-    <p>После merge опубликованные конспекты появятся в разделе «${course.title}» автоматически.</p>
-  `;
-  return card;
 }
 
 async function loadCatalog() {
