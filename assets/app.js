@@ -1,5 +1,9 @@
 const searchInput = document.querySelector("#lectureSearch");
-const lectureGrid = document.querySelector("#acosLectureGrid");
+const courseGrids = {
+  acos: document.querySelector("#acosLectureGrid"),
+  algorithms: document.querySelector("#algorithmsLectureGrid"),
+  distributed: document.querySelector("#distributedLectureGrid")
+};
 
 let lectureCards = [];
 
@@ -42,18 +46,29 @@ function applyLectureSearch() {
 }
 
 async function renderLectures() {
-  if (!lectureGrid) return;
-
   try {
     const catalog = await loadCatalog();
-    const acos = catalog.courses.find((course) => course.id === "acos");
-    const publishedLectures = (acos?.items || []).filter((lecture) => lecture.status === "published");
 
-    lectureGrid.replaceChildren(...publishedLectures.map(createLectureCard));
-    lectureCards = Array.from(lectureGrid.querySelectorAll(".lecture-card"));
+    catalog.courses.forEach((course) => {
+      const grid = courseGrids[course.id];
+      if (!grid) return;
+
+      const publishedLectures = (course.items || []).filter((lecture) => lecture.status === "published");
+
+      if (publishedLectures.length === 0) {
+        grid.replaceChildren(createEmptyCourseCard(course));
+        return;
+      }
+
+      grid.replaceChildren(...publishedLectures.map(createLectureCard));
+    });
+
+    lectureCards = Array.from(document.querySelectorAll(".lecture-card:not(.lecture-card--loading)"));
     applyLectureSearch();
   } catch (error) {
-    lectureGrid.innerHTML = `
+    Object.values(courseGrids).forEach((grid) => {
+      if (!grid) return;
+      grid.innerHTML = `
       <article class="lecture-card lecture-card--loading">
         <div class="card-topline">
           <span class="lecture-index">!</span>
@@ -62,7 +77,19 @@ async function renderLectures() {
         <p>Проверьте, что сайт открыт через веб-сервер, а файл data/lectures.json доступен.</p>
       </article>
     `;
+    });
   }
+}
+
+function createEmptyCourseCard(course) {
+  const card = document.createElement("article");
+  card.className = "placeholder-card";
+  card.innerHTML = `
+    <span>planned</span>
+    <h3>Раздел готовится</h3>
+    <p>После merge опубликованные конспекты появятся в разделе «${course.title}» автоматически.</p>
+  `;
+  return card;
 }
 
 async function loadCatalog() {
