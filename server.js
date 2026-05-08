@@ -40,6 +40,21 @@ const server = createServer(async (request, response) => {
       return;
     }
 
+    if (request.method === "POST" && url.pathname === "/api/admin/update-lecture") {
+      await updateLecture(request, response);
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/admin/delete-lecture") {
+      await deleteLecture(request, response);
+      return;
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/admin/pulls") {
+      await listPullRequests(request, response);
+      return;
+    }
+
     if (request.method !== "GET" && request.method !== "HEAD") {
       sendJson(response, 405, { error: "Method not allowed" });
       return;
@@ -98,18 +113,7 @@ async function serveStatic(pathname, response, headOnly) {
 }
 
 async function submitLecture(request, response) {
-  const configuredPassword = process.env.ADMIN_PASSWORD;
-  const providedPassword = request.headers["x-admin-password"];
-
-  if (!configuredPassword) {
-    sendJson(response, 503, { error: "ADMIN_PASSWORD is not configured" });
-    return;
-  }
-
-  if (providedPassword !== configuredPassword) {
-    sendJson(response, 401, { error: "Invalid admin password" });
-    return;
-  }
+  if (!requireAdmin(request, response)) return;
 
   const payload = await readJsonBody(request);
   const lecture = validateLecturePayload(payload);
@@ -123,20 +127,78 @@ async function submitLecture(request, response) {
 }
 
 async function checkAdminPassword(request, response) {
+  if (!requireAdmin(request, response)) return;
+  sendJson(response, 200, { ok: true });
+}
+
+async function updateLecture(request, response) {
+  if (!requireAdmin(request, response)) return;
+
+  const payload = await readJsonBody(request);
+  const lecture = validateManagedLecturePayload(payload);
+  const pr = await createUpdateLecturePullRequest(lecture);
+
+  sendJson(response, 201, {
+    message: "Pull request created",
+    prUrl: pr.html_url,
+    branch: pr.head.ref
+  });
+}
+
+async function deleteLecture(request, response) {
+  if (!requireAdmin(request, response)) return;
+
+  const payload = await readJsonBody(request);
+  const courseId = String(payload.courseId || "").trim();
+  const href = String(payload.href || "").trim();
+
+  if (!courseDirs[courseId]) throw httpError(400, "Unknown course");
+  if (!href.startsWith(`lectures/${courseDirs[courseId]}/`)) throw httpError(400, "Invalid lecture path");
+
+  const pr = await createDeleteLecturePullRequest({ courseId, href });
+
+  sendJson(response, 201, {
+    message: "Pull request created",
+    prUrl: pr.html_url,
+    branch: pr.head.ref
+  });
+}
+
+async function listPullRequests(request, response) {
+  if (!requireAdmin(request, response)) return;
+
+  const owner = requiredEnv("GITHUB_OWNER");
+  const repo = requiredEnv("GITHUB_REPO");
+  const token = requiredEnv("GITHUB_TOKEN");
+  const pulls = await github(`/repos/${owner}/${repo}/pulls?state=open&per_page=30&sort=created&direction=desc`, { token });
+
+  sendJson(response, 200, {
+    pulls: pulls.map((pull) => ({
+      number: pull.number,
+      title: pull.title,
+      url: pull.html_url,
+      branch: pull.head.ref,
+      author: pull.user?.login || "unknown",
+      createdAt: pull.created_at
+    }))
+  });
+}
+
+function requireAdmin(request, response) {
   const configuredPassword = process.env.ADMIN_PASSWORD;
   const providedPassword = request.headers["x-admin-password"];
 
   if (!configuredPassword) {
     sendJson(response, 503, { error: "ADMIN_PASSWORD is not configured" });
-    return;
+    return false;
   }
 
   if (providedPassword !== configuredPassword) {
     sendJson(response, 401, { error: "Invalid admin password" });
-    return;
+    return false;
   }
 
-  sendJson(response, 200, { ok: true });
+  return true;
 }
 
 function validateLecturePayload(payload) {
@@ -167,6 +229,40 @@ function validateLecturePayload(payload) {
     filename: safeFilename,
     status: payload.status === "draft" ? "draft" : "published"
   };
+}
+
+function validateManagedLecturePayload(payload) {
+  const courseId = String(payload.courseId || "").trim();
+  const href = String(payload.href || "").trim();
+  const title = String(payload.title || "").trim();
+  const description = String(payload.description || "").trim();
+  const tags = parseTags(payload.tags);
+  const htmlContent = String(payload.htmlContent || "").trim();
+
+  if (!courseDirs[courseId]) throw httpError(400, "Unknown course");
+  if (!href.startsWith(`lectures/${courseDirs[courseId]}/`)) throw httpError(400, "Invalid lecture path");
+  if (title.length < 3) throw httpError(400, "Title is too short");
+  if (description.length < 10) throw httpError(400, "Description is too short");
+  if (htmlContent && !htmlContent.toLowerCase().includes("<html")) {
+    throw httpError(400, "HTML file must contain a full HTML document");
+  }
+
+  return {
+    courseId,
+    href,
+    title,
+    description,
+    tags,
+    htmlContent,
+    status: payload.status === "draft" ? "draft" : "published"
+  };
+}
+
+function parseTags(value) {
+  return String(value || "")
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter(Boolean);
 }
 
 async function createLecturePullRequest(lecture) {
@@ -250,6 +346,153 @@ async function createLecturePullRequest(lecture) {
         "",
         "Проверьте HTML-конспект и карточку в каталоге перед merge."
       ].join("\n")
+    }
+  });
+}
+
+async function createUpdateLecturePullRequest(lecture) {
+  const context = await createGithubChangeContext(`edit-lecture/${Date.now()}-${slugify(lecture.title)}`);
+  const course = context.catalog.courses.find((item) => item.id === lecture.courseId);
+  const item = course?.items.find((entry) => entry.href === lecture.href);
+
+  if (!course || !item) throw httpError(404, "Lecture is missing in lectures.json");
+
+  item.title = lecture.title;
+  item.description = lecture.description;
+  item.tags = lecture.tags;
+  item.status = lecture.status;
+
+  if (lecture.htmlContent) {
+    const existingFile = await github(`/repos/${context.owner}/${context.repo}/contents/${lecture.href}?ref=${encodeURIComponent(context.baseBranch)}`, { token: context.token });
+    await github(`/repos/${context.owner}/${context.repo}/contents/${lecture.href}`, {
+      token: context.token,
+      method: "PUT",
+      body: {
+        message: `Update lecture HTML: ${lecture.title}`,
+        content: encodeBase64(lecture.htmlContent),
+        branch: context.branch,
+        sha: existingFile.sha
+      }
+    });
+  }
+
+  await commitCatalogFiles(context, `Update lecture card: ${lecture.title}`);
+
+  return createPullRequest(context, {
+    title: `Обновить конспект: ${lecture.title}`,
+    body: [
+      "Автоматически создано из админ-панели.",
+      "",
+      `Дисциплина: ${lecture.courseId}`,
+      `Файл: ${lecture.href}`,
+      `Статус: ${lecture.status}`,
+      "",
+      "Проверьте изменения карточки и HTML-конспекта перед merge."
+    ].join("\n")
+  });
+}
+
+async function createDeleteLecturePullRequest(lecture) {
+  const context = await createGithubChangeContext(`delete-lecture/${Date.now()}-${slugify(lecture.href)}`);
+  const course = context.catalog.courses.find((item) => item.id === lecture.courseId);
+  const itemIndex = course?.items.findIndex((entry) => entry.href === lecture.href) ?? -1;
+
+  if (!course || itemIndex < 0) throw httpError(404, "Lecture is missing in lectures.json");
+
+  const [removed] = course.items.splice(itemIndex, 1);
+  const existingFile = await github(`/repos/${context.owner}/${context.repo}/contents/${lecture.href}?ref=${encodeURIComponent(context.baseBranch)}`, { token: context.token });
+
+  await github(`/repos/${context.owner}/${context.repo}/contents/${lecture.href}`, {
+    token: context.token,
+    method: "DELETE",
+    body: {
+      message: `Delete lecture: ${removed.title}`,
+      branch: context.branch,
+      sha: existingFile.sha
+    }
+  });
+
+  await commitCatalogFiles(context, `Remove lecture from catalog: ${removed.title}`);
+
+  return createPullRequest(context, {
+    title: `Удалить конспект: ${removed.title}`,
+    body: [
+      "Автоматически создано из админ-панели.",
+      "",
+      `Дисциплина: ${lecture.courseId}`,
+      `Файл: ${lecture.href}`,
+      "",
+      "Проверьте удаление карточки и HTML-файла перед merge."
+    ].join("\n")
+  });
+}
+
+async function createGithubChangeContext(branch) {
+  const owner = requiredEnv("GITHUB_OWNER");
+  const repo = requiredEnv("GITHUB_REPO");
+  const token = requiredEnv("GITHUB_TOKEN");
+  const baseBranch = process.env.GITHUB_BASE_BRANCH || "main";
+
+  const baseRef = await github(`/repos/${owner}/${repo}/git/ref/heads/${baseBranch}`, { token });
+
+  await github(`/repos/${owner}/${repo}/git/refs`, {
+    token,
+    method: "POST",
+    body: {
+      ref: `refs/heads/${branch}`,
+      sha: baseRef.object.sha
+    }
+  });
+
+  const catalogFile = await github(`/repos/${owner}/${repo}/contents/data/lectures.json?ref=${encodeURIComponent(baseBranch)}`, { token });
+  const catalogScriptFile = await github(`/repos/${owner}/${repo}/contents/assets/catalog.js?ref=${encodeURIComponent(baseBranch)}`, { token });
+  const catalog = JSON.parse(decodeBase64(catalogFile.content));
+
+  return {
+    owner,
+    repo,
+    token,
+    baseBranch,
+    branch,
+    catalog,
+    catalogFile,
+    catalogScriptFile
+  };
+}
+
+async function commitCatalogFiles(context, message) {
+  await github(`/repos/${context.owner}/${context.repo}/contents/data/lectures.json`, {
+    token: context.token,
+    method: "PUT",
+    body: {
+      message,
+      content: encodeBase64(`${JSON.stringify(context.catalog, null, 2)}\n`),
+      branch: context.branch,
+      sha: context.catalogFile.sha
+    }
+  });
+
+  await github(`/repos/${context.owner}/${context.repo}/contents/assets/catalog.js`, {
+    token: context.token,
+    method: "PUT",
+    body: {
+      message: "Update browser catalog",
+      content: encodeBase64(createCatalogScript(context.catalog)),
+      branch: context.branch,
+      sha: context.catalogScriptFile.sha
+    }
+  });
+}
+
+function createPullRequest(context, pull) {
+  return github(`/repos/${context.owner}/${context.repo}/pulls`, {
+    token: context.token,
+    method: "POST",
+    body: {
+      title: pull.title,
+      head: context.branch,
+      base: context.baseBranch,
+      body: pull.body
     }
   });
 }

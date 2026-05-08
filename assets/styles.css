@@ -502,6 +502,42 @@ main {
   border-radius: 6px;
 }
 
+.admin-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin: 24px 0 8px;
+  padding: 5px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: rgba(17, 24, 39, 0.58);
+}
+
+.admin-tab,
+.small-action {
+  border: 1px solid transparent;
+  border-radius: 2px;
+  background: transparent;
+  color: var(--muted);
+  font: 800 11px var(--mono);
+  cursor: pointer;
+}
+
+.admin-tab {
+  min-height: 38px;
+}
+
+.admin-tab:hover,
+.admin-tab.is-active {
+  border-color: rgba(88, 209, 255, 0.28);
+  background: rgba(88, 209, 255, 0.09);
+  color: var(--text);
+}
+
+.admin-mode {
+  margin-top: 20px;
+}
+
 .back-link {
   display: inline-flex;
   margin-bottom: 28px;
@@ -631,6 +667,17 @@ main {
   background: rgba(34, 211, 238, 0.14);
 }
 
+.danger-button:not(:disabled) {
+  border-color: rgba(251, 113, 133, 0.34);
+  background: rgba(251, 113, 133, 0.08);
+  color: #ffd0d8;
+}
+
+.danger-button:not(:disabled):hover {
+  border-color: rgba(251, 113, 133, 0.6);
+  background: rgba(251, 113, 133, 0.14);
+}
+
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -644,8 +691,101 @@ main {
   gap: 16px;
 }
 
+.active-prs {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: linear-gradient(180deg, var(--surface), rgba(12, 18, 30, 0.86));
+}
+
+.active-prs__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.active-prs__head .section-kicker {
+  margin: 0;
+}
+
+.small-action {
+  min-height: 30px;
+  padding: 0 10px;
+  border-color: var(--border);
+}
+
+.small-action:hover {
+  border-color: rgba(88, 209, 255, 0.35);
+  color: var(--cyan);
+}
+
+.active-prs__list {
+  display: grid;
+  gap: 8px;
+}
+
+.pr-item {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.03);
+  text-decoration: none;
+}
+
+.pr-item:hover {
+  border-color: rgba(88, 209, 255, 0.35);
+}
+
+.pr-item span,
+.pr-item small {
+  color: var(--dim);
+  font: 700 10px var(--mono);
+}
+
+.pr-item strong {
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.empty-state {
+  color: var(--dim);
+  font-size: 13px;
+}
+
 .admin-preview .lecture-card {
   min-height: 290px;
+}
+
+.delete-summary {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid rgba(251, 113, 133, 0.22);
+  border-radius: 6px;
+  background: rgba(251, 113, 133, 0.06);
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.delete-summary strong {
+  color: var(--text);
+}
+
+.delete-summary span {
+  color: var(--dim);
+  font-size: 13px;
+}
+
+.delete-summary code {
+  color: #ffd0d8;
+  font: 700 12px var(--mono);
+  word-break: break-all;
 }
 
 .card-action--disabled {
