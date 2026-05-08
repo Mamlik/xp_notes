@@ -82,6 +82,17 @@ window.LECTURE_CATALOG = {
           ],
           "href": "lectures/acos/ebpf_unified.html",
           "status": "published"
+        },
+        {
+          "title": "Виртуальная память",
+          "description": "Лекция по принципам устройства адресов RAM и их модели отображения",
+          "tags": [
+            "virtual-memory",
+            "mmu",
+            "addressing"
+          ],
+          "href": "lectures/acos/tbank_otbornoe_final_revised_paths-2-.html",
+          "status": "draft"
         }
       ]
     },
