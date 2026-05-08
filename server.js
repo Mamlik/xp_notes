@@ -50,6 +50,11 @@ const server = createServer(async (request, response) => {
       return;
     }
 
+    if (request.method === "POST" && url.pathname === "/api/admin/reorder-lectures") {
+      await reorderLectures(request, response);
+      return;
+    }
+
     if (request.method === "GET" && url.pathname === "/api/admin/pulls") {
       await listPullRequests(request, response);
       return;
@@ -171,6 +176,20 @@ async function deleteLecture(request, response) {
   });
 }
 
+async function reorderLectures(request, response) {
+  if (!requireAdmin(request, response)) return;
+
+  const payload = await readJsonBody(request);
+  const orders = validateReorderPayload(payload);
+  const pr = await createReorderLecturesPullRequest(orders);
+
+  sendJson(response, 201, {
+    message: "Pull request created",
+    prUrl: pr.html_url,
+    branch: pr.head.ref
+  });
+}
+
 async function listPullRequests(request, response) {
   if (!requireAdmin(request, response)) return;
 
@@ -263,6 +282,29 @@ function validateManagedLecturePayload(payload) {
     htmlContent,
     status: payload.status === "draft" ? "draft" : "published"
   };
+}
+
+function validateReorderPayload(payload) {
+  const orders = payload.orders;
+  if (!orders || typeof orders !== "object" || Array.isArray(orders)) {
+    throw httpError(400, "Invalid order payload");
+  }
+
+  return Object.fromEntries(Object.entries(orders).map(([courseId, hrefs]) => {
+    if (!courseDirs[courseId]) throw httpError(400, "Unknown course");
+    if (!Array.isArray(hrefs)) throw httpError(400, "Course order must be an array");
+
+    const cleanHrefs = hrefs.map((href) => String(href || "").trim());
+    if (cleanHrefs.some((href) => !href.startsWith(`lectures/${courseDirs[courseId]}/`))) {
+      throw httpError(400, "Invalid lecture path");
+    }
+
+    if (new Set(cleanHrefs).size !== cleanHrefs.length) {
+      throw httpError(400, "Duplicate lecture path in order");
+    }
+
+    return [courseId, cleanHrefs];
+  }));
 }
 
 function parseTags(value) {
@@ -430,6 +472,37 @@ async function createDeleteLecturePullRequest(lecture) {
       `Файл: ${lecture.href}`,
       "",
       "Проверьте удаление карточки и HTML-файла перед merge."
+    ].join("\n")
+  });
+}
+
+async function createReorderLecturesPullRequest(orders) {
+  const context = await createGithubChangeContext(`reorder-lectures/${Date.now()}`);
+
+  for (const [courseId, hrefs] of Object.entries(orders)) {
+    const course = context.catalog.courses.find((item) => item.id === courseId);
+    if (!course) throw httpError(400, "Course is missing in lectures.json");
+
+    const byHref = new Map(course.items.map((item) => [item.href, item]));
+    if (hrefs.some((href) => !byHref.has(href))) {
+      throw httpError(400, "Order contains unknown lecture");
+    }
+
+    const ordered = hrefs.map((href) => byHref.get(href));
+    const leftovers = course.items.filter((item) => !hrefs.includes(item.href));
+    course.items = [...ordered, ...leftovers];
+  }
+
+  await commitCatalogFiles(context, "Reorder lectures");
+
+  return createPullRequest(context, {
+    title: "Изменить порядок конспектов",
+    body: [
+      "Автоматически создано из админ-панели.",
+      "",
+      "Изменен порядок карточек внутри дисциплин.",
+      "",
+      "Проверьте очередность конспектов перед merge."
     ].join("\n")
   });
 }

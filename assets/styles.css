@@ -504,7 +504,7 @@ main {
 
 .admin-tabs {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 6px;
   margin: 24px 0 8px;
   padding: 5px;
@@ -786,6 +786,85 @@ main {
   color: #ffd0d8;
   font: 700 12px var(--mono);
   word-break: break-all;
+}
+
+.order-board {
+  display: grid;
+  gap: 16px;
+}
+
+.order-course {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.order-course__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.order-course__head strong {
+  color: var(--text);
+}
+
+.order-course__head span {
+  color: var(--dim);
+  font: 700 10px var(--mono);
+  text-transform: uppercase;
+}
+
+.order-list {
+  display: grid;
+  gap: 8px;
+}
+
+.order-item {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) 28px;
+  gap: 12px;
+  align-items: center;
+  min-height: 58px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: rgba(17, 24, 39, 0.7);
+  cursor: grab;
+}
+
+.order-item.is-dragging {
+  opacity: 0.55;
+  border-color: rgba(88, 209, 255, 0.5);
+}
+
+.order-index {
+  color: var(--cyan);
+  font: 800 12px var(--mono);
+}
+
+.order-item strong {
+  display: block;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.order-item small {
+  display: block;
+  margin-top: 3px;
+  color: var(--dim);
+  font: 700 10px var(--mono);
+  overflow-wrap: anywhere;
+}
+
+.order-handle {
+  color: var(--dim);
+  font: 900 18px var(--mono);
+  text-align: center;
 }
 
 .card-action--disabled {

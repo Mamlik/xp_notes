@@ -18,12 +18,15 @@ const deleteLectureSelect = document.querySelector("#deleteLectureSelect");
 const deleteSummary = document.querySelector("#deleteSummary");
 const pullRequestList = document.querySelector("#pullRequestList");
 const refreshPulls = document.querySelector("#refreshPulls");
+const orderBoard = document.querySelector("#orderBoard");
+const saveOrderButton = document.querySelector("#saveOrderButton");
 
 let adminPassword = "";
 let activeMode = "add";
 let catalog = null;
 let addHtmlContent = "";
 let editHtmlContent = "";
+let orderState = {};
 let tagState = {
   add: [],
   edit: []
@@ -154,6 +157,12 @@ deleteLectureSelect?.addEventListener("change", () => {
   syncPreview();
 });
 
+saveOrderButton?.addEventListener("click", async () => {
+  await submitAdminRequest("/api/admin/reorder-lectures", {
+    orders: orderState
+  }, "Создаю PR с новым порядком...");
+});
+
 setupTagEditor("add");
 setupTagEditor("edit");
 
@@ -167,6 +176,7 @@ async function loadCatalog() {
   const response = await fetch("data/lectures.json");
   if (!response.ok) throw new Error("Не удалось загрузить каталог");
   catalog = await response.json();
+  buildOrderState();
 }
 
 async function loadPullRequests() {
@@ -210,6 +220,7 @@ function populateLectureSelects() {
   const placeholder = `<option value="">Выберите конспект</option>`;
   if (editLectureSelect) editLectureSelect.innerHTML = placeholder + options;
   if (deleteLectureSelect) deleteLectureSelect.innerHTML = placeholder + options;
+  renderOrderBoard();
 }
 
 function fillEditForm(key) {
@@ -278,6 +289,7 @@ function setMode(mode) {
     panel.hidden = !isActive;
   });
   setStatus("", "");
+  if (mode === "order") renderOrderBoard();
   syncPreview();
 }
 
@@ -391,6 +403,87 @@ function getAllLectures() {
   return (catalog?.courses || []).flatMap((course) =>
     (course.items || []).map((lecture) => ({ course, lecture }))
   );
+}
+
+function buildOrderState() {
+  orderState = Object.fromEntries((catalog?.courses || []).map((course) => [
+    course.id,
+    (course.items || []).map((lecture) => lecture.href)
+  ]));
+}
+
+function renderOrderBoard() {
+  if (!orderBoard || !catalog) return;
+
+  orderBoard.innerHTML = catalog.courses.map((course) => {
+    const itemsByHref = new Map((course.items || []).map((lecture) => [lecture.href, lecture]));
+    const orderedItems = (orderState[course.id] || [])
+      .map((href) => itemsByHref.get(href))
+      .filter(Boolean);
+
+    return `
+      <section class="order-course" data-course-id="${escapeHtml(course.id)}">
+        <div class="order-course__head">
+          <strong>${escapeHtml(course.title)}</strong>
+          <span>${orderedItems.length} конспектов</span>
+        </div>
+        <div class="order-list" data-order-list="${escapeHtml(course.id)}">
+          ${orderedItems.length === 0 ? `<div class="empty-state">Пока нет конспектов.</div>` : orderedItems.map((lecture, index) => renderOrderItem(lecture, index)).join("")}
+        </div>
+      </section>
+    `;
+  }).join("");
+
+  orderBoard.querySelectorAll(".order-item").forEach((item) => {
+    item.addEventListener("dragstart", onOrderDragStart);
+    item.addEventListener("dragover", onOrderDragOver);
+    item.addEventListener("drop", onOrderDrop);
+    item.addEventListener("dragend", onOrderDragEnd);
+  });
+}
+
+function renderOrderItem(lecture, index) {
+  return `
+    <div class="order-item" draggable="true" data-href="${escapeHtml(lecture.href)}">
+      <span class="order-index">${String(index + 1).padStart(2, "0")}</span>
+      <div>
+        <strong>${escapeHtml(lecture.title)}</strong>
+        <small>${escapeHtml(lecture.href)}</small>
+      </div>
+      <span class="order-handle" aria-hidden="true">⋮⋮</span>
+    </div>
+  `;
+}
+
+function onOrderDragStart(event) {
+  event.currentTarget.classList.add("is-dragging");
+  event.dataTransfer.effectAllowed = "move";
+  event.dataTransfer.setData("text/plain", event.currentTarget.dataset.href);
+}
+
+function onOrderDragOver(event) {
+  event.preventDefault();
+  const dragging = document.querySelector(".order-item.is-dragging");
+  const target = event.currentTarget;
+  if (!dragging || dragging === target) return;
+
+  const rect = target.getBoundingClientRect();
+  const after = event.clientY > rect.top + rect.height / 2;
+  target.parentNode.insertBefore(dragging, after ? target.nextSibling : target);
+}
+
+function onOrderDrop(event) {
+  event.preventDefault();
+  const list = event.currentTarget.closest("[data-order-list]");
+  if (!list) return;
+
+  const courseId = list.dataset.orderList;
+  orderState[courseId] = Array.from(list.querySelectorAll(".order-item")).map((item) => item.dataset.href);
+  renderOrderBoard();
+}
+
+function onOrderDragEnd(event) {
+  event.currentTarget.classList.remove("is-dragging");
 }
 
 function getSelectedLecture(key) {

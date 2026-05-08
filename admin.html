@@ -43,6 +43,7 @@
         <button class="admin-tab is-active" type="button" data-admin-tab="add">Добавить</button>
         <button class="admin-tab" type="button" data-admin-tab="edit">Редактировать</button>
         <button class="admin-tab" type="button" data-admin-tab="delete">Удалить</button>
+        <button class="admin-tab" type="button" data-admin-tab="order">Порядок</button>
       </div>
 
       <form class="auth-form admin-form admin-mode is-active" id="addForm" data-admin-panel="add">
@@ -158,6 +159,11 @@
 
         <button class="danger-button" type="submit">Создать PR на удаление</button>
       </form>
+
+      <section class="auth-form admin-form admin-mode" id="orderPanel" data-admin-panel="order" hidden>
+        <div class="order-board" id="orderBoard"></div>
+        <button id="saveOrderButton" type="button">Создать PR с новым порядком</button>
+      </section>
 
       <div class="admin-status" id="adminStatus" aria-live="polite"></div>
     </section>
