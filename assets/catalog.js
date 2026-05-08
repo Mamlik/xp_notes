@@ -108,7 +108,18 @@ window.LECTURE_CATALOG = {
       "title": "Распределенные системы",
       "shortTitle": "Распределенные системы",
       "description": "Будущий раздел для сетевого взаимодействия, консенсуса, отказоустойчивости и распределенных вычислений.",
-      "items": []
+      "items": [
+        {
+          "title": "тестовый конспект",
+          "description": "тестовое содержание",
+          "tags": [
+            "тестовый-тег-1",
+            "тестовый-тег-2"
+          ],
+          "href": "lectures/distributed/algorithms_documentation-2-.html",
+          "status": "draft"
+        }
+      ]
     }
   ]
 };
