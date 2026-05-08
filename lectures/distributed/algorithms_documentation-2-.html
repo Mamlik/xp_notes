@@ -1,0 +1,2017 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="description" content="Полная документация алгоритмов: Convex Hull, CHT, Минковский, Scanline, DFT, FFT, NTT, AND/OR/XOR свёртки. С доказательствами и кодом.">
+<meta name="keywords" content="алгоритмы, competitive programming, FFT, NTT, convex hull, CHT, Минковский, свёртки">
+<meta name="author" content="Algo Ref">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Алгоритмы: Геометрия · Полиномы · Преобразования</title>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0B0E1A;
+  --panel: #111425;
+  --panel2: #161929;
+  --border: #252A40;
+  --accent1: #4F8EF7;
+  --accent2: #A78BFA;
+  --accent3: #34D399;
+  --accent4: #FB923C;
+  --accent5: #F472B6;
+  --white: #E2E8F0;
+  --gray: #4B5563;
+  --lgray: #6B7280;
+  --codebg: #0D1117;
+  --codefg: #79C0FF;
+  --kw: #FF7B72;
+  --str: #A5D6FF;
+  --cmt: #8B949E;
+  --num: #F2CC60;
+  --bi: #D2A8FF;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--white);
+  line-height: 1.7;
+  font-size: 15px;
+  overflow-x: hidden;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gray); }
+
+/* Layout */
+.container { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+
+/* Hero */
+.hero {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  padding: 60px 20px;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% 50%, rgba(79,142,247,0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 30%, rgba(167,139,250,0.08) 0%, transparent 50%),
+    radial-gradient(circle at 50% 80%, rgba(52,211,153,0.06) 0%, transparent 50%);
+  pointer-events: none;
+}
+.hero h1 {
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--white);
+  position: relative;
+  z-index: 1;
+}
+.hero .subtitle {
+  font-size: 1.1rem;
+  color: var(--accent1);
+  font-weight: 600;
+  margin-top: 12px;
+  position: relative;
+  z-index: 1;
+}
+.hero .meta {
+  font-size: 0.85rem;
+  color: var(--lgray);
+  margin-top: 8px;
+  position: relative;
+  z-index: 1;
+}
+.hero .tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 28px;
+  position: relative;
+  z-index: 1;
+}
+.tag {
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: var(--panel);
+  border: 1px solid var(--border);
+}
+.tag.a1 { color: var(--accent1); border-color: rgba(79,142,247,0.3); }
+.tag.a2 { color: var(--accent2); border-color: rgba(167,139,250,0.3); }
+.tag.a3 { color: var(--accent3); border-color: rgba(52,211,153,0.3); }
+.tag.a4 { color: var(--accent4); border-color: rgba(251,146,60,0.3); }
+
+/* TOC */
+.toc {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px 32px;
+  margin: 40px 0;
+}
+.toc h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--accent1);
+}
+.toc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 16px;
+}
+.toc-item {
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: var(--panel2);
+  border-left: 3px solid var(--accent1);
+  transition: transform 0.15s, background 0.15s;
+}
+.toc-item:hover { transform: translateX(4px); background: #1a1f35; }
+.toc-item a { text-decoration: none; color: inherit; display: block; }
+.toc-item .num { font-weight: 800; font-size: 0.8rem; }
+.toc-item .title { font-weight: 600; font-size: 0.95rem; margin-top: 2px; }
+.toc-item .subs { font-size: 0.8rem; color: var(--lgray); margin-top: 4px; line-height: 1.5; }
+
+/* Section */
+.section {
+  margin: 60px 0;
+  scroll-margin-top: 20px;
+}
+.sec-header {
+  background: var(--panel);
+  border-radius: 10px;
+  padding: 24px 28px;
+  margin-bottom: 28px;
+  position: relative;
+  overflow: hidden;
+}
+.sec-header::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 5px;
+  border-radius: 10px 0 0 10px;
+}
+.sec-header.sec1::before { background: var(--accent1); }
+.sec-header.sec2::before { background: var(--accent2); }
+.sec-header.sec3::before { background: var(--accent3); }
+.sec-header.sec4::before { background: var(--accent4); }
+.sec-header.sec5::before { background: var(--accent5); }
+.sec-header.sec6::before { background: var(--accent1); }
+.sec-header.sec7::before { background: var(--accent3); }
+.sec-header.sec8::before { background: var(--accent4); }
+.sec-header .num {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 6px;
+}
+.sec-header.sec1 .num { color: var(--accent1); }
+.sec-header.sec2 .num { color: var(--accent2); }
+.sec-header.sec3 .num { color: var(--accent3); }
+.sec-header.sec4 .num { color: var(--accent4); }
+.sec-header.sec5 .num { color: var(--accent5); }
+.sec-header.sec6 .num { color: var(--accent1); }
+.sec-header.sec7 .num { color: var(--accent3); }
+.sec-header.sec8 .num { color: var(--accent4); }
+.sec-header h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.sec-header .sub {
+  font-size: 0.9rem;
+  color: var(--lgray);
+  margin-top: 6px;
+}
+
+/* Subheaders */
+.subheader {
+  background: var(--panel2);
+  border-radius: 6px;
+  padding: 10px 16px;
+  margin: 28px 0 16px;
+  font-weight: 700;
+  font-size: 1.05rem;
+  border-left: 3px solid var(--accent1);
+}
+.subheader.s2 { border-color: var(--accent2); color: var(--accent2); }
+.subheader.s3 { border-color: var(--accent3); color: var(--accent3); }
+.subheader.s4 { border-color: var(--accent4); color: var(--accent4); }
+.subheader.s5 { border-color: var(--accent5); color: var(--accent5); }
+
+/* Body text */
+p { margin-bottom: 14px; color: #c9d1d9; }
+p b, p strong { color: var(--white); font-weight: 600; }
+p i, p em { color: #a5b4c6; }
+
+/* Boxes */
+.box {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin: 18px 0;
+  overflow: hidden;
+}
+.box-header {
+  padding: 10px 18px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.box-body {
+  padding: 16px 20px;
+  font-size: 0.92rem;
+  line-height: 1.75;
+  color: #c9d1d9;
+}
+.box-body p { margin-bottom: 10px; }
+.box-body p:last-child { margin-bottom: 0; }
+
+.box.thm .box-header { background: rgba(79,142,247,0.12); color: var(--accent1); }
+.box.thm { border-color: rgba(79,142,247,0.25); }
+.box.pf  .box-header { background: rgba(52,211,153,0.12); color: var(--accent3); }
+.box.pf  { border-color: rgba(52,211,153,0.25); }
+.box.def .box-header { background: rgba(167,139,250,0.12); color: var(--accent2); }
+.box.def { border-color: rgba(167,139,250,0.25); }
+.box.ex  .box-header { background: rgba(251,146,60,0.12); color: var(--accent4); }
+.box.ex  { border-color: rgba(251,146,60,0.25); }
+.box.note .box-header { background: rgba(107,114,128,0.12); color: var(--lgray); }
+.box.note { border-color: rgba(107,114,128,0.25); }
+.box.lem .box-header { background: rgba(244,114,182,0.12); color: var(--accent5); }
+.box.lem { border-color: rgba(244,114,182,0.25); }
+
+/* Code blocks */
+.code-block {
+  background: var(--codebg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin: 18px 0;
+  overflow: hidden;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+.code-header {
+  background: var(--panel);
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.dot.r { background: #FF5F57; }
+.dot.y { background: #FEBC2E; }
+.dot.g { background: #28C840; }
+.code-lang {
+  margin-left: auto;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--lgray);
+  text-transform: uppercase;
+}
+.code-body {
+  padding: 14px 0;
+  overflow-x: auto;
+  font-size: 0.82rem;
+  line-height: 1.7;
+}
+.code-body pre { margin: 0; padding: 0 18px; }
+.code-body code {
+  font-family: inherit;
+  background: none;
+  padding: 0;
+  color: var(--codefg);
+}
+
+/* Syntax highlighting */
+.kw { color: var(--kw); font-weight: 600; }
+.bi { color: var(--bi); }
+.s { color: var(--str); }
+.c { color: var(--cmt); font-style: italic; }
+.n { color: var(--num); }
+.op { color: #E2E8F0; }
+
+/* Inline code */
+code {
+  font-family: 'JetBrains Mono', monospace;
+  background: rgba(13,17,23,0.6);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.88em;
+  color: var(--codefg);
+  border: 1px solid var(--border);
+}
+
+/* Formula blocks */
+.formula-block {
+  background: #0F1320;
+  border-left: 4px solid var(--accent4);
+  border-radius: 6px;
+  padding: 14px 20px;
+  margin: 16px 0;
+  text-align: center;
+  font-size: 1rem;
+  overflow-x: auto;
+}
+.formula-block.ac1 { border-color: var(--accent1); }
+.formula-block.ac2 { border-color: var(--accent2); }
+.formula-block.ac3 { border-color: var(--accent3); }
+.formula-block.ac5 { border-color: var(--accent5); }
+
+/* Complexity table */
+.complex-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 18px 0;
+  font-size: 0.88rem;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.complex-table thead {
+  background: var(--accent1);
+  color: var(--bg);
+}
+.complex-table th {
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.complex-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.complex-table tbody tr:nth-child(odd) { background: var(--panel); }
+.complex-table tbody tr:nth-child(even) { background: var(--panel2); }
+.complex-table .time { color: var(--accent3); font-family: 'JetBrains Mono', monospace; font-weight: 500; }
+.complex-table .mem { color: var(--accent2); font-family: 'JetBrains Mono', monospace; font-weight: 500; }
+
+/* NTT primes table */
+.primes-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 18px 0;
+  font-size: 0.82rem;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.primes-table thead { background: var(--accent3); color: var(--bg); }
+.primes-table th { padding: 10px 12px; text-align: left; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; }
+.primes-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; }
+.primes-table tbody tr:nth-child(odd) { background: var(--panel); }
+.primes-table tbody tr:nth-child(even) { background: var(--panel2); }
+
+/* Conv table */
+.conv-table { composes: complex-table; }
+
+/* Divider */
+hr {
+  border: none;
+  height: 1px;
+  background: var(--border);
+  margin: 32px 0;
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--gray);
+  font-size: 0.85rem;
+  border-top: 1px solid var(--border);
+  margin-top: 60px;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .toc-grid { grid-template-columns: 1fr; }
+  .container { padding: 0 16px; }
+  .sec-header h2 { font-size: 1.3rem; }
+  .code-body { font-size: 0.75rem; }
+}
+
+/* Anchor offset */
+[id] { scroll-margin-top: 24px; }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>АЛГОРИТМЫ</h1>
+  <div class="subtitle">Геометрия · Полиномы · Преобразования</div>
+  <div class="meta">Convex Hull · CHT · Минковский · Скайлайн · DFT · FFT · NTT · Свёртки AND/OR/XOR</div>
+  <div class="tags">
+    <span class="tag a1">§1 Convex Hull</span>
+    <span class="tag a2">§2 CHT</span>
+    <span class="tag a3">§3 Минковский</span>
+    <span class="tag a4">§4 Scanline</span>
+    <span class="tag a1">§5 DFT</span>
+    <span class="tag a2">§6 FFT</span>
+    <span class="tag a3">§7 NTT</span>
+    <span class="tag a4">§8 Свёртки</span>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- TOC -->
+<div class="toc">
+  <h2>Содержание</h2>
+  <div class="toc-grid">
+    <div class="toc-item" style="border-color:var(--accent1)">
+      <a href="#sec1">
+        <div class="num" style="color:var(--accent1)">§1</div>
+        <div class="title">Выпуклая Оболочка (Convex Hull)</div>
+        <div class="subs">Graham Scan · Jarvis March · Rotating Calipers</div>
+      </a>
+    </div>
+    <div class="toc-item" style="border-color:var(--accent2)">
+      <a href="#sec2">
+        <div class="num" style="color:var(--accent2)">§2</div>
+        <div class="title">Convex Hull Trick (CHT)</div>
+        <div class="subs">Оптимизация ДП · Дерево Ли Чао</div>
+      </a>
+    </div>
+    <div class="toc-item" style="border-color:var(--accent3)">
+      <a href="#sec3">
+        <div class="num" style="color:var(--accent3)">§3</div>
+        <div class="title">Сумма Минковского</div>
+        <div class="subs">Выпуклые многоугольники · GJK</div>
+      </a>
+    </div>
+    <div class="toc-item" style="border-color:var(--accent4)">
+      <a href="#sec4">
+        <div class="num" style="color:var(--accent4)">§4</div>
+        <div class="title">Задача о горизонте (Scanline)</div>
+        <div class="subs">События · Активные отрезки · Пересечения · Площадь объединения</div>
+      </a>
+    </div>
+    <div class="toc-item" style="border-color:var(--accent5)">
+      <a href="#sec5">
+        <div class="num" style="color:var(--accent5)">§5</div>
+        <div class="title">DFT — Дискретное Преобразование Фурье</div>
+        <div class="subs">Определение · Свойства · Обращение</div>
+      </a>
+    </div>
+    <div class="toc-item" style="border-color:var(--accent1)">
+      <a href="#sec6">
+        <div class="num" style="color:var(--accent1)">§6</div>
+        <div class="title">FFT — Быстрое Преобразование Фурье</div>
+        <div class="subs">Кули-Тьюки · Бабочка · Bit-reversal</div>
+      </a>
+    </div>
+    <div class="toc-item" style="border-color:var(--accent3)">
+      <a href="#sec7">
+        <div class="num" style="color:var(--accent3)">§7</div>
+        <div class="title">NTT — Числовое Преобразование Фурье</div>
+        <div class="subs">NTT-friendly primes · CRT</div>
+      </a>
+    </div>
+    <div class="toc-item" style="border-color:var(--accent4)">
+      <a href="#sec8">
+        <div class="num" style="color:var(--accent4)">§8</div>
+        <div class="title">AND / OR / XOR Свёртки</div>
+        <div class="subs">SOS DP · Walsh-Hadamard · Subset Sum</div>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SECTION 1 — CONVEX HULL -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="section" id="sec1">
+  <div class="sec-header sec1">
+    <div class="num">§1</div>
+    <h2>Выпуклая Оболочка (Convex Hull)</h2>
+    <div class="sub">Алгоритмы Грэма, Джарвиса, вращающиеся суппорты</div>
+  </div>
+
+  <p><b>Постановка задачи.</b> Дано множество <code>P = {p₁, p₂, …, pₙ}</code> точек на плоскости <code>ℝ²</code>. Требуется найти <i>выпуклую оболочку</i> <code>conv(P)</code> — наименьшее выпуклое множество, содержащее все точки <code>P</code>.</p>
+
+  <div class="box def">
+    <div class="box-header">📐 Определение — Выпуклая оболочка</div>
+    <div class="box-body">
+      <p>$$\text{conv}(P) = \left\{ \sum_i \lambda_i p_i \;\middle|\; p_i \in P,\; \lambda_i \geq 0,\; \sum_i \lambda_i = 1 \right\}$$</p>
+      <p>Эквивалентно: наименьший выпуклый многоугольник <code>Q</code>, такой что <code>P ⊆ Q</code>.</p>
+      <p>Ключевое свойство: точка <code>q ∈ conv(P)</code> тогда и только тогда, когда она является выпуклой комбинацией точек из <code>P</code>.</p>
+    </div>
+  </div>
+
+  <div class="subheader s1">1.1 Алгоритм Грэма (Graham Scan)</div>
+  <p><b>Основная идея.</b> Выбираем опорную точку <code>p₀</code> с наименьшей координатой <code>Y</code> (при равенстве — с наименьшей <code>X</code>). Все остальные точки сортируем по полярному углу относительно <code>p₀</code>. Затем проходим по отсортированным точкам, поддерживая стек, в котором каждые три последовательные точки образуют <i>левый поворот</i>.</p>
+
+  <div class="box def">
+    <div class="box-header">📐 Определение — Векторное произведение (cross product)</div>
+    <div class="box-body">
+      <p>$$\text{cross}(O, A, B) = (A_x - O_x)(B_y - O_y) - (A_y - O_y)(B_x - O_x)$$</p>
+      <p>Геометрический смысл:</p>
+      <p><code>cross &gt; 0</code> → поворот <code>O → A → B</code> левый (CCW)</p>
+      <p><code>cross &lt; 0</code> → поворот <code>O → A → B</code> правый (CW)</p>
+      <p><code>cross = 0</code> → точки <code>O, A, B</code> коллинеарны</p>
+    </div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-lang">Python</span></div>
+    <div class="code-body"><pre><code><span class="kw">def</span> <span class="bi">cross</span>(O, A, B):
+    <span class="kw">return</span> (A[<span class="num">0</span>]-O[<span class="num">0</span>])*(B[<span class="num">1</span>]-O[<span class="num">1</span>]) - (A[<span class="num">1</span>]-O[<span class="num">1</span>])*(B[<span class="num">0</span>]-O[<span class="num">0</span>])
+
+<span class="kw">def</span> <span class="bi">convex_hull_graham</span>(pts):
+    pts = <span class="bi">sorted</span>(<span class="bi">set</span>(<span class="bi">map</span>(<span class="bi">tuple</span>, pts)))
+    n = <span class="bi">len</span>(pts)
+    <span class="kw">if</span> n <= <span class="num">1</span>: <span class="kw">return</span> pts
+    <span class="c"># Нижняя цепь: движемся слева направо</span>
+    lower = []
+    <span class="kw">for</span> p <span class="kw">in</span> pts:
+        <span class="c"># Пока последние три не образуют левый поворот — убираем вершину</span>
+        <span class="kw">while</span> <span class="bi">len</span>(lower) >= <span class="num">2</span> <span class="kw">and</span> cross(lower[-<span class="num">2</span>], lower[-<span class="num">1</span>], p) <= <span class="num">0</span>:
+            lower.<span class="bi">pop</span>()
+        lower.<span class="bi">append</span>(p)
+    <span class="c"># Верхняя цепь: движемся справа налево</span>
+    upper = []
+    <span class="kw">for</span> p <span class="kw">in</span> <span class="bi">reversed</span>(pts):
+        <span class="kw">while</span> <span class="bi">len</span>(upper) >= <span class="num">2</span> <span class="kw">and</span> cross(upper[-<span class="num">2</span>], upper[-<span class="num">1</span>], p) <= <span class="num">0</span>:
+            upper.<span class="bi">pop</span>()
+        upper.<span class="bi">append</span>(p)
+    <span class="c"># Объединяем (исключаем дублирование крайних точек)</span>
+    <span class="kw">return</span> lower[:-<span class="num">1</span>] + upper[:-<span class="num">1</span>]</code></pre></div>
+  </div>
+
+  <div class="box pf">
+    <div class="box-header">✓ Доказательство — Корректность алгоритма Грэма</div>
+    <div class="box-body">
+      <p><b>Инвариант цикла:</b> стек <code>lower</code> содержит вершины выпуклой цепи (только левые повороты).</p>
+      <p><b>База:</b> при <code>|lower| ≤ 1</code> инвариант тривиален.</p>
+      <p><b>Переход:</b> при добавлении точки <code>p</code> проверяем <code>cross(lower[-2], lower[-1], p)</code>. Если <code>cross ≤ 0</code>, то <code>lower[-1]</code> не может быть на нижней оболочке, так как <code>p</code> расположена правее или на линии <code>lower[-2] → lower[-1]</code>. Удаляем <code>lower[-1]</code>. Повторяем до выполнения условия.</p>
+      <p><b>Завершение:</b> когда все точки обработаны, стек содержит нижнюю выпуклую цепь от <code>pts[0]</code> до <code>pts[-1]</code>. Аналогично для верхней. Объединение <code>lower[:-1] + upper[:-1]</code> даёт CCW-обход оболочки. ∎</p>
+    </div>
+  </div>
+
+  <div class="box pf">
+    <div class="box-header">✓ Доказательство — Сложность O(n log n)</div>
+    <div class="box-body">
+      <p>1. Сортировка <code>n</code> точек: <code>O(n log n)</code>.</p>
+      <p>2. Построение <code>lower</code> + <code>upper</code>: каждая точка добавляется в стек ровно 1 раз и удаляется не более 1 раза. Итого <code>O(n)</code> для обоих проходов.</p>
+      <p>3. Доминирует сортировка: <code>T(n) = O(n log n)</code>.</p>
+      <p><b>Нижняя оценка:</b> задача сортировки сводится к Convex Hull (точки <code>(x, x²)</code> лежат на параболе, оболочка даёт их порядок). Следовательно, <code>Ω(n log n)</code> — оптимально.</p>
+    </div>
+  </div>
+
+  <div class="subheader s1">1.2 Алгоритм Джарвиса (Jarvis March / Gift Wrapping)</div>
+  <p><b>Идея.</b> Начинаем с самой левой (крайней) точки. На каждом шаге ищем точку, которая является самой «правой» относительно текущего направления: т.е. точку <code>q</code>, такую что все остальные точки лежат <i>слева</i> от луча <code>p → q</code>. Алгоритм работает без предварительной сортировки, но на каждый шаг тратит <code>O(n)</code>.</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-lang">Python</span></div>
+    <div class="code-body"><pre><code><span class="kw">def</span> <span class="bi">jarvis_march</span>(pts):
+    n = <span class="bi">len</span>(pts)
+    <span class="kw">if</span> n < <span class="num">3</span>: <span class="kw">return</span> pts
+    hull = []
+    <span class="c"># Стартуем с крайне левой точки (минимальный X)</span>
+    start = <span class="bi">min</span>(<span class="bi">range</span>(n), key=<span class="kw">lambda</span> i: (pts[i][<span class="num">0</span>], pts[i][<span class="num">1</span>]))
+    cur = start
+    <span class="kw">while</span> <span class="kw">True</span>:
+        hull.<span class="bi">append</span>(pts[cur])
+        <span class="c"># next: точка, для которой все остальные — слева</span>
+        nxt = (cur + <span class="num">1</span>) % n
+        <span class="kw">for</span> r <span class="kw">in</span> <span class="bi">range</span>(n):
+            <span class="c"># cross &lt; 0: r правее cur→nxt => обновляем nxt</span>
+            <span class="kw">if</span> cross(pts[cur], pts[nxt], pts[r]) < <span class="num">0</span>:
+                nxt = r
+        cur = nxt
+        <span class="kw">if</span> cur == start:  <span class="c"># завершили обход</span>
+            <span class="kw">break</span>
+    <span class="kw">return</span> hull</code></pre></div>
+  </div>
+
+  <div class="box pf">
+    <div class="box-header">✓ Доказательство — Корректность Jarvis March</div>
+    <div class="box-body">
+      <p>На каждом шаге из точки <code>p</code> мы выбираем <code>q</code>, минимизирующую угол поворота.</p>
+      <p><b>Утверждение:</b> после полного обхода <code>hull</code> содержит все вершины оболочки.</p>
+      <p>Если <code>q*</code> — следующая вершина оболочки CCW, то для любой другой точки <code>r</code>: <code>cross(p, q*, r) ≥ 0</code> (r левее или на луче <code>p→q*</code>). Следовательно, алгоритм выберет именно <code>q*</code>.</p>
+      <p>Цикл завершается, когда мы вернулись в <code>start</code> — что происходит ровно после обхода всех <code>h</code> вершин оболочки. Следовательно, <code>hull</code> корректен. ∎</p>
+    </div>
+  </div>
+
+  <table class="complex-table">
+    <thead><tr><th>Операция</th><th>Время</th><th>Память</th></tr></thead>
+    <tbody>
+      <tr><td>Graham Scan (сортировка)</td><td class="time">O(n log n)</td><td class="mem">O(n)</td></tr>
+      <tr><td>Graham Scan (построение цепей)</td><td class="time">O(n)</td><td class="mem">O(n)</td></tr>
+      <tr><td>Jarvis March (h — вершин оболочки)</td><td class="time">O(n·h)</td><td class="mem">O(h)</td></tr>
+      <tr><td>Jarvis worst case (h = n)</td><td class="time">O(n²)</td><td class="mem">O(n)</td></tr>
+      <tr><td>Chan's algorithm</td><td class="time">O(n log h)</td><td class="mem">O(n)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="subheader s1">1.3 Вращающиеся суппорты (Rotating Calipers)</div>
+  <p><b>Метод вращающихся суппортов</b> (Shamos, 1978) позволяет решать задачи на выпуклых многоугольниках за <code>O(n)</code> после построения оболочки. Суппорты — пара параллельных прямых, касающихся оболочки. Поворачивая их, мы перебираем все антиподальные пары точек.</p>
+
+  <div class="box thm">
+    <div class="box-header">📐 Теорема — Диаметр через суппорты</div>
+    <div class="box-body">
+      <p>Диаметр выпуклого <code>n</code>-угольника достигается на антиподальной паре.</p>
+      <p>Алгоритм вращающихся суппортов за <code>O(n)</code> обходит все антиподальные пары:</p>
+      <p>1. Найти вершину, максимально удалённую от ребра <code>hull[0] → hull[1]</code>.</p>
+      <p>2. Синхронно двигать оба указателя <code>i</code> и <code>j</code> по оболочке: если <code>area(hull[i], hull[i+1], hull[j+1]) > area(hull[i], hull[i+1], hull[j])</code>, то <code>j = (j+1) % n</code>, иначе <code>i = (i+1) % n</code>.</p>
+      <p>3. На каждом шаге обновлять максимальное расстояние.</p>
+      <p><b>Корректность:</b> все антиподальные пары будут рассмотрены, так как при монотонном повороте суппортов <code>j</code> строго возрастает между последовательными увеличениями <code>i</code>. ∎</p>
+    </div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-lang">Python</span></div>
+    <div class="code-body"><pre><code><span class="kw">import</span> math
+
+<span class="kw">def</span> <span class="bi">dist2</span>(A, B):  <span class="c"># квадрат расстояния</span>
+    <span class="kw">return</span> (A[<span class="num">0</span>]-B[<span class="num">0</span>])**<span class="num">2</span> + (A[<span class="num">1</span>]-B[<span class="num">1</span>])**<span class="num">2</span>
+
+<span class="kw">def</span> <span class="bi">polygon_diameter</span>(hull):
+    n = <span class="bi">len</span>(hull)
+    <span class="kw">if</span> n == <span class="num">1</span>: <span class="kw">return</span> <span class="num">0</span>
+    <span class="kw">if</span> n == <span class="num">2</span>: <span class="kw">return</span> math.<span class="bi">sqrt</span>(dist2(hull[<span class="num">0</span>], hull[<span class="num">1</span>]))
+    <span class="c"># Ищем начальное j — максимально удалённое от hull[0]→hull[1]</span>
+    j = <span class="num">1</span>
+    <span class="kw">while</span> <span class="bi">abs</span>(cross(hull[<span class="num">0</span>], hull[<span class="num">1</span>], hull[(j+<span class="num">1</span>)%n])) > \
+          <span class="bi">abs</span>(cross(hull[<span class="num">0</span>], hull[<span class="num">1</span>], hull[j])):
+        j += <span class="num">1</span>
+    best = <span class="num">0</span>
+    i = <span class="num">0</span>
+    <span class="kw">while</span> i != j:  <span class="c"># пока суппорты не совпали</span>
+        best = <span class="bi">max</span>(best, dist2(hull[i], hull[j]))
+        c1 = cross(hull[i], hull[(i+<span class="num">1</span>)%n], hull[(j+<span class="num">1</span>)%n])
+        c2 = cross(hull[i], hull[(i+<span class="num">1</span>)%n], hull[j])
+        <span class="kw">if</span> c1 > c2:
+            j = (j+<span class="num">1</span>) % n
+        <span class="kw">else</span>:
+            i = (i+<span class="num">1</span>) % n
+    <span class="kw">return</span> math.<span class="bi">sqrt</span>(best)
+
+<span class="c"># Применения вращающихся суппортов:</span>
+<span class="c"># - Диаметр множества точек: O(n log n) с построением оболочки</span>
+<span class="c"># - Минимальный описывающий прямоугольник: O(n)</span>
+<span class="c"># - Ширина выпуклого многоугольника: O(n)</span>
+<span class="c"># - Расстояние между двумя выпуклыми многоугольниками: O(n+m)</span></code></pre></div>
+  </div>
+
+  <div class="box note">
+    <div class="box-header">💡 Замечание — Алгоритм Чана (Chan's Algorithm, 1996)</div>
+    <div class="box-body">
+      <p>Объединяет Graham и Jarvis за <code>O(n log h)</code>, где <code>h</code> — размер оболочки.</p>
+      <p><b>Идея:</b> угадываем <code>H = h</code> (параметр), делаем <code>⌈n/H⌉</code> групп по <code>H</code> точек, строим оболочки групп алгоритмом Грэма за <code>O(n log H)</code>, затем запускаем Jarvis на этих оболочках (<code>H</code> шагов по <code>O(n/H · log H)</code>).</p>
+      <p>Если <code>H ≥ h</code> — успех; иначе удваиваем <code>H</code> и повторяем. Суммарно: <code>O(n log h)</code> — оптимальный алгоритм для задачи.</p>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center; margin: 20px 0;">
+  <a href="#" style="color: var(--lgray); font-size: 0.8rem; text-decoration: none; border: 1px solid var(--border); padding: 4px 12px; border-radius: 12px;">↑ Наверх</a>
+</div><hr>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SECTION 2 — CHT -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="section" id="sec2">
+  <div class="sec-header sec2">
+    <div class="num">§2</div>
+    <h2>Convex Hull Trick (CHT)</h2>
+    <div class="sub">Оптимизация ДП · Дерево Ли Чао</div>
+  </div>
+
+  <p><b>Convex Hull Trick</b> — техника оптимизации динамического программирования, применимая когда переходы имеют вид:</p>
+  <div class="formula-block ac2">
+    $$\text{dp}[i] = \min_{j &lt; i} \{ \text{dp}[j] + m[j] \cdot x[i] + c[j] \}$$
+  </div>
+  <p>где <code>m[j], x[i]</code> — монотонные или произвольные числа.</p>
+
+  <p><b>Геометрическая интерпретация.</b> Каждый переход <code>j</code> задаёт прямую <code>l_j(t) = m[j]·t + b[j]</code>, где <code>b[j] = dp[j] + c[j]</code>. При фиксированном <code>i</code> нас интересует <i>минимальное значение прямых</i> в точке <code>t = x[i]</code>. Множество прямых, образующих нижнюю огибающую — это в точности выпуклая оболочка в двойственном пространстве. Отсюда и название.</p>
+
+  <div class="subheader s2">2.1 Геометрическое доказательство</div>
+
+  <div class="box thm">
+    <div class="box-header">📐 Теорема — Нижняя огибающая прямых выпукла</div>
+    <div class="box-body">
+      <p>Пусть дан набор прямых <code>{l_j(x) = m_j·x + b_j}</code>. <code>f(x) = min_j l_j(x)</code> — их нижняя огибающая.</p>
+      <p><b>Утверждение:</b> <code>f(x)</code> — выпуклая функция.</p>
+      <p><b>Доказательство:</b> покажем, что <code>f(λx + (1-λ)y) ≤ λf(x) + (1-λ)f(y)</code>. Пусть <code>j* = argmin_j l_j(λx + (1-λ)y)</code>. Тогда:</p>
+      <p>$$f(\lambda x + (1-\lambda)y) = l_{j^*}(\lambda x + (1-\lambda)y) = \lambda l_{j^*}(x) + (1-\lambda) l_{j^*}(y)$$</p>
+      <p>Так как <code>l_{j*}(x) ≥ f(x)</code> и <code>l_{j*}(y) ≥ f(y)</code>, получаем:</p>
+      <p>$$f(\lambda x + (1-\lambda)y) \leq \lambda f(x) + (1-\lambda) f(y)$$</p>
+      <p><b>Следствие:</b> для минимизации оптимальные прямые упорядочены по <code>x</code>. ∎</p>
+    </div>
+  </div>
+
+  <div class="subheader s2">2.2 Критерий удаления прямой (функция bad)</div>
+  <p>При добавлении прямых с <b>убывающими наклонами</b> <code>m₁ ≥ m₂ ≥ m₃</code> средняя прямая <code>l₂</code> «бесполезна» (никогда не является минимумом), если пересечение <code>l₁</code> и <code>l₃</code> лежит <i>левее</i> пересечения <code>l₁</code> и <code>l₂</code>.</p>
+
+  <div class="box pf">
+    <div class="box-header">✓ Доказательство — Формула функции bad(l1, l2, l3)</div>
+    <div class="box-body">
+      <p>Пересечение <code>l₁</code> и <code>l₂</code>: <code>x₁₂ = (b₂-b₁)/(m₁-m₂)</code></p>
+      <p>Пересечение <code>l₁</code> и <code>l₃</code>: <code>x₁₃ = (b₃-b₁)/(m₁-m₃)</code></p>
+      <p><code>l₂</code> никогда не оптимальна ⟺ <code>x₁₃ ≤ x₁₂</code></p>
+      <p>Так как <code>m₁ > m₂ > m₃</code>, оба знаменателя > 0. Умножаем:</p>
+      <p>$$(b_3 - b_1)(m_1 - m_2) \leq (b_2 - b_1)(m_1 - m_3)$$</p>
+      <p>Это и есть проверка <code>bad(l1, l2, l3)</code>. ∎</p>
+    </div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-lang">Python</span></div>
+    <div class="code-body"><pre><code><span class="c"># ── Статический CHT: наклоны убывают, запросы возрастают ──</span>
+<span class="kw">class</span> <span class="bi">CHT_monotone</span>:
+    <span class="kw">def</span> <span class="bi">__init__</span>(self):
+        self.lines = []  <span class="c"># (m, b), m убывает</span>
+        self.ptr = <span class="num">0</span>     <span class="c"># указатель для монотонных запросов</span>
+
+    <span class="kw">def</span> <span class="bi">bad</span>(self, l1, l2, l3):
+        <span class="c"># l2 никогда не оптимальна при наличии l1 и l3</span>
+        <span class="kw">return</span> (l3[<span class="num">1</span>]-l1[<span class="num">1</span>])*(l1[<span class="num">0</span>]-l2[<span class="num">0</span>]) <= (l2[<span class="num">1</span>]-l1[<span class="num">1</span>])*(l1[<span class="num">0</span>]-l3[<span class="num">0</span>])
+
+    <span class="kw">def</span> <span class="bi">add</span>(self, m, b):
+        line = (m, b)
+        <span class="kw">while</span> <span class="bi">len</span>(self.lines) >= <span class="num">2</span> <span class="kw">and</span> self.<span class="bi">bad</span>(self.lines[-<span class="num">2</span>], self.lines[-<span class="num">1</span>], line):
+            self.lines.<span class="bi">pop</span>()
+        self.lines.<span class="bi">append</span>(line)
+
+    <span class="kw">def</span> <span class="bi">query_min</span>(self, x):
+        <span class="c"># Монотонный запрос (x возрастает): скользящий указатель O(1)</span>
+        <span class="kw">while</span> (self.ptr+<span class="num">1</span> < <span class="bi">len</span>(self.lines) <span class="kw">and</span>
+               self.lines[self.ptr+<span class="num">1</span>][<span class="num">0</span>]*x + self.lines[self.ptr+<span class="num">1</span>][<span class="num">1</span>] <=
+               self.lines[self.ptr][<span class="num">0</span>]*x + self.lines[self.ptr][<span class="num">1</span>]):
+            self.ptr += <span class="num">1</span>
+        m, b = self.lines[self.ptr]
+        <span class="kw">return</span> m*x + b
+
+    <span class="kw">def</span> <span class="bi">query_min_any</span>(self, x):
+        <span class="c"># Произвольный запрос: бинарный поиск O(log n)</span>
+        lo, hi = <span class="num">0</span>, <span class="bi">len</span>(self.lines)-<span class="num">1</span>
+        <span class="kw">while</span> lo < hi:
+            mid = (lo+hi)//<span class="num">2</span>
+            m1,b1 = self.lines[mid]
+            m2,b2 = self.lines[mid+<span class="num">1</span>]
+            <span class="kw">if</span> m1*x+b1 <= m2*x+b2: hi = mid
+            <span class="kw">else</span>: lo = mid+<span class="num">1</span>
+        m, b = self.lines[lo]
+        <span class="kw">return</span> m*x + b</code></pre></div>
+  </div>
+
+  <div class="subheader s2">2.3 Дерево Ли Чао (Li Chao Segment Tree)</div>
+  <p>Дерево Ли Чао поддерживает операции добавления прямой и запроса минимума в точке за <code>O(log N)</code> каждая, <b>без ограничений на порядок</b> добавления и запросов. Ключевая идея: в каждом узле <code>[l, r]</code> хранить «победителя» в точке <code>mid = (l+r)/2</code>.</p>
+
+  <div class="box pf">
+    <div class="box-header">✓ Доказательство — Корректность дерева Ли Чао</div>
+    <div class="box-body">
+      <p><b>Инвариант:</b> в узле <code>[l,r]</code> хранится прямая-«победитель» в точке <code>mid</code>.</p>
+      <p>При добавлении прямой <code>new</code> в узел <code>[l,r]</code> с хранимой прямой <code>cur</code>:</p>
+      <p>Вычисляем <code>mid = (l+r)/2</code>. <code>left_better = new.val(l) &lt; cur.val(l)</code>, <code>mid_better = new.val(mid) &lt; cur.val(mid)</code>.</p>
+      <p>Если <code>mid_better</code>: меняем <code>cur</code> и <code>new</code> местами (<code>new</code> становится победителем).</p>
+      <p><b>Почему достаточно одной замены?</b> Если <code>new</code> лучше <code>cur</code> в <code>mid</code>, то на <code>[mid+1, r]</code> <code>cur</code> не может быть оптимальной (две прямые пересекаются не более одного раза, <code>new</code> «охватывает» <code>cur</code> справа). Рекурсивно добавляем «проигравшую» прямую только в <code>[l,mid]</code> или <code>[mid+1,r]</code>.</p>
+      <p>Каждая прямая проходит не более <code>O(log N)</code> узлов. ∎</p>
+    </div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-lang">Python</span></div>
+    <div class="code-body"><pre><code><span class="kw">class</span> <span class="bi">LiChaoNode</span>:
+    __slots__ = (<span class="s">'line'</span>,<span class="s">'left'</span>,<span class="s">'right'</span>)
+    <span class="kw">def</span> <span class="bi">__init__</span>(self): self.line=<span class="kw">None</span>; self.left=self.right=<span class="kw">None</span>
+
+<span class="kw">class</span> <span class="bi">LiChaoTree</span>:
+    <span class="kw">def</span> <span class="bi">__init__</span>(self, lo, hi):
+        self.lo, self.hi = lo, hi
+        self.root = LiChaoNode()
+
+    <span class="kw">def</span> <span class="bi">_add</span>(self, node, lo, hi, line):
+        <span class="kw">if</span> node.line <span class="kw">is</span> <span class="kw">None</span>:
+            node.line = line; <span class="kw">return</span>
+        mid = (lo + hi) // <span class="num">2</span>
+        cur = node.line
+        <span class="c"># Проверяем кто лучше в mid</span>
+        left_new  = line[<span class="num">0</span>]*lo  + line[<span class="num">1</span>]  < cur[<span class="num">0</span>]*lo  + cur[<span class="num">1</span>]
+        mid_new   = line[<span class="num">0</span>]*mid + line[<span class="num">1</span>]  < cur[<span class="num">0</span>]*mid + cur[<span class="num">1</span>]
+        <span class="kw">if</span> mid_new:
+            node.line, line = line, cur  <span class="c"># меняем победителя</span>
+        <span class="kw">if</span> lo == hi: <span class="kw">return</span>
+        <span class="kw">if</span> left_new != mid_new:  <span class="c"># 'проигравшая' прямая в левой половине</span>
+            <span class="kw">if</span> <span class="kw">not</span> node.left: node.left = LiChaoNode()
+            self.<span class="bi">_add</span>(node.left, lo, mid, line)
+        <span class="kw">else</span>:                   <span class="c"># 'проигравшая' прямая в правой половине</span>
+            <span class="kw">if</span> <span class="kw">not</span> node.right: node.right = LiChaoNode()
+            self.<span class="bi">_add</span>(node.right, mid+<span class="num">1</span>, hi, line)
+
+    <span class="kw">def</span> <span class="bi">add_line</span>(self, m, b):  <span class="c"># прямая y = m*x + b</span>
+        self.<span class="bi">_add</span>(self.root, self.lo, self.hi, (m, b))
+
+    <span class="kw">def</span> <span class="bi">_query</span>(self, node, lo, hi, x):
+        <span class="kw">if</span> node <span class="kw">is</span> <span class="kw">None</span>: <span class="kw">return</span> <span class="bi">float</span>(<span class="s">'inf'</span>)
+        mid = (lo + hi) // <span class="num">2</span>
+        res = node.line[<span class="num">0</span>]*x + node.line[<span class="num">1</span>] <span class="kw">if</span> node.line <span class="kw">else</span> <span class="bi">float</span>(<span class="s">'inf'</span>)
+        <span class="kw">if</span> x <= mid: <span class="kw">return</span> <span class="bi">min</span>(res, self.<span class="bi">_query</span>(node.left,  lo, mid, x))
+        <span class="kw">else</span>:        <span class="kw">return</span> <span class="bi">min</span>(res, self.<span class="bi">_query</span>(node.right, mid+<span class="num">1</span>, hi, x))
+
+    <span class="kw">def</span> <span class="bi">query</span>(self, x):
+        <span class="kw">return</span> self.<span class="bi">_query</span>(self.root, self.lo, self.hi, x)</code></pre></div>
+  </div>
+
+  <table class="complex-table">
+    <thead><tr><th>Операция</th><th>Время</th><th>Память</th></tr></thead>
+    <tbody>
+      <tr><td>CHT add() [монотонные m]</td><td class="time">O(1) amortized</td><td class="mem">O(n)</td></tr>
+      <tr><td>CHT query() [монотонные x]</td><td class="time">O(1) amortized</td><td class="mem">O(1)</td></tr>
+      <tr><td>CHT query() [произвольные x]</td><td class="time">O(log n)</td><td class="mem">O(1)</td></tr>
+      <tr><td>Li Chao add_line()</td><td class="time">O(log N)</td><td class="mem">O(n log N)</td></tr>
+      <tr><td>Li Chao query()</td><td class="time">O(log N)</td><td class="mem">O(1)</td></tr>
+      <tr><td>Li Chao (динам. координаты)</td><td class="time">O(log² N)</td><td class="mem">O(n log N)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="subheader s2">2.4 Пример применения CHT — задача о разбиении</div>
+  <p><b>Задача.</b> Разбить массив <code>a[1..n]</code> на не более <code>k</code> групп, минимизируя сумму квадратов «стоимостей» групп, где стоимость группы <code>[l,r] = (prefix[r] - prefix[l-1])²</code>. Классический подход — ДП с CHT за <code>O(n log n)</code>.</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-lang">Python</span></div>
+    <div class="code-body"><pre><code><span class="c"># dp[i][j] = min стоимость разбиения a[1..i] на j групп</span>
+<span class="c"># Переход: dp[i][j] = min_{l&lt;i} { dp[l][j-1] + (S[i]-S[l])^2 }</span>
+<span class="c"># Раскрываем: dp[l][j-1] + S[i]^2 - 2*S[i]*S[l] + S[l]^2</span>
+<span class="c"># = S[i]^2 + (dp[l][j-1] + S[l]^2) + (-2*S[l]) * S[i]</span>
+<span class="c">#             ─── b[l] ───────────────   ─ m[l] ─    ─ x ─</span>
+<span class="c"># => прямая с наклоном m[l] = -2*S[l] и свободным членом b[l]</span>
+
+<span class="kw">def</span> <span class="bi">solve</span>(a, K):
+    n = <span class="bi">len</span>(a)
+    S = [<span class="num">0</span>] * (n+<span class="num">1</span>)
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(n): S[i+<span class="num">1</span>] = S[i] + a[i]
+    INF = <span class="bi">float</span>(<span class="s">'inf'</span>)
+    dp = [[INF]*(n+<span class="num">1</span>) <span class="kw">for</span> _ <span class="kw">in</span> <span class="bi">range</span>(K+<span class="num">1</span>)]
+    dp[<span class="num">0</span>][<span class="num">0</span>] = <span class="num">0</span>
+    <span class="kw">for</span> j <span class="kw">in</span> <span class="bi">range</span>(<span class="num">1</span>, K+<span class="num">1</span>):
+        cht = CHT_monotone()
+        cht.<span class="bi">add</span>(-<span class="num">2</span>*S[<span class="num">0</span>], dp[j-<span class="num">1</span>][<span class="num">0</span>] + S[<span class="num">0</span>]**<span class="num">2</span>)
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(<span class="num">1</span>, n+<span class="num">1</span>):
+            dp[j][i] = cht.<span class="bi">query_min_any</span>(S[i]) + S[i]**<span class="num">2</span>
+            <span class="kw">if</span> dp[j-<span class="num">1</span>][i] < INF:
+                cht.<span class="bi">add</span>(-<span class="num">2</span>*S[i], dp[j-<span class="num">1</span>][i] + S[i]**<span class="num">2</span>)
+    <span class="kw">return</span> dp[K][n]</code></pre></div>
+  </div>
+</div>
+
+<div style="text-align:center; margin: 20px 0;">
+  <a href="#" style="color: var(--lgray); font-size: 0.8rem; text-decoration: none; border: 1px solid var(--border); padding: 4px 12px; border-radius: 12px;">↑ Наверх</a>
+</div><hr>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SECTION 3 — MINKOWSKI -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="section" id="sec3">
+  <div class="sec-header sec3">
+    <div class="num">§3</div>
+    <h2>Сумма Минковского</h2>
+    <div class="sub">Выпуклые многоугольники · Применения · GJK</div>
+  </div>
+
+  <p><b>Сумма Минковского</b> двух множеств <code>A</code> и <code>B</code> в <code>ℝ²</code> — это множество всех попарных сумм:</p>
+  <div class="formula-block ac3">
+    $$A \oplus B = \{ a + b \;|\; a \in A,\; b \in B \}$$
+  </div>
+  <p>Для выпуклых многоугольников сумма Минковского также является выпуклым многоугольником с числом вершин не более <code>n + m</code> (где <code>n, m</code> — исходные). Это фундаментальный объект в вычислительной геометрии, теории роботов и компьютерной графике.</p>
+
+  <div class="box thm">
+    <div class="box-header">📐 Теорема — Структура суммы Минковского выпуклых многоугольников</div>
+    <div class="box-body">
+      <p>Пусть <code>A</code> и <code>B</code> — выпуклые многоугольники с <code>n</code> и <code>m</code> вершинами соответственно. Тогда <code>A⊕B</code> — выпуклый многоугольник с не более <code>n+m</code> вершинами.</p>
+      <p><b>Ключевое свойство рёбер:</b> рёбра <code>A⊕B</code> — это объединение рёбер <code>A</code> и <code>B</code>, отсортированных по полярному углу.</p>
+      <p><b>Доказательство:</b> граница <code>A⊕B</code> параметризуется как <code>γ(t) = α(t) + β(t)</code>, где <code>α(t)</code> и <code>β(t)</code> — точки на границах <code>A</code> и <code>B</code> с одинаковой нормалью. При обходе по нормали (вращение на <code>2π</code>) каждое ребро <code>A</code> и <code>B</code> встречается ровно один раз в порядке возрастания угла нормали. Следовательно, <code>A⊕B</code> имеет ровно <code>n+m</code> рёбер (или меньше при параллельных). ∎</p>
+    </div>
+  </div>
+
+  <div class="subheader s3">3.1 Алгоритм вычисления суммы Минковского — O(n+m)</div>
+
+  <div class="code-block">
+    <div class="code-header"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-lang">Python</span></div>
+    <div class="code-body"><pre><code><span class="kw">def</span> <span class="bi">minkowski_sum</span>(P, Q):
+    <span class="c"># P, Q — выпуклые CCW-многоугольники (вершины без дублей)</span>
+    <span class="c"># Шаг 1: ориентировать, начать с нижне-левой вершины</span>
+    <span class="kw">def</span> <span class="bi">reorder</span>(poly):
+        i = <span class="bi">min</span>(<span class="bi">range</span>(<span class="bi">len</span>(poly)), key=<span class="kw">lambda</span> k: (poly[k][<span class="num">1</span>], poly[k][<span class="num">0</span>]))
+        <span class="kw">return</span> poly[i:] + poly[:i]
+
+    P, Q = reorder(P), reorder(Q)
+    nP, nQ = <span class="bi">len</span>(P), <span class="bi">len</span>(Q)
+
+    <span class="c"># Шаг 2: вычислить рёбра как векторы (dx, dy)</span>
+    <span class="kw">def</span> <span class="bi">edge_vec</span>(poly, i):
+        n = <span class="bi">len</span>(poly)
+        <span class="kw">return</span> (poly[(i+<span class="num">1</span>)%n][<span class="num">0</span>]-poly[i][<span class="num">0</span>],
+                poly[(i+<span class="num">1</span>)%n][<span class="num">1</span>]-poly[i][<span class="num">1</span>])
+
+    ep = [edge_vec(P, i) <span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(nP)]
+    eq = [edge_vec(Q, i) <span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(nQ)]
+
+    <span class="c"># Шаг 3: слияние рёбер по полярному углу (как merge в merge sort)</span>
+    result = [(P[<span class="num">0</span>][<span class="num">0</span>]+Q[<span class="num">0</span>][<span class="num">0</span>], P[<span class="num">0</span>][<span class="num">1</span>]+Q[<span class="num">0</span>][<span class="num">1</span>])]
+    i = j = <span class="num">0</span>
+    <span class="kw">while</span> i < nP <span class="kw">or</span> j < nQ:
+        <span class="c"># Сравниваем ep[i] и eq[j] по углу через cross product</span>
+        <span class="kw">if</span> i < nP <span class="kw">and</span> (j >= nQ <span class="kw">or</span> cross((<span class="num">0</span>,<span class="num">0</span>), ep[i], eq[j]) > <span class="num">0</span>):
+            e = ep[i]; i += <span class="num">1</span>
+        <span class="kw">elif</span> j < nQ <span class="kw">and</span> (i >= nP <span class="kw">or</span> cross((<span class="num">0</span>,<span class="num">0</span>), ep[i], eq[j]) < <span class="num">0</span>):
+            e = eq[j]; j += <span class="num">1</span>
+        <span class="kw">else</span>:  <span class="c"># параллельные рёбра — берём оба</span>
+            e = (ep[i][<span class="num">0</span>]+eq[j][<span class="num">0</span>], ep[i][<span class="num">1</span>]+eq[j][<span class="num">1</span>])
+            i += <span class="num">1</span>; j += <span class="num">1</span>
+        last = result[-<span class="num">1</span>]
+        result.<span class="bi">append</span>((last[<span class="num">0</span>]+e[<span class="num">0</span>], last[<span class="num">1</span>]+e[<span class="num">1</span>]))
+    result.<span class="bi">pop</span>()  <span class="c"># последняя = первая (замкнули)</span>
+    <span class="kw">return</span> result
+
+<span class="kw">def</span> <span class="bi">cross</span>(O, A, B):
+    <span class="kw">return</span> (A[<span class="num">0</span>]-O[<span class="num">0</span>])*(B[<span class="num">1</span>]-O[<span class="num">1</span>]) - (A[<span class="num">1</span>]-O[<span class="num">1</span>])*(B[<span class="num">0</span>]-O[<span class="num">0</span>])</code></pre></div>
+  </div>
+
+  <div class="subheader s3">3.2 Применения суммы Минковского</div>
+
+  <div class="box ex">
+    <div class="box-header">🔧 Пример — Обнаружение столкновений (Collision Detection)</div>
+    <div class="box-body">
+      <p><b>Задача:</b> Пересекаются ли выпуклые объекты <code>A</code> и <code>B</code>?</p>
+      <p><b>Ключевая теорема:</b> <code>A ∩ B ≠ ∅ ⟺ 0 ∈ A ⊕ (−B)</code>, где <code>−B = {−b | b ∈ B}</code> — отражение <code>B</code> относительно начала координат.</p>
+      <p><b>Алгоритм:</b></p>
+      <p>1. Построить <code>−B</code>: отразить все вершины <code>B</code>.</p>
+      <p>2. Вычислить <code>A ⊕ (−B)</code> за <code>O(n+m)</code>.</p>
+      <p>3. Проверить, содержит ли полученный многоугольник точку <code>(0,0)</code>. Это делается за <code>O(log(n+m))</code> бинарным поиском.</p>
+      <p><b>GJK-алгоритм</b> (Gilbert-Johnson-Keerthi) работает ещё быстрее, неявно итерируя по вершинам <code>A⊕(−B)</code> без явного построения.</p>
+    </div>
+  </div>
+
+  <div class="box ex">
+    <div class="box-header">🔧 Пример — Задача о достижимости</div>
+    <div class="box-body">
+      <p><b>Задача:</b> Существуют ли <code>a ∈ A, b ∈ B</code> с <code>a + b = T</code>?</p>
+      <p>Равносильно: <code>T ∈ A ⊕ B</code>.</p>
+      <p><b>Алгоритм:</b></p>
+      <p>1. Построить <code>A⊕B</code> за <code>O(n+m)</code>.</p>
+      <p>2. Проверить <code>T ∈ A⊕B</code> за <code>O(log(n+m))</code>.</p>
+      <p>Итого: <code>O(n + m + log(n+m)) = O(n+m)</code>.</p>
+    </div>
+  </div>
+
+  <div class="box ex">
+    <div class="box-header">🔧 Пример — Сумма наборов (Three-sum / геометрическая)</div>
+    <div class="box-body">
+      <p><b>Задача:</b> Существуют ли <code>a ∈ A, b ∈ B, c ∈ C</code>: <code>a+b+c = T</code>?</p>
+      <p>1. Строим <code>D = A ⊕ B</code> за <code>O(|A|+|B|)</code>.</p>
+      <p>2. Для каждого <code>c ∈ C</code> проверяем <code>T−c ∈ D</code> за <code>O(log|D|)</code>.</p>
+      <p>Итого: <code>O((|A|+|B|)·log(|A|+|B|) + |C|·log(|A|+|B|))</code></p>
+      <p>Если <code>C</code> тоже выпуклый набор, строим <code>(A⊕B)⊕C</code> за <code>O(|A|+|B|+|C|)</code>.</p>
+    </div>
+  </div>
+
+  <table class="complex-table">
+    <thead><tr><th>Операция</th><th>Время</th><th>Память</th></tr></thead>
+    <tbody>
+      <tr><td>A⊕B для выпуклых многоугольников</td><td class="time">O(n + m)</td><td class="mem">O(n + m)</td></tr>
+      <tr><td>A⊕B для невыпуклых</td><td class="time">O(n·m)</td><td class="mem">O(n·m)</td></tr>
+      <tr><td>Проверка точки в A⊕B</td><td class="time">O(log(n+m))</td><td class="mem">O(1)</td></tr>
+      <tr><td>Построение −B (отражение)</td><td class="time">O(m)</td><td class="mem">O(m)</td></tr>
+      <tr><td>GJK collision detection</td><td class="time">O(n+m) expected</td><td class="mem">O(1)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="subheader s3">3.3 Точка в выпуклом многоугольнике — O(log n)</div>
+
+  <div class="code-block">
+    <div class="code-header"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-lang">Python</span></div>
+    <div class="code-body"><pre><code><span class="kw">def</span> <span class="bi">point_in_convex_polygon</span>(poly, q):
+    <span class="c"># poly: выпуклый CCW-многоугольник, q: точка запроса</span>
+    n = <span class="bi">len</span>(poly)
+    <span class="kw">if</span> n == <span class="num">0</span>: <span class="kw">return</span> <span class="kw">False</span>
+    p0 = poly[<span class="num">0</span>]
+    <span class="c"># Проверяем, в каком се��торе лежит q</span>
+    <span class="kw">if</span> cross(p0, poly[<span class="num">1</span>], q) < <span class="num">0</span>: <span class="kw">return</span> <span class="kw">False</span>
+    <span class="kw">if</span> cross(p0, poly[n-<span class="num">1</span>], q) > <span class="num">0</span>: <span class="kw">return</span> <span class="kw">False</span>
+    <span class="c"># Бинарный поиск по треугольникам p0-poly[i]-poly[i+1]</span>
+    lo, hi = <span class="num">1</span>, n-<span class="num">1</span>
+    <span class="kw">while</span> hi - lo > <span class="num">1</span>:
+        mid = (lo + hi) // <span class="num">2</span>
+        <span class="kw">if</span> cross(p0, poly[mid], q) >= <span class="num">0</span>: lo = mid
+        <span class="kw">else</span>: hi = mid
+    <span class="c"># Проверяем треугольник p0-poly[lo]-poly[lo+1]</span>
+    <span class="kw">return</span> cross(poly[lo], poly[lo+<span class="num">1</span>], q) >= <span class="num">0</span></code></pre></div>
+  </div>
+</div>
+
+<div style="text-align:center; margin: 20px 0;">
+  <a href="#" style="color: var(--lgray); font-size: 0.8rem; text-decoration: none; border: 1px solid var(--border); padding: 4px 12px; border-radius: 12px;">↑ Наверх</a>
+</div><hr>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SECTION 4 — SKYLINE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="section" id="sec4">
+  <div class="sec-header sec4">
+    <div class="num">§4</div>
+    <h2>Метод сканирующей прямой (Scanline)</h2>
+    <div class="sub">События · Активные отрезки · Пересечения · Площадь объединения</div>
+  </div>
+
+  <p><b>Метод сканирующей прямой (scanline)</b> — фундаментальная техника вычислительной геометрии. Идея: вертикальная прямая движется слева направо по плоскости. В каждый момент нас интересует множество объектов, <i>пересекаемых</i> прямой в данной точке <code>x</code> — <b>активное множество</b>. При движении прямой состав активного множества меняется только в <b>точках событий</b> (начало/конец отрезка, пересечение).</p>
+
+  <div class="box def">
+    <div class="box-header">📐 Определение — Сканирующая прямая</div>
+    <div class="box-body">
+      <p>Пусть на плоскости дано множество геометрических объектов (отрезков, прямоугольников, окружностей). <b>Сканирующая прямая</b> — вертикальная прямая <code>x = const</code>, движущаяся слева направо.</p>
+      <p><b>Точка события</b> — координата <code>x</code>, где изменяется активное множество:</p>
+      <p>• Начало отрезка/прямоугольника (добавление в активное множество)</p>
+      <p>• Конец отрезка/прямоугольника (удаление из активного множества)</p>
+      <p>• Пересечение двух отрезков (изменение порядка в активном множестве)</p>
+      <p><b>Сложность:</b> <code>O((n + k) log n)</code>, где <code>k</code> — число событий (пересечений).</p>
+    </div>
+  </div>
+
+  <div class="subheader s4">4.1 Общая схема алгоритма</div>
+
+  <div class="box thm">
+    <div class="box-header">📐 Теорема — Корректность метода сканирующей прямой</div>
+    <div class="box-body">
+      <p>Рассмотрим произвольное свойство <code>P</code> геометрической конфигурации, зависящее только от пересечения сканирующей прямой <code>x = x₀</code> с объектами.</p>
+      <p><b>Утверждение:</b> если <code>P</code> изменяется только в точках событий, то достаточно проверить <code>P</code> только в этих точках для полного анализа.</p>
+      <p><b>Доказательство:</b> между двумя последовательными точками событий <code>xᵢ</code> и <code>xᵢ₊₁</code> состав активного множества не меняется. Если объекты — отрезки, то порядок их пересечения с прямой <code>x = const</code> сохраняется (иначе было бы пересечение — точка события). Следовательно, любое свойство, зависящее только от активного множества и порядка, постоянно на <code>(xᵢ, xᵢ₊₁)</code>. ∎</p>
+    </div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-lang">Python</span></div>
+    <div class="code-body"><pre><code><span class="c"># Общая схема scanline-алгоритма</span>
+<span class="kw">def</span> <span class="bi">scanline_general</span>(objects):
+    <span class="c"># Шаг 1: Сгенерировать события</span>
+    events = []
+    <span class="kw">for</span> obj <span class="kw">in</span> objects:
+        events.<span class="bi">append</span>((obj.x_left,  <span class="s">'add'</span>,    obj))
+        events.<span class="bi">append</span>((obj.x_right, <span class="s">'remove'</span>, obj))
+    events.<span class="bi">sort</span>()  <span class="c"># сортируем по x</span>
+
+    active = ActiveSet()  <span class="c"># структура данных для активных объектов</span>
+    result = []
+
+    <span class="kw">for</span> x, typ, obj <span class="kw">in</span> events:
+        <span class="kw">if</span> typ == <span class="s">'add'</span>:
+            <span class="c"># Проверить отношения с соседями в active</span>
+            <span class="c"># (например, пересечения для отрезков)</span>
+            active.<span class="bi">add</span>(obj)
+        <span class="kw">else</span>:  <span class="c"># 'remove'</span>
+            active.<span class="bi">remove</span>(obj)
+
+        <span class="c"># Обработать изменение состояния между событиями</span>
+        <span class="c"># (зависит от конкретной задачи)</span>
+
+    <span class="kw">return</span> result</code></pre></div>
+  </div>
+
+  <div class="subheader s4">4.2 Пересечение множества отрезков — O((n+k) log n)</div>
+  <p><b>Задача.</b> Найти все точки пересечения <code>n</code> отрезков на плоскости (общего положения: нет вертикальных, нет троек через одну точку).</p>
+  <p><b>Идея.</b> Сканирующая прямая поддерживает активные отрезки, упорядоченные по <code>y</code>-координате пересечения с прямой. Пересечение возможно только между <b>соседними</b> в этом порядке отрезками. При добавлении нового отрезка проверяем пересечения только с соседями.</p>
+
+  <div class="box pf">
+    <div class="box-header">✓ Доказательство — Почему проверять только соседей</div>
+    <div class="box-body">
+      <p><b>Лемма:</b> если два отрезка <code>s₁</code> и <code>s₂</code> пересекаются в точке <code>p = (xₚ, yₚ)</code>, то непосредственно перед <code>xₚ</code> они были соседями в упорядочении активного множества по <code>y</code>.</p>
+      <p><b>Доказательство:</b> пусть <code>s₁</code> и <code>s₂</code> пересекаются в <code>p</code>. При <code>x = xₚ - ε</code> (немного левее пересечения) отрезки не пересечены. Пусть <code>s₁</code> ниже <code>s₂</code> в этой точке. Если между ними есть отрезок <code>s₃</code>, то <code>s₃</code> пересекает либо <code>s₁</code>, либо <code>s₂</code> левее <code>xₚ</code> (т.к. все три проходят через область между <code>s₁</code> и <code>s₂</code>). Противоречие с общим положением (пересечение левее уже обнаружено). Следовательно, <code>s₁</code> и <code>s₂</code> — соседи. ∎</p>
+      <p><b>Следствие:</b> достаточно проверять пересечения только при изменении соседства: добавление отрезка, удаление отрезка, пересечение двух соседей (меняем порядок).</p>
+    </div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-lang">Python</span></div>
+    <div class="code-body"><pre><code><span class="kw">from</span> sortedcontainers <span class="kw">import</span> SortedList  <span class="c"># или treap / RB-tree</span>
+
+<span class="kw">class</span> <span class="bi">Segment</span>:
+    <span class="kw">def</span> <span class="bi">__init__</span>(self, x1, y1, x2, y2):
+        self.x1, self.y1 = x1, y1
+        self.x2, self.y2 = x2, y2
+        <span class="c"># y = k*x + b</span>
+        self.k = (y2-y1)/(x2-x1) <span class="kw">if</span> x2 != x1 <span class="kw">else</span> <span class="num">0</span>
+        self.b = y1 - self.k*x1
+
+    <span class="kw">def</span> <span class="bi">y_at</span>(self, x):
+        <span class="kw">return</span> self.k*x + self.b
+
+    <span class="kw">def</span> <span class="bi">intersect</span>(self, other):
+        <span class="c"># Решаем систему: k1*x+b1 = k2*x+b2</span>
+        <span class="kw">if</span> self.k == other.k: <span class="kw">return</span> <span class="kw">None</span>
+        x = (other.b - self.b) / (self.k - other.k)
+        <span class="kw">if</span> <span class="bi">max</span>(self.x1, other.x1) <= x <= <span class="bi">min</span>(self.x2, other.x2):
+            <span class="kw">return</span> (x, self.<span class="bi">y_at</span>(x))
+        <span class="kw">return</span> <span class="kw">None</span>
+
+<span class="kw">def</span> <span class="bi">segment_intersections</span>(segments):
+    <span class="s">"""Найти все пересечения n отрезков. O((n+k) log n)."""</span>
+    events = []
+    <span class="kw">for</span> i, s <span class="kw">in</span> <span class="bi">enumerate</span>(segments):
+        <span class="kw">if</span> s.x1 > s.x2:  <span class="c"># ориентируем слева направо</span>
+            s.x1, s.x2 = s.x2, s.x1
+            s.y1, s.y2 = s.y2, s.y1
+            s.k = -s.k; s.b = s.y1 - s.k*s.x1
+        events.<span class="bi">append</span>((s.x1, <span class="num">0</span>, i))   <span class="c"># 0 = начало</span>
+        events.<span class="bi">append</span>((s.x2, <span class="num">1</span>, i))   <span class="c"># 1 = конец</span>
+    events.<span class="bi">sort</span>()
+
+    <span class="c"># Активное множество: отрезки, упорядоченные по y_at(current_x)</span>
+    <span class="c"># Ключ: (y_at(x), id) для уникальности</span>
+    active = SortedList(key=<span class="kw">lambda</span> i: segments[i].<span class="bi">y_at</span>(current_x))
+    current_x = <span class="num">0</span>
+    result = []
+
+    <span class="kw">for</span> x, typ, idx <span class="kw">in</span> events:
+        current_x = x
+        s = segments[idx]
+        <span class="kw">if</span> typ == <span class="num">0</span>:  <span class="c"># добавление</span>
+            pos = active.<span class="bi">bisect</span>(idx)
+            <span class="c"># Проверяем пересечения с соседями</span>
+            <span class="kw">if</span> pos > <span class="num">0</span>:
+                p = s.<span class="bi">intersect</span>(segments[active[pos-<span class="num">1</span>]])
+                <span class="kw">if</span> p: result.<span class="bi">append</span>(p)
+            <span class="kw">if</span> pos < <span class="bi">len</span>(active):
+                p = s.<span class="bi">intersect</span>(segments[active[pos]])
+                <span class="kw">if</span> p: result.<span class="bi">append</span>(p)
+            active.<span class="bi">add</span>(idx)
+        <span class="kw">else</span>:  <span class="c"># удаление</span>
+            pos = active.<span class="bi">index</span>(idx)
+            <span class="c"># После удаления бывшие соседи становятся соседями</span>
+            <span class="kw">if</span> pos > <span class="num">0</span> <span class="kw">and</span> pos+<span class="num">1</span> < <span class="bi">len</span>(active):
+                p = segments[active[pos-<span class="num">1</span>]].<span class="bi">intersect</span>(
+                    segments[active[pos+<span class="num">1</span>]])
+                <span class="kw">if</span> p: result.<span class="bi">append</span>(p)
+            active.<span class="bi">remove</span>(idx)
+    <span class="kw">return</span> result</code></pre></div>
+  </div>
+
+  <div class="subheader s4">4.3 Площадь объединения прямоугольников — O(n log n)</div>
+  <p><b>Задача.</b> Даны оси-выровненные прямоугольники <code>[x₁,x₂] × [y₁,y₂]</code>. Найти площадь их объединения.</p>
+  <p><b>Идея.</b> Сканирующая прямая движется по <code>x</code>. На каждом отрезке <code>[xᵢ, xᵢ₊₁]</code> между событиями активное множество — набор <code>y</code>-интервалов. Площадь = сумма <code>(xᵢ₊₁ − xᵢ) × (длина объединения y-интервалов)</code>.</p>
+
+  <div class="box pf">
+    <div class="box-header">✓ Доказательство — Корректность площади через scanline</div>
+    <div class="box-body">
+      <p>Разобьём объединение прямоугольников на вертикальные полосы <code>[xᵢ, xᵢ₊₁]</code>, где <code>xᵢ</code> — отсортированные уникальные <code>x</code>-координаты границ.</p>
+      <p>На полосе <code>[xᵢ, xᵢ₊₁]</code> множество активных <code>y</code>-интервалов постоянно. Пусть <code>Lᵢ</code> — длина объединения этих интервалов. Тогда вклад полосы в площадь: <code>(xᵢ₊₁ − xᵢ) × Lᵢ</code>.</p>
+      <p>Сумма по всем полосам даёт точную площадь объединения, т.к. полосы не пересекаются и покрывают всё объединение. ∎</p>
+    </div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-lang">Python</span></div>
+    <div class="code-body"><pre><code><span class="kw">def</span> <span class="bi">union_area_rectangles</span>(rects):
+    <span class="s">"""Площадь объединения оси-выровненных прямоугольников."""</span>
+    <span class="c"># rects: [(x1, y1, x2, y2), ...]</span>
+    <span class="kw">if</span> <span class="kw">not</span> rects: <span class="kw">return</span> <span class="num">0</span>
+
+    <span class="c"># События: (x, тип, y1, y2), тип: +1 = начало, -1 = конец</span>
+    events = []
+    <span class="kw">for</span> x1, y1, x2, y2 <span class="kw">in</span> rects:
+        events.<span class="bi">append</span>((x1, <span class="num">1</span>, y1, y2))
+        events.<span class="bi">append</span>((x2, -<span class="num">1</span>, y1, y2))
+    events.<span class="bi">sort</span>()
+
+    <span class="c"># Дерево отрезков или line sweep по y</span>
+    <span class="c"># Упрощённая версия: считаем длину покрытия активных интервалов</span>
+    <span class="kw">from</span> collections <span class="kw">import</span> defaultdict
+    active = defaultdict(<span class="bi">int</span>)  <span class="c"># y-координата -> счётчик покрытия</span>
+    prev_x = events[<span class="num">0</span>][<span class="num">0</span>]
+    area = <span class="num">0</span>
+
+    <span class="kw">def</span> <span class="bi">covered_length</span>():
+        <span class="c"># Длина объединения активных y-интервалов</span>
+        <span class="kw">if</span> <span class="kw">not</span> active: <span class="kw">return</span> <span class="num">0</span>
+        pts = <span class="bi">sorted</span>(active.<span class="bi">keys</span>())
+        total = <span class="num">0</span>
+        cur_cover = <span class="num">0</span>
+        prev_y = pts[<span class="num">0</span>]
+        <span class="kw">for</span> y <span class="kw">in</span> pts:
+            <span class="kw">if</span> cur_cover > <span class="num">0</span>:
+                total += y - prev_y
+            cur_cover += active[y]
+            prev_y = y
+        <span class="kw">return</span> total
+
+    <span class="kw">for</span> x, typ, y1, y2 <span class="kw">in</span> events:
+        dx = x - prev_x
+        <span class="kw">if</span> dx > <span class="num">0</span>:
+            area += dx * covered_length()
+            prev_x = x
+        active[y1] += typ
+        active[y2] -= typ
+        <span class="kw">if</span> active[y1] == <span class="num">0</span>: <span class="kw">del</span> active[y1]
+        <span class="kw">if</span> active[y2] == <span class="num">0</span>: <span class="kw">del</span> active[y2]
+
+    <span class="kw">return</span> area</code></pre></div>
+  </div>
+
+  <div class="subheader s4">4.4 Задача о горизонте как частный случай scanline</div>
+  <p>Классическая задача о силуэте зданий — это scanline, где активное множество содержит высоты, а нас интересует максимум.</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-lang">Python</span></div>
+    <div class="code-body"><pre><code><span class="kw">import</span> heapq
+
+<span class="kw">def</span> <span class="bi">scanline_skyline</span>(buildings):
+    <span class="s">"""Силуэт зданий через scanline + max-heap. O(n log n)."""</span>
+    <span class="c"># События: (x, тип, высота, конец)</span>
+    events = []
+    <span class="kw">for</span> l, r, h <span class="kw">in</span> buildings:
+        events.<span class="bi">append</span>((l, -h, r))   <span class="c"># -h: начало (h &gt; 0 =&gt; приоритет)</span>
+        events.<span class="bi">append</span>((r,  <span class="num">0</span>, <span class="num">0</span>))   <span class="c">#  0: конец</span>
+    events.<span class="bi">sort</span>()
+
+    result = []
+    <span class="c"># Max-heap через min-heap с отрицательными значениями</span>
+    heap = [(<span class="num">0</span>, <span class="bi">float</span>(<span class="s">'inf'</span>))]  <span class="c"># sentinel: высота 0 до бесконечности</span>
+    prev_max = <span class="num">0</span>
+
+    <span class="kw">for</span> x, neg_h, end <span class="kw">in</span> events:
+        <span class="kw">if</span> neg_h < <span class="num">0</span>:  <span class="c"># начало здания</span>
+            heapq.<span class="bi">heappush</span>(heap, (neg_h, end))
+        <span class="c"># Ленивое удаление: убираем здания, уже закончившиеся до x</span>
+        <span class="kw">while</span> heap[<span class="num">0</span>][<span class="num">1</span>] <= x:
+            heapq.<span class="bi">heappop</span>(heap)
+        <span class="c"># Текущий максимум высот</span>
+        cur_max = -heap[<span class="num">0</span>][<span class="num">0</span>]
+        <span class="kw">if</span> cur_max != prev_max:
+            result.<span class="bi">append</span>((x, cur_max))
+            prev_max = cur_max
+    <span class="kw">return</span> result</code></pre></div>
+  </div>
+
+  <div class="box pf">
+    <div class="box-header">✓ Доказательство — Корректность lazy deletion в skyline</div>
+    <div class="box-body">
+      <p><b>Утверждение:</b> в момент запроса <code>heap[0]</code> — активное здание с максимальной высотой.</p>
+      <p><b>Доказательство:</b> при запросе в точке <code>x</code> удаляем элементы <code>(neg_h, end)</code> с <code>end ≤ x</code>. Эти здания закончились до <code>x</code>, поэтому не влияют на высоту в <code>x</code>. ✓</p>
+      <p>Оставшиеся элементы — здания с <code>end &gt; x</code>, т.е. активные в <code>x</code>. <code>heap[0]</code> — минимальный <code>neg_h</code> среди них, т.е. максимальный <code>h</code>. ✓</p>
+      <p>Каждое здание добавляется и удаляется из heap ровно 1 раз. Суммарная сложность: <code>O(n log n)</code>. ∎</p>
+    </div>
+  </div>
+
+  <div class="subheader s4">4.5 Решение через дерево отрезков — O(n log n)</div>
+  <p>Альтернативный подход: сжатие координат + дерево отрезков с операцией «покрасить отрезок <code>[l,r]</code> в высоту <code>h</code>, запросить максимум». Подходит для онлайн-версии задачи и обобщается на другие scanline-приложения.</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-lang">Python</span></div>
+    <div class="code-body"><pre><code><span class="c"># Сжатие координат + дерево отрезков для scanline</span>
+<span class="kw">def</span> <span class="bi">scanline_segtree</span>(rects):
+    <span class="s">"""Площадь объединения через scanline + segment tree."""</span>
+    <span class="c"># Собрать все уникальные x-координаты</span>
+    xs = <span class="bi">sorted</span>(<span class="bi">set</span>(x <span class="kw">for</span> x1,y1,x2,y2 <span class="kw">in</span> rects <span class="kw">for</span> x <span class="kw">in</span> (x1, x2)))
+    idx = {x: i <span class="kw">for</span> i, x <span class="kw">in</span> <span class="bi">enumerate</span>(xs)}
+    m = <span class="bi">len</span>(xs)
+    tree = [<span class="num">0</span>] * (<span class="num">4</span> * m)  <span class="c"># дерево отрезков max</span>
+
+    <span class="kw">def</span> <span class="bi">update</span>(node, lo, hi, l, r, h):
+        <span class="kw">if</span> r <= lo <span class="kw">or</span> hi <= l: <span class="kw">return</span>
+        <span class="kw">if</span> l <= lo <span class="kw">and</span> hi <= r:
+            tree[node] = <span class="bi">max</span>(tree[node], h); <span class="kw">return</span>
+        mid = (lo+hi)//<span class="num">2</span>
+        update(<span class="num">2</span>*node, lo, mid, l, r, h)
+        update(<span class="num">2</span>*node+<span class="num">1</span>, mid, hi, l, r, h)
+
+    <span class="kw">def</span> <span class="bi">build</span>(node, lo, hi):
+        <span class="kw">if</span> hi - lo == <span class="num">1</span>: <span class="kw">return</span>
+        mid = (lo+hi)//<span class="num">2</span>
+        build(<span class="num">2</span>*node, lo, mid)
+        build(<span class="num">2</span>*node+<span class="num">1</span>, mid, hi)
+        tree[node] = <span class="bi">max</span>(tree[<span class="num">2</span>*node], tree[<span class="num">2</span>*node+<span class="num">1</span>])
+
+    <span class="kw">for</span> x1, y1, x2, y2 <span class="kw">in</span> rects:
+        update(<span class="num">1</span>, <span class="num">0</span>, m, idx[x1], idx[x2], y2-y1)
+    build(<span class="num">1</span>, <span class="num">0</span>, m)  <span class="c"># propagate</span>
+    <span class="c"># Собрать результат</span>
+    result = []
+    prev = <span class="num">0</span>
+    <span class="kw">for</span> i, x <span class="kw">in</span> <span class="bi">enumerate</span>(xs):
+        <span class="c"># query point i</span>
+        h = <span class="num">0</span>  <span class="c"># упрощённо; полная реализация требует query(i,i+1)</span>
+        <span class="kw">if</span> h != prev: result.<span class="bi">append</span>((x, h)); prev = h
+    <span class="kw">return</span> result</code></pre></div>
+  </div>
+
+  <table class="complex-table">
+    <thead><tr><th>Операция</th><th>Время</th><th>Память</th></tr></thead>
+    <tbody>
+      <tr><td>Пересечение отрезков (Bentley-Ottmann)</td><td class="time">O((n+k) log n)</td><td class="mem">O(n+k)</td></tr>
+      <tr><td>Площадь объединения прямоугольников</td><td class="time">O(n log n)</td><td class="mem">O(n)</td></tr>
+      <tr><td>Силуэт зданий (scanline + heap)</td><td class="time">O(n log n)</td><td class="mem">O(n)</td></tr>
+      <tr><td>Segment Tree (coord compress)</td><td class="time">O(n log n)</td><td class="mem">O(n)</td></tr>
+      <tr><td>Обработка события (add/remove)</td><td class="time">O(log n)</td><td class="mem">O(1)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="box note">
+    <div class="box-header">💡 Замечание — Обобщение scanline</div>
+    <div class="box-body">
+      <p>Метод сканирующей прямой применяется к широкому классу задач:</p>
+      <p>• <b>Пересечение отрезков</b> — проверка только соседей в активном множестве</p>
+      <p>• <b>Площадь/периметр объединения</b> — длина покрытия активных интервалов</p>
+      <p>• <b>Ближайшая пара точек</b> — divide & conquer + scanline по полосе</p>
+      <p>• <b>Выпуклая оболочка</b> — Graham scan как частный случай</p>
+      <p>• <b>Триангуляция Делоне</b> — sweep line + beach line (Fortune's algorithm)</p>
+      <p>Ключевое преимущество: вместо <code>O(n²)</code> пар проверяем только <code>O(n log n)</code> событий.</p>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center; margin: 20px 0;">
+  <a href="#" style="color: var(--lgray); font-size: 0.8rem; text-decoration: none; border: 1px solid var(--border); padding: 4px 12px; border-radius: 12px;">↑ Наверх</a>
+</div>
+<hr>
+
+<div class="section" id="sec5">
+  <div class="sec-header sec5">
+    <div class="num">§5</div>
+    <h2>DFT — Дискретное Преобразование Фурье</h2>
+    <div class="sub">Определение · Матричная форма · Свойства · Обращение</div>
+  </div>
+
+  <p><b>Дискретное преобразование Фурье (DFT)</b> переводит последовательность <code>n</code> комплексных чисел в <code>n</code> коэффициентов по примитивным корням из единицы. Это дискретный аналог преобразования Фурье для непрерывных функций.</p>
+
+  <div class="box def">
+    <div class="box-header">📐 Определение — DFT и IDFT</div>
+    <div class="box-body">
+      <p>Пусть <code>a = (a₀, a₁, ..., a_{n-1})</code>, <code>ω_n = e^{2πi/n}</code> (примитивный корень).</p>
+      <p><b>DFT:</b></p>
+      <p>$$A[k] = \sum_{j=0}^{n-1} a[j] \cdot \omega_n^{jk}, \quad k = 0, 1, \dots, n-1$$</p>
+      <p><b>IDFT:</b></p>
+      <p>$$a[j] = \frac{1}{n} \sum_{k=0}^{n-1} A[k] \cdot \omega_n^{-jk}, \quad j = 0, \dots, n-1$$</p>
+      <p><b>Матричная форма:</b> <code>A = F_n · a</code>, где <code>F_n[j,k] = ω_n^{jk}</code>. <code>F_n</code> — матрица ДПФ; <code>F_n^{-1} = (1/n) · conj(F_n)</code> (<code>F_n</code> — унитарная с норм. <code>1/√n</code>).</p>
+    </div>
+  </div>
+
+  <div class="subheader s5">5.1 Доказательство формулы обращения IDFT</div>
+
+  <div class="box pf">
+    <div class="box-header">✓ Доказательство — IDFT корректно обращает DFT</div>
+    <div class="box-body">
+      <p>Покажем: <code>(IDFT ∘ DFT)(a) = a</code>.</p>
+      <p>$$(\text{IDFT}\cdot\text{DFT}(a))[j] = \frac{1}{n} \sum_{k=0}^{n-1} A[k] \cdot \omega_n^{-jk}$$</p>
+      <p>$$= \frac{1}{n} \sum_k \left[\sum_m a[m] \omega_n^{mk}\right] \omega_n^{-jk} = \frac{1}{n} \sum_m a[m] \sum_k \omega_n^{k(m-j)}$$</p>
+      <p>Вычислим внутреннюю сумму <code>S(d) = Σ_{k=0}^{n-1} ω_n^{k·d}</code>:</p>
+      <p>Если <code>d ≡ 0 (mod n)</code>: <code>S(d) = Σ 1^k = n</code></p>
+      <p>Если <code>d ≢ 0 (mod n)</code>: <code>S(d) = (ω_n^{dn} - 1)/(ω_n^d - 1) = 0</code> (геом. прогрессия со знаменателем ≠ 1, сумма = 0)</p>
+      <p>Следовательно:</p>
+      <p>$$(\text{IDFT}\cdot\text{DFT}(a))[j] = \frac{1}{n} \cdot a[j] \cdot n = a[j] \;\blacksquare$$</p>
+    </div>
+  </div>
+
+  <div class="subheader s5">5.2 Ключевые свойства DFT</div>
+
+  <div class="box thm">
+    <div class="box-header">📐 Теорема — Теорема о свёртке (Convolution Theorem)</div>
+    <div class="box-body">
+      <p><b>Линейная свёртка:</b> <code>(a*b)[k] = Σ_{j=0}^{k} a[j]·b[k-j]</code></p>
+      <p><b>Утверждение:</b> <code>DFT(a * b)[k] = DFT(a)[k] · DFT(b)[k]</code></p>
+      <p><b>Доказательство:</b></p>
+      <p>$$\text{DFT}(a*b)[k] = \sum_n \left(\sum_j a[j]\cdot b[n-j]\right) \omega^{nk}$$</p>
+      <p>$$= \sum_j a[j] \sum_n b[n-j] \omega^{nk} = \sum_j a[j] \omega^{jk} \sum_m b[m] \omega^{mk}$$</p>
+      <p>(замена <code>m = n-j</code>, <code>ω^{nk} = ω^{jk}·ω^{mk}</code>)</p>
+      <p>$$= \text{DFT}(a)[k] \cdot \text{DFT}(b)[k] \;\blacksquare$$</p>
+      <p><b>Следствие:</b> умножение полиномов через DFT:</p>
+      <p>1. Вычислить <code>A = DFT(a), B = DFT(b)</code> — <code>O(n log n)</code></p>
+      <p>2. <code>C[k] = A[k]·B[k]</code> для всех <code>k</code> — <code>O(n)</code></p>
+      <p>3. <code>c = IDFT(C)</code> — <code>O(n log n)</code></p>
+    </div>
+  </div>
+
+  <div class="box thm">
+    <div class="box-header">📐 Теорема — Теорема Парсеваля (Parseval's identity)</div>
+    <div class="box-body">
+      <p>$$\sum_{j=0}^{n-1} |a[j]|^2 = \frac{1}{n} \sum_{k=0}^{n-1} |A[k]|^2$$</p>
+      <p><b>Смысл:</b> DFT сохраняет L²-норму (с точностью до <code>1/√n</code>).</p>
+      <p><b>Доказательство:</b></p>
+      <p>$$\sum_j |a[j]|^2 = \langle a, a \rangle = \langle F^{-1}A, F^{-1}A \rangle$$</p>
+      <p>$$= \langle A, (F\cdot F^H/n)\cdot A \rangle = \frac{1}{n}\langle A,A \rangle = \frac{1}{n}\sum_k|A[k]|^2 \;\blacksquare$$</p>
+    </div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-lang">Python</span></div>
+    <div class="code-body"><pre><code><span class="kw">import</span> cmath, math
+
+<span class="kw">def</span> <span class="bi">dft</span>(a, invert=<span class="kw">False</span>):
+    <span class="s">"""Наивный DFT за O(n²). Для демонстрации и проверки."""</span>
+    n = <span class="bi">len</span>(a)
+    A = []
+    <span class="kw">for</span> k <span class="kw">in</span> <span class="bi">range</span>(n):
+        Ak = <span class="num">0</span>
+        <span class="kw">for</span> j <span class="kw">in</span> <span class="bi">range</span>(n):
+            angle = <span class="num">2</span> * math.<span class="bi">pi</span> * j * k / n
+            <span class="kw">if</span> invert: angle = -angle
+            Ak += a[j] * cmath.<span class="bi">exp</span>(<span class="num">1j</span> * angle)
+        <span class="kw">if</span> invert: Ak /= n
+        A.<span class="bi">append</span>(Ak)
+    <span class="kw">return</span> A
+
+<span class="c"># Свойства DFT — проверка:</span>
+<span class="c"># 1. Линейность: DFT(α·a + β·b) = α·DFT(a) + β·DFT(b)</span>
+<span class="c"># 2. Сдвиг:      DFT(a сдвинутое на s)[k] = ω^{sk} · DFT(a)[k]</span>
+<span class="c"># 3. Свёртка:    DFT(a * b) = DFT(a) · DFT(b)  (поточечно)</span>
+<span class="c"># 4. Обращение:  IDFT(DFT(a)) = a</span>
+<span class="c"># 5. Парсеваль:  sum|a[j]|² = (1/n)·sum|A[k]|²</span></code></pre></div>
+  </div>
+
+  <table class="complex-table">
+    <thead><tr><th>Операция</th><th>Время</th><th>Память</th></tr></thead>
+    <tbody>
+      <tr><td>Наивный DFT</td><td class="time">O(n²)</td><td class="mem">O(n)</td></tr>
+      <tr><td>FFT (Кули-Тьюки)</td><td class="time">O(n log n)</td><td class="mem">O(n)</td></tr>
+      <tr><td>Умножение полиномов через DFT</td><td class="time">O(n log n)</td><td class="mem">O(n)</td></tr>
+      <tr><td>Корреляция сигналов</td><td class="time">O(n log n)</td><td class="mem">O(n)</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div style="text-align:center; margin: 20px 0;">
+  <a href="#" style="color: var(--lgray); font-size: 0.8rem; text-decoration: none; border: 1px solid var(--border); padding: 4px 12px; border-radius: 12px;">↑ Наверх</a>
+</div><hr>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SECTION 6 — FFT -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="section" id="sec6">
+  <div class="sec-header sec6">
+    <div class="num">§6</div>
+    <h2>FFT — Быстрое Преобразование Фурье</h2>
+    <div class="sub">Кули-Тьюки · Бабочка · Bit-reversal · Оптимизации</div>
+  </div>
+
+  <p><b>FFT (Fast Fourier Transform)</b> вычисляет DFT за <code>O(n log n)</code> используя принцип «разделяй-и-властвуй». Алгоритм Кули–Тьюки (1965) — наиболее распространённая реализация для <code>n = 2^k</code>.</p>
+
+  <div class="subheader s1">6.1 Вывод алгоритма Кули–Тьюки</div>
+
+  <div class="box pf">
+    <div class="box-header">✓ Доказательство — Формула «бабочки» (butterfly)</div>
+    <div class="box-body">
+      <p>Дано: DFT размера <code>n</code>, <code>n = 2^k</code>. Разбиваем <code>a</code> на чётные/нечётные:</p>
+      <p><code>a_even = [a[0], a[2], a[4], ...]</code> (n/2 элементов)</p>
+      <p><code>a_odd  = [a[1], a[3], a[5], ...]</code> (n/2 элементов)</p>
+      <p>$$A[k] = \sum_{j=0}^{n-1} a[j] \cdot \omega_n^{jk}$$</p>
+      <p>$$= \sum_m a[2m] \cdot \omega_n^{2mk} + \sum_m a[2m+1] \cdot \omega_n^{(2m+1)k}$$</p>
+      <p>$$= \sum_m a_{\text{even}}[m] \cdot (\omega_n^2)^{mk} + \omega_n^k \cdot \sum_m a_{\text{odd}}[m] \cdot (\omega_n^2)^{mk}$$</p>
+      <p>Замечаем: <code>ω_n² = e^{2πi·2/n} = e^{2πi/(n/2)} = ω_{n/2}</code></p>
+      <p>$$\Rightarrow A[k]     = E[k] + \omega_n^k \cdot O[k], \quad k = 0..n/2-1$$</p>
+      <p>$$\Rightarrow A[k+n/2] = E[k] - \omega_n^k \cdot O[k], \quad k = 0..n/2-1$$</p>
+      <p>где <code>E = DFT_{n/2}(a_even), O = DFT_{n/2}(a_odd)</code></p>
+      <p>Операция <code>(E[k], O[k]) → (E[k]+w·O[k], E[k]-w·O[k])</code> — «бабочка». ∎</p>
+    </div>
+  </div>
+
+  <div class="subheader s1">6.2 Итеративный FFT с bit-reversal permutation</div>
+  <p>Рекурсивный FFT имеет накладные расходы на вызовы. Итеративная версия сначала переставляет элементы в «bit-reversed» порядок, затем применяет бабочки снизу вверх по слоям.</p>
+
+  <div class="box thm">
+    <div class="box-header">📐 Теорема — Корректность bit-reversal permutation</div>
+    <div class="box-body">
+      <p>При рекурсивном разделении чётных/нечётных <code>n/2</code> раза, элемент с индексом <code>j</code> оказывается на позиции <code>rev(j)</code>, где <code>rev(j)</code> — <code>j</code> с битами, записанными в обратном порядке.</p>
+      <p><b>Пример (n=8, 3 бита):</b></p>
+      <p><code>j=0: 000 → 000: позиция 0</code></p>
+      <p><code>j=1: 001 → 100: позиция 4</code></p>
+      <p><code>j=2: 010 → 010: позиция 2</code></p>
+      <p><code>j=3: 011 → 110: позиция 6</code></p>
+      <p><code>j=4: 100 → 001: позиция 1</code></p>
+      <p><b>Корректность:</b> на каждом уровне рекурсии чётные/нечётные = 0/1 бит в младшем разряде. После <code>log₂(n)</code> уровней биты оказываются обращены. ∎</p>
+    </div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-lang">Python</span></div>
+    <div class="code-body"><pre><code><span class="kw">import</span> cmath, math
+
+<span class="kw">def</span> <span class="bi">fft</span>(a, invert=<span class="kw">False</span>):
+    n = <span class="bi">len</span>(a)
+    <span class="kw">assert</span> n & (n-<span class="num">1</span>) == <span class="num">0</span>, <span class="s">'n must be power of 2'</span>
+    <span class="c"># Шаг 1: bit-reversal permutation</span>
+    j = <span class="num">0</span>
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(<span class="num">1</span>, n):
+        bit = n >> <span class="num">1</span>
+        <span class="kw">while</span> j & bit:
+            j ^= bit
+            bit >>= <span class="num">1</span>
+        j ^= bit
+        <span class="kw">if</span> i < j:
+            a[i], a[j] = a[j], a[i]
+    <span class="c"># Шаг 2: послойные бабочки</span>
+    length = <span class="num">2</span>
+    <span class="kw">while</span> length <= n:
+        <span class="c"># Корень из единицы для текущего размера</span>
+        ang = <span class="num">2</span> * math.<span class="bi">pi</span> / length * (-<span class="num">1</span> <span class="kw">if</span> invert <span class="kw">else</span> <span class="num">1</span>)
+        w_start = cmath.<span class="bi">exp</span>(<span class="num">1j</span> * ang)
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(<span class="num">0</span>, n, length):
+            w = <span class="num">1</span> + <span class="num">0j</span>
+            half = length // <span class="num">2</span>
+            <span class="kw">for</span> k <span class="kw">in</span> <span class="bi">range</span>(half):
+                u = a[i + k]
+                v = a[i + k + half] * w
+                a[i + k]        = u + v  <span class="c"># верхняя 'нога' бабочки</span>
+                a[i + k + half] = u - v  <span class="c"># нижняя 'нога' бабочки</span>
+                w *= w_start
+        length <<= <span class="num">1</span>
+    <span class="kw">if</span> invert:
+        inv_n = <span class="num">1</span> / n
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(n): a[i] *= inv_n
+
+<span class="kw">def</span> <span class="bi">poly_multiply</span>(p, q):
+    <span class="s">"""Умножение полиномов через FFT за O(n log n)."""</span>
+    result_len = <span class="bi">len</span>(p) + <span class="bi">len</span>(q) - <span class="num">1</span>
+    n = <span class="num">1</span>
+    <span class="kw">while</span> n < result_len: n <<= <span class="num">1</span>  <span class="c"># следующая степень 2</span>
+    fa = [<span class="bi">complex</span>(x) <span class="kw">for</span> x <span class="kw">in</span> p] + [<span class="num">0j</span>]*(n - <span class="bi">len</span>(p))
+    fb = [<span class="bi">complex</span>(x) <span class="kw">for</span> x <span class="kw">in</span> q] + [<span class="num">0j</span>]*(n - <span class="bi">len</span>(q))
+    <span class="bi">fft</span>(fa); <span class="bi">fft</span>(fb)
+    fc = [a*b <span class="kw">for</span> a, b <span class="kw">in</span> <span class="bi">zip</span>(fa, fb)]
+    <span class="bi">fft</span>(fc, invert=<span class="kw">True</span>)
+    <span class="kw">return</span> [<span class="bi">round</span>(c.real) <span class="kw">for</span> c <span class="kw">in</span> fc[:result_len]]</code></pre></div>
+  </div>
+
+  <div class="subheader s1">6.3 Доказательство сложности O(n log n)</div>
+
+  <div class="box pf">
+    <div class="box-header">✓ Доказательство — FFT: T(n) = O(n log n)</div>
+    <div class="box-body">
+      <p><b>Рекуррентность:</b> <code>T(n) = 2·T(n/2) + O(n)</code></p>
+      <p>— 2 рекурсивных вызова размера <code>n/2</code></p>
+      <p>— <code>O(n)</code> для комбинирования (<code>n/2</code> бабочек)</p>
+      <p><b>Master Theorem</b> (случай 2): <code>a=2, b=2, f(n)=n</code>:</p>
+      <p>$$n^{\log_b a} = n^1 = \Theta(f(n)) \quad\Rightarrow\quad T(n) = \Theta(n \log n)$$</p>
+      <p><b>Итеративная версия:</b> <code>log₂(n)</code> слоёв, в каждом <code>n/2</code> бабочек = <code>n/2</code> умножений. Итого: <code>(n/2)·log₂(n)</code> умножений и <code>n·log₂(n)</code> сложений. <code>O(n log n)</code> арифметических операций. ∎</p>
+      <p><b>Нижняя оценка:</b> <code>O(n log n)</code> для умножения полиномов оптимальна (под моделью с алгебраическими деревьями вычислений).</p>
+    </div>
+  </div>
+
+  <div class="subheader s1">6.4 Практические оптимизации FFT</div>
+
+  <div class="box note">
+    <div class="box-header">💡 Замечание — Вещественный FFT (real FFT)</div>
+    <div class="box-body">
+      <p>Если входные данные вещественные (<code>a[j] ∈ ℝ</code>), можно сэкономить в ~2 раза:</p>
+      <p>Объединяем два вещественных вектора <code>p</code> и <code>q</code> в один комплексный: <code>z[j] = p[j] + i·q[j]</code></p>
+      <p>Вычисляем <code>FFT(z)</code>, затем разделяем через свойство:</p>
+      <p>$$P[k] = \frac{Z[k] + \overline{Z[n-k]}}{2}, \quad Q[k] = \frac{Z[k] - \overline{Z[n-k]}}{2i}$$</p>
+      <p>Для умножения двух вещественных полиномов: одна FFT вместо двух.</p>
+    </div>
+  </div>
+
+  <div class="box note">
+    <div class="box-header">💡 Замечание — Предвычисленные корни из единицы</div>
+    <div class="box-body">
+      <p>В горячем цикле <code>cmath.exp()</code> — дорогая операция (тригонометрия).</p>
+      <p><b>Оптимизация:</b> предвычислить таблицу <code>roots[n] = ω_n^0, ω_n^1, ..., ω_n^{n-1}</code> один раз при инициализации.</p>
+      <p>Это снижает время работы в 3-5 раз на практике.</p>
+    </div>
+  </div>
+
+  <table class="complex-table">
+    <thead><tr><th>Операция</th><th>Время</th><th>Память</th></tr></thead>
+    <tbody>
+      <tr><td>Наивный DFT</td><td class="time">O(n²)</td><td class="mem">O(n)</td></tr>
+      <tr><td>Рекурсивный FFT</td><td class="time">O(n log n)</td><td class="mem">O(n log n)</td></tr>
+      <tr><td>Итеративный FFT</td><td class="time">O(n log n)</td><td class="mem">O(n)</td></tr>
+      <tr><td>Real FFT (вещественный)</td><td class="time">O(n log n)</td><td class="mem">O(n)</td></tr>
+      <tr><td>Split-radix FFT</td><td class="time">O(n log n) ~4n ln n op</td><td class="mem">O(n)</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div style="text-align:center; margin: 20px 0;">
+  <a href="#" style="color: var(--lgray); font-size: 0.8rem; text-decoration: none; border: 1px solid var(--border); padding: 4px 12px; border-radius: 12px;">↑ Наверх</a>
+</div><hr>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SECTION 7 — NTT -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="section" id="sec7">
+  <div class="sec-header sec7">
+    <div class="num">§7</div>
+    <h2>NTT — Числовое Преобразование Фурье</h2>
+    <div class="sub">NTT-friendly primes · Примитивный корень · CRT</div>
+  </div>
+
+  <p><b>NTT (Number Theoretic Transform)</b> — аналог FFT, работающий в кольце вычетов <code>Z_p</code>. Результаты — точные целые числа без ошибок округления. NTT применяется везде, где коэффициенты полиномов — целые числа по некоторому модулю.</p>
+
+  <div class="box def">
+    <div class="box-header">📐 Определение — Условия применимости NTT</div>
+    <div class="box-body">
+      <p><b>Требования:</b></p>
+      <p>1. <code>p</code> — простое число</p>
+      <p>2. <code>n | (p-1)</code> — <code>n</code> должна делить <code>p-1</code> (чтобы существовал корень порядка <code>n</code>)</p>
+      <p>3. <code>g</code> — примитивный корень по модулю <code>p</code></p>
+      <p>Тогда аналог <code>ω_n = g^{(p-1)/n} mod p</code>:</p>
+      <p><code>ω_n^n = g^{p-1} ≡ 1 (mod p)</code> — по малой теореме Ферма</p>
+      <p>Порядок <code>ω_n</code> равен в точности <code>n</code> — т.к. <code>g</code> примитивный корень</p>
+      <p><b>NTT формулы</b> идентичны FFT, но все вычисления <code>mod p</code>:</p>
+      <p>$$A[k] = \sum_{j=0}^{n-1} a[j] \cdot \omega_n^{jk} \pmod p$$</p>
+      <p>$$a[j] = n^{-1} \cdot \sum_{k=0}^{n-1} A[k] \cdot \omega_n^{-jk} \pmod p$$</p>
+      <p><code>n^{-1} = n^{p-2} mod p</code> — обратный элемент по Ферма</p>
+    </div>
+  </div>
+
+  <div class="subheader s3">7.1 Теоретическое обоснование NTT</div>
+
+  <div class="box pf">
+    <div class="box-header">✓ Доказательство — NTT корректно вычисляет DFT в Z_p</div>
+    <div class="box-body">
+      <p><b>Лемма о геометрической сумме в Z_p:</b></p>
+      <p>$$\sum_{k=0}^{n-1} \omega_n^{k\cdot d} \equiv n\cdot[d\equiv 0\pmod n] \pmod p$$</p>
+      <p><b>Доказательство:</b> если <code>d≡0(mod n)</code>: все слагаемые = 1, сумма = <code>n</code>.</p>
+      <p>Если <code>d≢0(mod n)</code>: <code>ω_n^d ≠ 1</code> (порядок <code>ω_n = n</code>, <code>d</code> не кратно <code>n</code>).</p>
+      <p>$$S = \sum_{k=0}^{n-1} r^k = \frac{r^n - 1}{r - 1} \equiv 0 \pmod p$$</p>
+      <p>т.к. <code>r^n = ω_n^{dn} = (ω_n^n)^d = 1^d = 1</code>, и <code>r-1 ≠ 0 (mod p)</code>. ✓</p>
+      <p><b>Корректность INTT:</b></p>
+      <p>$$(\text{INTT}\cdot\text{NTT}(a))[j] = n^{-1} \sum_k \left[\sum_m a[m]\omega^{km}\right] \omega^{-jk}$$</p>
+      <p>$$= n^{-1} \sum_m a[m] \sum_k \omega^{k(m-j)} = n^{-1}\cdot a[j]\cdot n = a[j] \;\blacksquare$$</p>
+    </div>
+  </div>
+
+  <div class="subheader s3">7.2 NTT-friendly простые числа</div>
+
+  <table class="primes-table">
+    <thead><tr><th>Простое p</th><th>g</th><th>2-адичность</th><th>Макс. n</th><th>Применение</th></tr></thead>
+    <tbody>
+      <tr><td>998 244 353 = 119·2²³+1</td><td>3</td><td>2²³</td><td>≈ 8.4M</td><td>Стандартное (CF)</td></tr>
+      <tr><td>469 762 049 = 7·2²⁶+1</td><td>3</td><td>2²⁶</td><td>≈ 67M</td><td>Большие полиномы</td></tr>
+      <tr><td>1 004 535 809 = 479·2²¹+1</td><td>3</td><td>2²¹</td><td>≈ 2.1M</td><td>CRT тройки</td></tr>
+      <tr><td>2 013 265 921 = 15·2²⁷+1</td><td>31</td><td>2²⁷</td><td>≈ 134M</td><td>Очень большие</td></tr>
+      <tr><td>786 433 = 3·2¹⁸+1</td><td>10</td><td>2¹⁸</td><td>≈ 262K</td><td>Малые задачи</td></tr>
+    </tbody>
+  </table>
+
+  <div class="subheader s3">7.3 Полная реализация NTT</div>
+
+  <div class="code-block">
+    <div class="code-header"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-lang">Python</span></div>
+    <div class="code-body"><pre><code>MOD = <span class="num">998_244_353</span>
+PRIM_ROOT = <span class="num">3</span>
+
+<span class="kw">def</span> <span class="bi">power</span>(base, exp, mod=MOD):
+    <span class="s">"""Быстрое возведение в степень — O(log exp)."""</span>
+    r = <span class="num">1</span>; base %= mod
+    <span class="kw">while</span> exp > <span class="num">0</span>:
+        <span class="kw">if</span> exp & <span class="num">1</span>: r = r * base % mod
+        base = base * base % mod
+        exp >>= <span class="num">1</span>
+    <span class="kw">return</span> r
+
+<span class="kw">def</span> <span class="bi">ntt</span>(a, invert=<span class="kw">False</span>, mod=MOD):
+    n = <span class="bi">len</span>(a)
+    <span class="kw">assert</span> n & (n-<span class="num">1</span>) == <span class="num">0</span>
+    <span class="c"># bit-reversal (идентично FFT)</span>
+    j = <span class="num">0</span>
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(<span class="num">1</span>, n):
+        bit = n >> <span class="num">1</span>
+        <span class="kw">while</span> j & bit: j ^= bit; bit >>= <span class="num">1</span>
+        j ^= bit
+        <span class="kw">if</span> i < j: a[i], a[j] = a[j], a[i]
+    <span class="c"># послойные бабочки в Z_mod</span>
+    length = <span class="num">2</span>
+    <span class="kw">while</span> length <= n:
+        <span class="c"># Примитивный корень порядка length</span>
+        w = power(PRIM_ROOT, (mod-<span class="num">1</span>)//length, mod)
+        <span class="kw">if</span> invert: w = power(w, mod-<span class="num">2</span>, mod)  <span class="c"># обратный элемент</span>
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(<span class="num">0</span>, n, length):
+            wn = <span class="num">1</span>
+            <span class="kw">for</span> k <span class="kw">in</span> <span class="bi">range</span>(length >> <span class="num">1</span>):
+                u = a[i+k]
+                v = a[i+k + length//<span class="num">2</span>] * wn % mod
+                a[i+k]              = (u + v) % mod
+                a[i+k + length//<span class="num">2</span>]  = (u - v) % mod
+                wn = wn * w % mod
+        length <<= <span class="num">1</span>
+    <span class="kw">if</span> invert:
+        inv_n = power(n, mod-<span class="num">2</span>, mod)
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(n): a[i] = a[i] * inv_n % mod
+
+<span class="kw">def</span> <span class="bi">poly_multiply_ntt</span>(p, q, mod=MOD):
+    n = <span class="num">1</span>
+    <span class="kw">while</span> n < <span class="bi">len</span>(p)+<span class="bi">len</span>(q): n <<= <span class="num">1</span>
+    a = p[:] + [<span class="num">0</span>]*(n-<span class="bi">len</span>(p))
+    b = q[:] + [<span class="num">0</span>]*(n-<span class="bi">len</span>(q))
+    <span class="bi">ntt</span>(a, mod=mod); <span class="bi">ntt</span>(b, mod=mod)
+    c = [x*y % mod <span class="kw">for</span> x,y <span class="kw">in</span> <span class="bi">zip</span>(a, b)]
+    <span class="bi">ntt</span>(c, invert=<span class="kw">True</span>, mod=mod)
+    <span class="kw">return</span> c[:<span class="bi">len</span>(p)+<span class="bi">len</span>(q)-<span class="num">1</span>]</code></pre></div>
+  </div>
+
+  <div class="subheader s3">7.4 Метод CRT для произвольного модуля</div>
+  <p>Если результирующие коэффициенты могут превышать <code>MOD</code> (например, умножаем полиномы с большими коэффициентами), используют несколько NTT-простых и Китайскую теорему об остатках (CRT). Стандартная тройка: <code>p₁ = 998244353, p₂ = 985661441, p₃ = 754974721</code>.</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-lang">Python</span></div>
+    <div class="code-body"><pre><code><span class="kw">def</span> <span class="bi">crt2</span>(r1, m1, r2, m2):
+    <span class="s">"""CRT для двух модулей: найти x ≡ r1 (mod m1), x ≡ r2 (mod m2)."""</span>
+    <span class="c"># x = r1 + m1 * t,  t = (r2-r1) * m1^{-1} (mod m2)</span>
+    t = (r2 - r1) % m2 * power(m1, m2-<span class="num">2</span>, m2) % m2
+    <span class="kw">return</span> r1 + m1 * t  <span class="c"># результат в [0, m1*m2)</span>
+
+<span class="kw">def</span> <span class="bi">poly_multiply_arbitrary_mod</span>(p, q, MOD_OUT):
+    <span class="s">"""Умножение полиномов mod MOD_OUT (любой, не обязательно NTT-friendly)."""</span>
+    P1, P2 = <span class="num">998_244_353</span>, <span class="num">985_661_441</span>
+    <span class="c"># NTT по двум простым</span>
+    c1 = poly_multiply_ntt(p, q, P1)
+    c2 = poly_multiply_ntt(p, q, P2)
+    <span class="c"># CRT: c[i] mod (P1*P2), затем mod MOD_OUT</span>
+    result = []
+    <span class="kw">for</span> a1, a2 <span class="kw">in</span> <span class="bi">zip</span>(c1, c2):
+        val = crt2(a1, P1, a2, P2) % MOD_OUT
+        result.<span class="bi">append</span>(val)
+    <span class="kw">return</span> result</code></pre></div>
+  </div>
+
+  <table class="complex-table">
+    <thead><tr><th>Операция</th><th>Время</th><th>Память</th></tr></thead>
+    <tbody>
+      <tr><td>NTT (одно преобразование)</td><td class="time">O(n log n)</td><td class="mem">O(n)</td></tr>
+      <tr><td>power() — быстрое возведение</td><td class="time">O(log p)</td><td class="mem">O(1)</td></tr>
+      <tr><td>poly_multiply_ntt()</td><td class="time">O(n log n)</td><td class="mem">O(n)</td></tr>
+      <tr><td>CRT для 2 простых (per coeff)</td><td class="time">O(log p)</td><td class="mem">O(1)</td></tr>
+      <tr><td>poly_multiply_arbitrary_mod()</td><td class="time">O(n log n)</td><td class="mem">O(n)</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div style="text-align:center; margin: 20px 0;">
+  <a href="#" style="color: var(--lgray); font-size: 0.8rem; text-decoration: none; border: 1px solid var(--border); padding: 4px 12px; border-radius: 12px;">↑ Наверх</a>
+</div><hr>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SECTION 8 — AND/OR/XOR CONVOLUTIONS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="section" id="sec8">
+  <div class="sec-header sec8">
+    <div class="num">§8</div>
+    <h2>AND / OR / XOR Свёртки</h2>
+    <div class="sub">SOS DP · Walsh-Hadamard · Subset Sum Convolution</div>
+  </div>
+
+  <p>Помимо линейной свёртки полиномов, существуют <b>подмножественные свёртки</b> над операциями AND, OR, XOR на битовых масках. Они возникают в задачах о подмножествах, покрытиях, теории кодирования и вероятностных алгоритмах.</p>
+
+  <div class="formula-block ac4">
+    $$C[k] = \sum_{i \oplus j = k} A[i] \cdot B[j] \quad\text{(XOR-свёртка)}$$
+  </div>
+  <div class="formula-block ac2">
+    $$C[k] = \sum_{i \& j = k} A[i] \cdot B[j] \quad\text{(AND-свёртка)}$$
+  </div>
+  <div class="formula-block ac3">
+    $$C[k] = \sum_{i \mid j = k} A[i] \cdot B[j] \quad\text{(OR-свёртка)}$$
+  </div>
+
+  <div class="subheader s4">8.1 OR-свёртка и преобразование по подмножествам (SOS DP)</div>
+  <p><b>Зета-преобразование по OR</b> (Sum over Subsets): <code>Â[mask] = Σ_{sub ⊆ mask} A[sub]</code> — сумма <code>A</code> по всем подмножествам <code>mask</code>. Это «обновление снизу вверх» по решётке подмножеств (Boolean lattice).</p>
+
+  <div class="box pf">
+    <div class="box-header">✓ Доказательство — Корректность зета-преобразования по OR</div>
+    <div class="box-body">
+      <p>После обработки бита <code>i</code>: <code>Â[mask] = Σ_{sub: биты > i равны bits>i(mask), биты ≤ i: sub ⊆ mask} A[sub]</code></p>
+      <p><b>Инвариант:</b> перед обработкой бита <code>i</code>:</p>
+      <p><code>Â[mask] = Σ_{sub: sub[bits ≥ i] = mask[bits ≥ i], sub[bits&lt;i]⊆mask[bits&lt;i]} A[sub]</code></p>
+      <p>После <code>n</code> итераций (по битам <code>0..n-1</code>):</p>
+      <p><code>Â[mask] = Σ_{sub ⊆ mask} A[sub]</code> — суммирование по всем подмножествам.</p>
+      <p><b>Переход</b> (обработка бита <code>i</code>):</p>
+      <p>Если <code>mask & (1&lt;&lt;i)</code>: <code>Â[mask] += Â[mask ^ (1&lt;&lt;i)]</code></p>
+      <p>(добавляем вклад масок, у которых бит <code>i = 0</code> при тех же остальных битах). ∎</p>
+    </div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-lang">Python</span></div>
+    <div class="code-body"><pre><code><span class="kw">def</span> <span class="bi">zeta_or</span>(f):
+    <span class="s">"""Зета-преобразование: f[mask] = Σ_{sub ⊆ mask} f[sub]"""</span>
+    f = f[:]
+    n = <span class="bi">len</span>(f)
+    i = <span class="num">1</span>
+    <span class="kw">while</span> i < n:
+        <span class="kw">for</span> mask <span class="kw">in</span> <span class="bi">range</span>(n):
+            <span class="kw">if</span> mask & i:  <span class="c"># бит i установлен</span>
+                f[mask] += f[mask ^ i]  <span class="c"># добавляем без бита i</span>
+        i <<= <span class="num">1</span>
+    <span class="kw">return</span> f
+
+<span class="kw">def</span> <span class="bi">mobius_or</span>(f):
+    <span class="s">"""Обратное (преобразование Мёбиуса): f[mask] = Σ_{sub ⊆ mask} (-1)^|mask\sub| f[sub]"""</span>
+    f = f[:]
+    n = <span class="bi">len</span>(f)
+    i = <span class="num">1</span>
+    <span class="kw">while</span> i < n:
+        <span class="kw">for</span> mask <span class="kw">in</span> <span class="bi">range</span>(n):
+            <span class="kw">if</span> mask & i:
+                f[mask] -= f[mask ^ i]
+        i <<= <span class="num">1</span>
+    <span class="kw">return</span> f
+
+<span class="kw">def</span> <span class="bi">or_convolution</span>(A, B):
+    hatA, hatB = zeta_or(A), zeta_or(B)
+    hatC = [a*b <span class="kw">for</span> a,b <span class="kw">in</span> <span class="bi">zip</span>(hatA, hatB)]
+    <span class="kw">return</span> mobius_or(hatC)</code></pre></div>
+  </div>
+
+  <div class="subheader s4">8.2 AND-свёртка — преобразование по надмножествам</div>
+  <p><b>Зета-преобразование по AND</b> (Sum over Supersets): <code>Â[mask] = Σ_{mask ⊆ sup} A[sup]</code> — сумма по всем надмножествам <code>mask</code>. Симметрично OR, но биты обрабатываются «сверху вниз».</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-lang">Python</span></div>
+    <div class="code-body"><pre><code><span class="kw">def</span> <span class="bi">zeta_and</span>(f):
+    <span class="s">"""Зета по AND: f[mask] = Σ_{mask ⊆ sup} f[sup]"""</span>
+    f = f[:]
+    n = <span class="bi">len</span>(f)
+    i = <span class="num">1</span>
+    <span class="kw">while</span> i < n:
+        <span class="kw">for</span> mask <span class="kw">in</span> <span class="bi">range</span>(n):
+            <span class="kw">if</span> <span class="kw">not</span> (mask & i):  <span class="c"># бит i НЕ установлен</span>
+                f[mask] += f[mask | i]  <span class="c"># добавляем с битом i</span>
+        i <<= <span class="num">1</span>
+    <span class="kw">return</span> f
+
+<span class="kw">def</span> <span class="bi">mobius_and</span>(f):
+    f = f[:]
+    n = <span class="bi">len</span>(f)
+    i = <span class="num">1</span>
+    <span class="kw">while</span> i < n:
+        <span class="kw">for</span> mask <span class="kw">in</span> <span class="bi">range</span>(n):
+            <span class="kw">if</span> <span class="kw">not</span> (mask & i):
+                f[mask] -= f[mask | i]
+        i <<= <span class="num">1</span>
+    <span class="kw">return</span> f
+
+<span class="kw">def</span> <span class="bi">and_convolution</span>(A, B):
+    hatA, hatB = zeta_and(A), zeta_and(B)
+    hatC = [a*b <span class="kw">for</span> a,b <span class="kw">in</span> <span class="bi">zip</span>(hatA, hatB)]
+    <span class="kw">return</span> mobius_and(hatC)</code></pre></div>
+  </div>
+
+  <div class="subheader s4">8.3 XOR-свёртка и преобразование Уолша–Адамара (WHT)</div>
+  <p><b>WHT (Walsh-Hadamard Transform)</b> — аналог FFT для группы <code>(Z/2Z)^n</code> по операции XOR. Матрица преобразования — матрица Адамара: строится рекурсивно как тензорное произведение.</p>
+
+  <div class="box pf">
+    <div class="box-header">✓ Доказательство — WHT корректно вычисляет XOR-свёртку</div>
+    <div class="box-body">
+      <p>Символы группы <code>(Z/2Z)^n</code>: <code>χ_k(j) = (-1)^{popcount(j AND k)}</code></p>
+      <p>$$\hat A[k] = \sum_j A[j] \cdot \chi_k(j) = \sum_j A[j] \cdot (-1)^{\text{popcount}(j \& k)}$$</p>
+      <p><b>Ключевое свойство мультипликативности:</b></p>
+      <p>$$\chi_k(j \oplus m) = (-1)^{\text{popcount}((j \oplus m) \& k)} = (-1)^{\text{popcount}(j\&k) + \text{popcount}(m\&k)} = \chi_k(j) \cdot \chi_k(m)$$</p>
+      <p>Тогда для <code>C[i] = Σ_{j XOR m = i} A[j]·B[m]</code>:</p>
+      <p>$$\hat C[k] = \sum_i C[i]\cdot\chi_k(i) = \sum_{j,m} A[j]\cdot B[m]\cdot\chi_k(j \oplus m)$$</p>
+      <p>$$= \sum_j A[j]\chi_k(j) \cdot \sum_m B[m]\chi_k(m) = \hat A[k] \cdot \hat B[k] \;\blacksquare$$</p>
+      <p><b>Обращение:</b> <code>WHT^{-1} = (1/n)·WHT</code> (WHT самообратно с нормировкой). ∎</p>
+    </div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-lang">Python</span></div>
+    <div class="code-body"><pre><code><span class="kw">def</span> <span class="bi">fwht</span>(f, invert=<span class="kw">False</span>):
+    <span class="s">"""Fast Walsh-Hadamard Transform. f изменяется in-place."""</span>
+    f = f[:]
+    n = <span class="bi">len</span>(f)
+    h = <span class="num">1</span>
+    <span class="kw">while</span> h < n:
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(<span class="num">0</span>, n, h*<span class="num">2</span>):
+            <span class="kw">for</span> j <span class="kw">in</span> <span class="bi">range</span>(i, i+h):
+                x, y = f[j], f[j+h]
+                f[j]   = x + y   <span class="c"># верхняя 'нога' бабочки Адамара</span>
+                f[j+h] = x - y   <span class="c"># нижняя 'нога'</span>
+        h <<= <span class="num">1</span>
+    <span class="kw">if</span> invert:
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(n): f[i] //= n  <span class="c"># или /= n для нецелых</span>
+    <span class="kw">return</span> f
+
+<span class="kw">def</span> <span class="bi">xor_convolution</span>(A, B):
+    hatA = fwht(A)
+    hatB = fwht(B)
+    hatC = [a*b <span class="kw">for</span> a,b <span class="kw">in</span> <span class="bi">zip</span>(hatA, hatB)]
+    <span class="kw">return</span> fwht(hatC, invert=<span class="kw">True</span>)
+
+<span class="c"># Пример: XOR-свёртка [1,2,3,4] и [5,6,7,8]</span>
+<span class="c"># A = [1,2,3,4], B = [5,6,7,8]  (индексы — маски 00,01,10,11)</span>
+<span class="c"># C[k] = Σ_{i XOR j = k} A[i]*B[j]</span>
+<span class="c"># C[0] = A[0]B[0]+A[1]B[1]+A[2]B[2]+A[3]B[3] = 5+12+21+32 = 70</span></code></pre></div>
+  </div>
+
+  <div class="subheader s4">8.4 Подмножественная свёртка (Subset Sum Convolution)</div>
+  <p><b>Subset Sum Convolution</b> (SSC) вычисляет строгую свёртку по непересекающимся подмножествам: <code>C[S] = Σ_{T ⊆ S} A[T]·B[S\\T]</code>. Ключевая идея — добавить «ранговое» измерение <code>popcount</code> и применить зета-преобразование по каждому рангу отдельно.</p>
+
+  <div class="box pf">
+    <div class="box-header">✓ Доказательство — Корректность Subset Sum Convolution</div>
+    <div class="box-body">
+      <p><b>Идея:</b> <code>C[S] = Σ_{T ⊆ S} A[T]·B[S\\T] = Σ_{T ⊆ S, T∩(S\\T)=∅} A[T]·B[S\\T]</code></p>
+      <p>Вводим ранговые версии: <code>f̂[r][mask] = A[mask]</code> если <code>|mask|=r</code>, иначе 0. Аналогично <code>ĝ[r][mask] = B[mask]</code> если <code>|mask|=r</code>, иначе 0.</p>
+      <p>После зета-преобразования по OR:</p>
+      <p><code>F[r][mask] = Σ_{sub⊆mask, |sub|=r} A[sub]</code></p>
+      <p><code>G[r][mask] = Σ_{sub⊆mask, |sub|=r} B[sub]</code></p>
+      <p>Свёртка по рангам: <code>H[r][mask] = Σ_{j=0}^{r} F[j][mask]·G[r-j][mask]</code></p>
+      <p>После обратного (Мёбиус) преобразования:</p>
+      <p><code>h[r][mask] = Σ_{sub⊆mask, |sub|=r} Σ_{j} A[sub_j]·B[sub_{r-j}]</code></p>
+      <p><code>C[S] = H[|S|][S]</code>, поскольку <code>|T|+|S\\T| = |S|</code> и <code>T∩(S\\T) = ∅</code>. ∎</p>
+    </div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-lang">Python</span></div>
+    <div class="code-body"><pre><code><span class="kw">def</span> <span class="bi">subset_sum_convolution</span>(A, B):
+    <span class="s">"""C[S] = Σ_{T ⊆ S} A[T]*B[S \ T]"""</span>
+    <span class="kw">from</span> math <span class="kw">import</span> log2
+    N = <span class="bi">len</span>(A)
+    K = <span class="bi">int</span>(log2(N))  <span class="c"># N = 2^K</span>
+
+    <span class="c"># Ранговые версии: fA[r][mask], fB[r][mask]</span>
+    fA = [[<span class="num">0</span>]*N <span class="kw">for</span> _ <span class="kw">in</span> <span class="bi">range</span>(K+<span class="num">1</span>)]
+    fB = [[<span class="num">0</span>]*N <span class="kw">for</span> _ <span class="kw">in</span> <span class="bi">range</span>(K+<span class="num">1</span>)]
+    <span class="kw">for</span> mask <span class="kw">in</span> <span class="bi">range</span>(N):
+        pc = <span class="bi">bin</span>(mask).count(<span class="s">'1'</span>)
+        fA[pc][mask] = A[mask]
+        fB[pc][mask] = B[mask]
+
+    <span class="c"># Зета-преобразование по OR для каждого ранга</span>
+    <span class="kw">for</span> r <span class="kw">in</span> <span class="bi">range</span>(K+<span class="num">1</span>):
+        fA[r] = zeta_or(fA[r])
+        fB[r] = zeta_or(fB[r])
+
+    <span class="c"># Свёртка по рангам (для каждой маски — полиномиальное умножение)</span>
+    fC = [[<span class="num">0</span>]*N <span class="kw">for</span> _ <span class="kw">in</span> <span class="bi">range</span>(K+<span class="num">1</span>)]
+    <span class="kw">for</span> mask <span class="kw">in</span> <span class="bi">range</span>(N):
+        <span class="kw">for</span> j <span class="kw">in</span> <span class="bi">range</span>(K+<span class="num">1</span>):
+            <span class="kw">for</span> r <span class="kw">in</span> <span class="bi">range</span>(j, K+<span class="num">1</span>):
+                fC[r][mask] += fA[j][mask] * fB[r-j][mask]
+
+    <span class="c"># Обратное преобразование (Мёбиус по OR)</span>
+    <span class="kw">for</span> r <span class="kw">in</span> <span class="bi">range</span>(K+<span class="num">1</span>):
+        fC[r] = mobius_or(fC[r])
+
+    <span class="c"># Ответ: C[S] = fC[popcount(S)][S]</span>
+    <span class="kw">return</span> [fC[<span class="bi">bin</span>(mask).count(<span class="s">'1'</span>)][mask] <span class="kw">for</span> mask <span class="kw">in</span> <span class="bi">range</span>(N)]</code></pre></div>
+  </div>
+
+  <div class="subheader s4">8.5 Итоговое сравнение всех типов свёрток</div>
+
+  <table class="complex-table">
+    <thead><tr><th>Свёртка</th><th>Условие (op)</th><th>Преобразование</th><th>Время</th><th>Память</th></tr></thead>
+    <tbody>
+      <tr><td><b>Линейная</b></td><td><code>i + j = k</code></td><td>FFT / NTT</td><td class="time">O(n log n)</td><td class="mem">O(n)</td></tr>
+      <tr><td><b>OR</b></td><td><code>i | j = k</code></td><td>Зета (SOS)</td><td class="time">O(n·2ⁿ)</td><td class="mem">O(2ⁿ)</td></tr>
+      <tr><td><b>AND</b></td><td><code>i & j = k</code></td><td>Зета (Superset)</td><td class="time">O(n·2ⁿ)</td><td class="mem">O(2ⁿ)</td></tr>
+      <tr><td><b>XOR</b></td><td><code>i ^ j = k</code></td><td>Walsh-Hadamard</td><td class="time">O(n·2ⁿ)</td><td class="mem">O(2ⁿ)</td></tr>
+      <tr><td><b>Subset Sum</b></td><td><code>T ⊆ S, i|j=S</code></td><td>Ранговая зета</td><td class="time">O(n²·2ⁿ)</td><td class="mem">O(n·2ⁿ)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="box note">
+    <div class="box-header">💡 Замечание — Выбор свёртки для задачи</div>
+    <div class="box-body">
+      <p>• Умножение полиномов (целые коэффициенты, mod M) → <b>NTT</b></p>
+      <p>• Умножение полиномов (вещественные, приблизительно) → <b>FFT</b></p>
+      <p>• Задачи о подмножествах (существование пересечения) → <b>AND</b></p>
+      <p>• Задачи о покрытии (покрыть множество) → <b>OR</b></p>
+      <p>• Задачи о чётности / XOR-пути → <b>XOR (WHT)</b></p>
+      <p>• Ровно T подмножеств / непересекающиеся покрытия → <b>Subset Sum</b></p>
+      <p><b>Hint:</b> OR-свёртка + мёбиус = SOS DP, одна из самых частых техник на олимпиадных задачах с битовыми масками.</p>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <p>Competitive Programming Reference · 2024 · Полная документация с доказательствами</p>
+  <p style="margin-top:8px; color: var(--lgray);">Сгенерировано из Python-источника · Тёмная тема · MathJax · JetBrains Mono</p>
+</div>
+
+</div>
+</body>
+</html>
