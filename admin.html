@@ -72,7 +72,11 @@
 
         <label>
           <span>Теги</span>
-          <input name="tags" type="text" placeholder="linux, memory, kernel">
+          <input id="tagsValue" name="tags" type="hidden">
+          <div class="tag-editor" id="tagEditor">
+            <div class="tag-editor__chips" id="tagChips" aria-label="Добавленные теги"></div>
+            <input id="tagInput" type="text" placeholder="Введите тег и нажмите Enter" autocomplete="off">
+          </div>
         </label>
 
         <label>

@@ -8,9 +8,13 @@ const form = document.querySelector("#lectureForm");
 const fileInput = document.querySelector("#htmlFile");
 const preview = document.querySelector("#lecturePreview");
 const statusBox = document.querySelector("#adminStatus");
+const tagsValue = document.querySelector("#tagsValue");
+const tagInput = document.querySelector("#tagInput");
+const tagChips = document.querySelector("#tagChips");
 
 let htmlContent = "";
 let adminPassword = "";
+let tags = [];
 
 gateForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -54,6 +58,22 @@ fileInput?.addEventListener("change", async () => {
 
 form?.addEventListener("input", syncPreview);
 
+tagInput?.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" || event.key === ",") {
+    event.preventDefault();
+    addTag(tagInput.value);
+  }
+
+  if (event.key === "Backspace" && tagInput.value === "" && tags.length > 0) {
+    tags.pop();
+    renderTags();
+  }
+});
+
+tagInput?.addEventListener("blur", () => {
+  addTag(tagInput.value);
+});
+
 form?.addEventListener("submit", async (event) => {
   event.preventDefault();
   setStatus("Отправляю заявку в GitHub...", "info");
@@ -93,7 +113,9 @@ form?.addEventListener("submit", async (event) => {
 
     setStatus(`Pull Request создан: ${result.prUrl}`, "success", result.prUrl);
     form.reset();
+    tags = [];
     htmlContent = "";
+    renderTags();
     syncPreview();
   } catch (error) {
     setStatus(error.message, "error");
@@ -112,10 +134,7 @@ function syncPreview() {
   const formData = new FormData(form);
   const title = formData.get("title") || "Название конспекта";
   const description = formData.get("description") || "Короткое описание появится здесь.";
-  const tags = String(formData.get("tags") || "tag")
-    .split(",")
-    .map((tag) => tag.trim())
-    .filter(Boolean);
+  const previewTags = tags.length > 0 ? tags : ["tag"];
 
   preview.innerHTML = `
     <div class="card-topline">
@@ -124,10 +143,58 @@ function syncPreview() {
     <h3>${escapeHtml(title)}</h3>
     <p>${escapeHtml(description)}</p>
     <div class="tags">
-      ${tags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join("")}
+      ${previewTags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join("")}
     </div>
     <span class="card-action card-action--disabled">Предпросмотр карточки</span>
   `;
+}
+
+function addTag(value) {
+  const tag = normalizeTag(value);
+  if (!tag) {
+    if (tagInput) tagInput.value = "";
+    return;
+  }
+
+  if (!tags.includes(tag)) {
+    tags.push(tag);
+  }
+
+  if (tagInput) tagInput.value = "";
+  renderTags();
+}
+
+function removeTag(tag) {
+  tags = tags.filter((item) => item !== tag);
+  renderTags();
+}
+
+function renderTags() {
+  if (tagsValue) tagsValue.value = tags.join(", ");
+  if (!tagChips) return;
+
+  tagChips.innerHTML = tags
+    .map((tag) => `
+      <button class="tag-chip" type="button" data-tag="${escapeHtml(tag)}" aria-label="Удалить тег ${escapeHtml(tag)}">
+        <span>${escapeHtml(tag)}</span>
+        <span aria-hidden="true">×</span>
+      </button>
+    `)
+    .join("");
+
+  tagChips.querySelectorAll(".tag-chip").forEach((chip) => {
+    chip.addEventListener("click", () => removeTag(chip.dataset.tag));
+  });
+
+  syncPreview();
+}
+
+function normalizeTag(value) {
+  return String(value)
+    .trim()
+    .replace(/^#/, "")
+    .replace(/\s+/g, "-")
+    .toLowerCase();
 }
 
 function setStatus(message, type, url) {
@@ -149,3 +216,4 @@ function escapeHtml(value) {
 }
 
 syncPreview();
+renderTags();
