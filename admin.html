@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Админка · Конспекты МИФИ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body class="auth-body">
+  <div class="shell-grid" aria-hidden="true"></div>
+  <main class="admin-screen">
+    <section class="auth-card admin-card" aria-labelledby="auth-title">
+      <a class="back-link" href="index.html">← На главную</a>
+      <div class="eyebrow">// github pull request flow</div>
+      <h1 id="auth-title">Добавить конспект</h1>
+      <p>
+        Заполните карточку, загрузите HTML-файл и отправьте заявку. Сервер создаст
+        Pull Request в GitHub: конспект появится на сайте только после проверки и merge.
+      </p>
+
+      <form class="auth-form admin-form" id="lectureForm">
+        <label>
+          <span>Пароль администратора</span>
+          <input name="adminPassword" type="password" placeholder="Пароль с сервера" autocomplete="current-password" required>
+        </label>
+
+        <div class="form-grid">
+          <label>
+            <span>Дисциплина</span>
+            <select name="courseId" required>
+              <option value="acos">АКОС</option>
+              <option value="algorithms">Алгоритмы</option>
+              <option value="distributed">Распределенные системы</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Статус</span>
+            <select name="status" required>
+              <option value="published">Опубликовать после merge</option>
+              <option value="draft">Черновик</option>
+            </select>
+          </label>
+        </div>
+
+        <label>
+          <span>Название</span>
+          <input name="title" type="text" placeholder="Например: Виртуальная память" required>
+        </label>
+
+        <label>
+          <span>Описание</span>
+          <textarea name="description" rows="4" placeholder="Короткое описание для карточки на главной" required></textarea>
+        </label>
+
+        <label>
+          <span>Теги</span>
+          <input name="tags" type="text" placeholder="linux, memory, kernel">
+        </label>
+
+        <label>
+          <span>HTML-конспект</span>
+          <input id="htmlFile" name="htmlFile" type="file" accept=".html,text/html" required>
+        </label>
+
+        <button type="submit">Создать Pull Request</button>
+      </form>
+
+      <div class="admin-status" id="adminStatus" aria-live="polite"></div>
+    </section>
+
+    <aside class="admin-preview" aria-label="Предпросмотр карточки">
+      <p class="section-kicker">Предпросмотр</p>
+      <article class="lecture-card" id="lecturePreview"></article>
+
+      <div class="auth-roadmap">
+        <strong>Что произойдет после отправки</strong>
+        <ul>
+          <li>создастся новая ветка в GitHub;</li>
+          <li>HTML-файл попадет в папку дисциплины;</li>
+          <li>обновится `data/lectures.json`;</li>
+          <li>откроется Pull Request для ревью.</li>
+        </ul>
+      </div>
+    </aside>
+  </main>
+  <script src="assets/admin.js"></script>
+</body>
+</html>

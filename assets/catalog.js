@@ -1,0 +1,103 @@
+window.LECTURE_CATALOG = {
+  "courses": [
+    {
+      "id": "acos",
+      "title": "Архитектура компьютера и Операционные системы",
+      "shortTitle": "АКОС",
+      "description": "Конспекты по архитектуре компьютера, операционным системам, Linux и низкоуровневой механике.",
+      "items": [
+        {
+          "title": "Работа с аппаратурой",
+          "description": "Базовая карта взаимодействия ОС с устройствами: регистры, MMIO, прерывания и драйверная логика.",
+          "tags": [
+            "hardware",
+            "drivers",
+            "interrupts"
+          ],
+          "href": "lectures/acos/hardware_lec5.html",
+          "status": "published"
+        },
+        {
+          "title": "Кеши процессора",
+          "description": "Почему память не выглядит плоской: уровни кешей, локальность, промахи и цена доступа к данным.",
+          "tags": [
+            "cpu",
+            "cache",
+            "locality"
+          ],
+          "href": "lectures/acos/cpu_caches_lec6.html",
+          "status": "published"
+        },
+        {
+          "title": "NUMA, memory ordering и atomics",
+          "description": "Память в многопроцессорных системах: NUMA, порядок операций, барьеры и атомарные примитивы.",
+          "tags": [
+            "numa",
+            "atomics",
+            "memory"
+          ],
+          "href": "lectures/acos/numa_memory_model_sem7.html",
+          "status": "published"
+        },
+        {
+          "title": "Примитивы синхронизации",
+          "description": "Mutex, spinlock, semaphore, condition variables и типовые ловушки конкурентного кода.",
+          "tags": [
+            "sync",
+            "locks",
+            "threads"
+          ],
+          "href": "lectures/acos/sync_primitives_lec7.html",
+          "status": "published"
+        },
+        {
+          "title": "Inter-process communication",
+          "description": "Как процессы договариваются между собой: каналы, сокеты, shared memory и сигнальные механики.",
+          "tags": [
+            "ipc",
+            "processes",
+            "linux"
+          ],
+          "href": "lectures/acos/ipc_unified.html",
+          "status": "published"
+        },
+        {
+          "title": "Планировщики задач",
+          "description": "От классических политик планирования до Linux scheduling, CFS/EEVDF и классов задач.",
+          "tags": [
+            "scheduling",
+            "linux",
+            "kernel"
+          ],
+          "href": "lectures/acos/scheduling_unified.html",
+          "status": "published"
+        },
+        {
+          "title": "eBPF",
+          "description": "Безопасные программы внутри ядра Linux: verifier, хуки, трассировка и observability.",
+          "tags": [
+            "ebpf",
+            "kernel",
+            "tracing"
+          ],
+          "href": "lectures/acos/ebpf_unified.html",
+          "status": "published"
+        }
+      ]
+    },
+    {
+      "id": "algorithms",
+      "title": "Алгоритмы",
+      "shortTitle": "Алгосы",
+      "description": "Будущий раздел для структур данных, графов, динамики и анализа сложности.",
+      "items": []
+    },
+    {
+      "id": "distributed",
+      "title": "Распределенные системы",
+      "shortTitle": "Распределенные системы",
+      "description": "Будущий раздел для сетевого взаимодействия, консенсуса, отказоустойчивости и распределенных вычислений.",
+      "items": []
+    }
+  ]
+};

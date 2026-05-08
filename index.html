@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Конспекты МИФИ · АКОС</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="shell-grid" aria-hidden="true"></div>
+  <header class="site-header">
+    <a class="brand" href="https://goit.mephi.ru/extreme_programming" target="_blank" rel="noopener noreferrer" aria-label="Сайт программы Экстремальное программирование МИФИ">
+      <span class="brand-mark brand-mark--logo">
+        <img src="assets/mephi-logo-cropped.jpg" alt="Логотип НИЯУ МИФИ">
+      </span>
+      <span>
+        <strong>Экстремальное программирование</strong>
+        <small>компьютерные дисциплины</small>
+      </span>
+    </a>
+
+    <nav class="main-nav" aria-label="Разделы сайта">
+      <a href="#acos">АКОС</a>
+      <a href="#algos">Алгосы</a>
+    </nav>
+
+    <a class="login-link" href="admin.html">Войти</a>
+  </header>
+
+  <main id="top">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-grid" aria-hidden="true"></div>
+      <div class="hero-glow" aria-hidden="true"></div>
+      <div class="hero-copy">
+        <div class="eyebrow">НИЯУ МИФИ · экстремальное программирование</div>
+        <h1 id="hero-title">Конспекты</h1>
+        <p>
+          Библиотека материалов по компьютерным дисциплинам программы Экстремальное
+          Программирование в МИФИ: Архитектура компьютера и операционные системы,
+          Алгоритмы, Распределенные системы.
+        </p>
+        <div class="hero-tags" aria-label="Темы сайта">
+          <span>Архитектура компьютера</span>
+          <span>Операционные системы</span>
+          <span>Алгоритмы</span>
+          <span>Распределенные системы</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-head" id="acos">
+      <div>
+        <p class="section-kicker">АКОС</p>
+        <h2>Архитектура компьютера и Операционные системы</h2>
+      </div>
+      <label class="search-box">
+        <span>Поиск</span>
+        <input id="lectureSearch" type="search" placeholder="кеши, IPC, eBPF..." autocomplete="off">
+      </label>
+    </section>
+
+    <section class="lecture-grid" id="acosLectureGrid" aria-label="Конспекты АКОС">
+      <article class="lecture-card lecture-card--loading">
+        <div class="card-topline">
+          <span class="lecture-index">...</span>
+        </div>
+        <h3>Загружаем конспекты</h3>
+        <p>Карточки лекций подтягиваются из каталога данных.</p>
+      </article>
+    </section>
+
+    <section class="section-head section-head--compact" id="algos">
+      <div>
+        <p class="section-kicker">Алгосы</p>
+        <h2>Заглушка под будущие конспекты по алгоритмам</h2>
+      </div>
+    </section>
+
+    <section class="placeholder-grid" aria-label="Будущие разделы по алгоритмам">
+      <article class="placeholder-card">
+        <span>planned</span>
+        <h3>Структуры данных</h3>
+        <p>Массивы, списки, деревья, хеш-таблицы и амортизированная сложность.</p>
+      </article>
+      <article class="placeholder-card">
+        <span>planned</span>
+        <h3>Графы</h3>
+        <p>BFS, DFS, кратчайшие пути, MST и задачи на связность.</p>
+      </article>
+      <article class="placeholder-card">
+        <span>planned</span>
+        <h3>Динамика</h3>
+        <p>Состояния, переходы, восстановление ответа и оптимизация памяти.</p>
+      </article>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span>МИФИ · Экстремальное программирование</span>
+    <a href="admin.html">Вход для администратора</a>
+  </footer>
+
+  <script src="assets/catalog.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NUMA, memory ordering и atomics</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Unbounded:wght@400;700;900&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0e14;
+    --surface: #111520;
+    --surface2: #161c2a;
+    --surface3: #0f172a;
+    --border: #1e2840;
+    --accent: #8b5cf6;
+    --accent2: #22d3ee;
+    --accent3: #f59e0b;
+    --danger: #ef4444;
+    --success: #10b981;
+    --pink: #ec4899;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --text-dim: #94a3b8;
+    --mono: 'JetBrains Mono', monospace;
+    --display: 'Unbounded', sans-serif;
+    --body: 'Noto Sans', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 15px;
+    line-height: 1.75;
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.6;
+  }
+
+  .wrapper {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 60px 32px 100px;
+    position: relative;
+    z-index: 1;
+  }
+
+  header {
+    margin-bottom: 64px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--border);
+    animation: fadeDown 0.6s ease both;
+  }
+
+  .meta {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent2);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  h1 {
+    font-family: var(--display);
+    font-size: clamp(26px, 5vw, 44px);
+    font-weight: 900;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: #fff;
+    margin-bottom: 12px;
+  }
+
+  h1 span { color: var(--accent); }
+
+  .subtitle {
+    color: var(--text-dim);
+    font-size: 14px;
+    max-width: 680px;
+  }
+
+  section {
+    margin-bottom: 52px;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  section:nth-child(2) { animation-delay: 0.1s; }
+  section:nth-child(3) { animation-delay: 0.15s; }
+  section:nth-child(4) { animation-delay: 0.2s; }
+  section:nth-child(5) { animation-delay: 0.25s; }
+  section:nth-child(6) { animation-delay: 0.3s; }
+  section:nth-child(7) { animation-delay: 0.35s; }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  h2 {
+    font-family: var(--display);
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  h2 .icon {
+    width: 32px;
+    height: 32px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  h3 {
+    font-family: var(--display);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--accent2);
+    margin: 26px 0 10px;
+    letter-spacing: 0.03em;
+  }
+
+  p { margin-bottom: 12px; color: var(--text-dim); }
+  strong { color: var(--text); }
+
+  code {
+    font-family: var(--mono);
+    font-size: 12px;
+    background: rgba(139,92,246,0.1);
+    border: 1px solid rgba(139,92,246,0.22);
+    color: #c4b5fd;
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+
+  pre {
+    background: #090d15;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    overflow-x: auto;
+    margin: 16px 0;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.65;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .card:hover {
+    border-color: var(--accent);
+    transform: translateX(4px);
+  }
+
+  .card-title {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent3);
+    margin-bottom: 8px;
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .badge-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+
+  .badge-card .badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 11px;
+    background: rgba(139,92,246,0.15);
+    color: #c4b5fd;
+    border: 1px solid rgba(139,92,246,0.35);
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+  }
+
+  .badge-card .badge.amber { background: rgba(245,158,11,0.15); color: var(--accent3); border-color: rgba(245,158,11,0.3); }
+  .badge-card .badge.cyan  { background: rgba(34,211,238,0.15);  color: var(--accent2); border-color: rgba(34,211,238,0.3);  }
+  .badge-card .badge.red   { background: rgba(239,68,68,0.15);   color: var(--danger);  border-color: rgba(239,68,68,0.3);   }
+  .badge-card .badge.green { background: rgba(16,185,129,0.15);  color: var(--success); border-color: rgba(16,185,129,0.3);  }
+  .badge-card .badge.pink  { background: rgba(236,72,153,0.15);  color: var(--pink);    border-color: rgba(236,72,153,0.3);  }
+
+  .badge-card strong {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .badge-card p { font-size: 13px; margin: 0; }
+
+  .note {
+    background: rgba(139,92,246,0.07);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 18px;
+    margin: 16px 0;
+    font-size: 14px;
+    color: var(--text-dim);
+  }
+
+  .note.warn {
+    background: rgba(245,158,11,0.07);
+    border-left-color: var(--accent3);
+  }
+
+  .note.danger {
+    background: rgba(239,68,68,0.07);
+    border-left-color: var(--danger);
+  }
+
+  .note.success {
+    background: rgba(16,185,129,0.07);
+    border-left-color: var(--success);
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+    margin: 16px 0;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  th {
+    background: var(--surface2);
+    padding: 10px 16px;
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+  }
+
+  td {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-dim);
+    vertical-align: top;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+  td:first-child { font-family: var(--mono); font-size: 12px; color: var(--accent3); }
+
+  ul.list {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0;
+  }
+
+  ul.list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 6px 0;
+    font-size: 14px;
+    color: var(--text-dim);
+  }
+
+  ul.list li::before {
+    content: '→';
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 12px;
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+
+  .pipeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 16px 0;
+  }
+
+  .pipeline-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .pipeline-step:last-child { border-bottom: none; }
+
+  .step-num {
+    width: 28px;
+    height: 28px;
+    background: var(--surface2);
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .step-content strong { color: var(--text); display: block; margin-bottom: 2px; font-size: 14px; }
+  .step-content span   { color: var(--text-muted); font-size: 13px; }
+
+  .diagram {
+    background: linear-gradient(135deg, rgba(139,92,246,0.08), rgba(34,211,238,0.04));
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px;
+    margin: 18px 0;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-dim);
+    overflow-x: auto;
+  }
+
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, var(--accent) 0%, transparent 100%);
+    margin: 40px 0;
+    opacity: 0.3;
+  }
+
+  .questions-section {
+    background: linear-gradient(135deg, rgba(239,68,68,0.06), rgba(245,158,11,0.04));
+    border: 1px solid rgba(239,68,68,0.25);
+    border-radius: 14px;
+    padding: 32px;
+    margin-top: 56px;
+  }
+
+  .questions-section h2 {
+    border-color: rgba(239,68,68,0.2);
+    margin-bottom: 24px;
+  }
+
+  .q-item {
+    display: flex;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    align-items: flex-start;
+  }
+
+  .q-item:last-child { border-bottom: none; }
+
+  .q-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--danger);
+    min-width: 34px;
+    padding-top: 2px;
+  }
+
+  .q-text {
+    font-size: 14px;
+    color: var(--text-dim);
+    flex: 1;
+  }
+
+  .q-hint {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    font-style: italic;
+  }
+
+  .cheatsheet {
+    background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(34,211,238,0.04));
+    border: 1px solid rgba(16,185,129,0.25);
+    border-radius: 14px;
+    padding: 26px;
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+
+  .progress-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: rgba(30, 40, 64, 0.85);
+    z-index: 1000;
+  }
+
+  .progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    box-shadow: 0 0 16px rgba(139, 92, 246, 0.65);
+    transition: width 0.08s linear;
+  }
+
+  .section-indicator {
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    z-index: 1000;
+    max-width: min(360px, calc(100vw - 44px));
+    padding: 10px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(139, 92, 246, 0.35);
+    background: rgba(17, 21, 32, 0.88);
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 11px;
+    line-height: 1.45;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+  }
+
+  .section-indicator strong { color: var(--accent2); }
+
+  .intro-note {
+    background: linear-gradient(135deg, rgba(139,92,246,0.09), rgba(34,211,238,0.045));
+    border: 1px solid rgba(139,92,246,0.30);
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin-bottom: 44px;
+  }
+
+  .intro-note p { margin: 0; }
+
+  .toc {
+    background: linear-gradient(135deg, rgba(139,92,246,0.08), rgba(34,211,238,0.04));
+    border: 1px solid rgba(139,92,246,0.28);
+    border-radius: 16px;
+    padding: 24px 28px;
+    margin-bottom: 48px;
+  }
+
+  .toc-title {
+    font-family: var(--display);
+    font-size: 15px;
+    color: #fff;
+    margin-bottom: 14px;
+  }
+
+  .toc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 10px 18px;
+  }
+
+  .toc a {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 14px;
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+    transition: color 0.2s, transform 0.2s;
+  }
+
+  .toc a:hover { color: var(--accent2); transform: translateX(4px); }
+  .toc code { color: var(--accent3); }
+
+  @media (max-width: 650px) {
+    .wrapper { padding: 44px 18px 78px; }
+    .section-indicator { right: 14px; bottom: 14px; border-radius: 14px; }
+    .questions-section { padding: 22px; }
+  }
+
+</style>
+</head>
+<body>
+<div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
+<div class="section-indicator" id="sectionIndicator"><strong>Раздел 0 / 10</strong>: начало</div>
+<div class="wrapper">
+
+  <header>
+    <div class="meta">// АКОС · открытый конспект</div>
+    <h1><span>NUMA</span>, memory ordering и atomics</h1>
+    <p class="subtitle">Открытый конспект по архитектуре компьютеров и операционным системам: NUMA-сокеты, локальная и удалённая память, ccNUMA, переупорядочивание компилятором и CPU, барьеры памяти, RMW-инструкции, lock-префикс и модели атомарной синхронизации.</p>
+  </header>
+
+  <div class="intro-note">
+    <p>Открытые Конспекты Экстремального Программирования МИФИ по архитектуре компьютера и операционным сетям. Конспект подготовлен студентами и может содержать ошибки</p>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Навигация по конспекту</div>
+    <div class="toc-grid">
+      <a href="#map"><code>00</code> Карта конспекта</a>
+      <a href="#numa"><code>01</code> NUMA и локальность памяти</a>
+      <a href="#ccnuma"><code>02</code> ccNUMA и когерентность</a>
+      <a href="#compiler-reordering"><code>03</code> Compiler memory reordering</a>
+      <a href="#cpu-reordering"><code>04</code> CPU memory reordering</a>
+      <a href="#rmw"><code>05</code> RMW, xadd, cmpxchg, lock</a>
+      <a href="#atomics"><code>06</code> Atomics и memory order</a>
+      <a href="#connection"><code>07</code> Связь NUMA, кешей и atomics</a>
+      <a href="#practice"><code>08</code> Практические советы</a>
+      <a href="#cheatsheet"><code>09</code> Мини-шпаргалка</a>
+      <a href="#questions"><code>10</code> Вопросы на понимание</a>
+    </div>
+  </div>
+
+  <section id="map">
+    <div class="section-label">// 00</div>
+    <h2><span class="icon">🧭</span>Карта конспекта: что здесь изучается</h2>
+
+    <p>Этот конспект про то, что на современных многопроцессорных машинах память уже нельзя воспринимать как одну простую коробку, куда все ядра одинаково быстро читают и пишут.</p>
+
+    <div class="grid-3">
+      <div class="badge-card">
+        <span class="badge">NUMA</span>
+        <strong>Память физически распределена</strong>
+        <p>У каждого сокета есть своя локальная память. Доступ к чужой памяти возможен, но медленнее.</p>
+      </div>
+      <div class="badge-card">
+        <span class="badge cyan">Reordering</span>
+        <strong>Операции могут менять порядок</strong>
+        <p>И компилятор, и CPU могут переставлять чтения/записи ради скорости, если считают это безопасным.</p>
+      </div>
+      <div class="badge-card">
+        <span class="badge green">Atomics</span>
+        <strong>Нужна управляемая синхронизация</strong>
+        <p>Атомики дают атомарность и, в зависимости от режима, запрещают опасные переупорядочивания.</p>
+      </div>
+    </div>
+
+    <div class="note warn">
+      <strong>Главная идея конспекта:</strong> в однопоточном коде часто кажется, что инструкции выполняются ровно в том порядке, в котором написаны. В многопоточном коде это иллюзия. Между исходным кодом и реальной памятью стоят компилятор, микроархитектура CPU, кеши, store buffers, invalidation queues и протоколы когерентности.
+    </div>
+  </section>
+
+  <section id="numa">
+    <div class="section-label">// 01</div>
+    <h2><span class="icon">🧩</span>NUMA: зачем вообще разделять память</h2>
+
+    <p><strong>NUMA</strong> расшифровывается как <strong>Non-Uniform Memory Access</strong>, то есть «неодинаковый доступ к памяти». Это архитектура, где разные процессоры/сокеты имеют разную стоимость доступа к разным участкам RAM.</p>
+
+    <div class="card">
+      <div class="card-title">Мотивация</div>
+      <p>Если процессоров и ядер мало, можно представить одну общую память, к которой все обращаются примерно одинаково. Но при большом числе процессоров такая схема становится дорогой: все борются за один общий контроллер памяти, растут задержки, усложняется синхронизация, шины и контроллеры становятся узким местом.</p>
+    </div>
+
+    <div class="diagram">
+      UMA, простая модель:<br>
+      CPU0 ─┐<br>
+      CPU1 ─┼── общий контроллер памяти ── DRAM<br>
+      CPU2 ─┘<br><br>
+      NUMA, масштабируемая модель:<br>
+      Socket 0: cores + L3 + memory controller ── local DRAM 0<br>
+          │<br>
+          ├── interconnect ── Socket 1: cores + L3 + memory controller ── local DRAM 1<br>
+          │<br>
+          └── interconnect ── Socket 2: cores + L3 + memory controller ── local DRAM 2
+    </div>
+
+    <h3>Что такое NUMA node / NUMA socket</h3>
+    <p><strong>NUMA node</strong> — это обычно группа ядер, их локальные кеши/часть общего кеша и ближайшая к ним память. В серверной машине это часто совпадает с физическим сокетом процессора, поэтому говорят <strong>NUMA socket</strong>.</p>
+
+    <div class="grid-2">
+      <div class="badge-card">
+        <span class="badge green">Локальная память</span>
+        <strong>Память своего NUMA-узла</strong>
+        <p>Доступ быстрее: ядро обращается к DRAM через свой локальный контроллер памяти.</p>
+      </div>
+      <div class="badge-card">
+        <span class="badge amber">Удалённая память</span>
+        <strong>Память другого NUMA-узла</strong>
+        <p>Доступ медленнее: запрос идёт через межсокетное соединение к другому контроллеру памяти.</p>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>Важно для КР:</strong> NUMA не значит, что ядро не может прочитать чужую память. Может. Но время доступа неравномерно: локальная память быстрее, удалённая медленнее.
+    </div>
+
+    <h3>Почему общие кеши локальны для сокета</h3>
+    <p>Внутри сокета несколько ядер обычно делят последний уровень кеша, например L3. Но L3 одного сокета не является «бесплатно общим» для другого сокета. Если ядро на сокете 0 хочет данные, которые находятся ближе к сокету 1, придётся идти через межсокетную связь.</p>
+
+    <div class="card">
+      <div class="card-title">Практический вывод</div>
+      <p>Если поток работает с данными, которые лежат в памяти его NUMA-узла, всё хорошо. Если поток постоянно обращается к памяти другого узла, программа может тормозить даже при большом числе ядер.</p>
+    </div>
+  </section>
+
+  <section id="ccnuma">
+    <div class="section-label">// 02</div>
+    <h2><span class="icon">🔗</span>ccNUMA: cache-coherent NUMA</h2>
+
+    <p><strong>ccNUMA</strong> означает <strong>cache-coherent NUMA</strong>. Это NUMA-система, в которой кеши разных ядер/сокетов остаются когерентными: если одно ядро изменило данные, другие ядра не должны бесконечно читать старую версию из своих кешей.</p>
+
+    <div class="card">
+      <div class="card-title">Зачем нужна когерентность</div>
+      <p>Представь переменную <code>x</code>. Ядро A прочитало <code>x</code> и положило её в свой кеш. Потом ядро B изменило <code>x</code>. Если ничего не делать, ядро A может продолжить читать старое значение из кеша. Когерентность нужна, чтобы такие копии согласовывались.</p>
+    </div>
+
+    <div class="pipeline">
+      <div class="pipeline-step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <strong>Ядро читает память</strong>
+          <span>Кеш-линия попадает в локальный кеш ядра.</span>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <strong>Другое ядро хочет записать в эту же кеш-линию</strong>
+          <span>Протокол когерентности должен убедиться, что старые копии у других ядер больше не считаются валидными.</span>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <strong>Инвалидация или передача владения</strong>
+          <span>Другие кеши помечают свою копию как недействительную или меняют состояние кеш-линии.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="note warn">
+      <strong>Ловушка:</strong> cache-coherent не означает «быстро». ccNUMA гарантирует согласованность кешей, но удалённые обращения и межсокетные инвалидации всё равно дорогие.
+    </div>
+  </section>
+
+  <section id="compiler-reordering">
+    <div class="section-label">// 03</div>
+    <h2><span class="icon">🧠</span>Compiler memory reordering</h2>
+
+    <p><strong>Compiler reordering</strong> — это переупорядочивание операций компилятором. Компилятор не обязан сохранять буквальный порядок строк исходного кода, если в рамках однопоточной логики результат не меняется.</p>
+
+    <div class="card">
+      <div class="card-title">Почему компилятор вообще переставляет операции</div>
+      <p>Компилятор оптимизирует код: убирает лишние чтения, держит значения в регистрах, меняет порядок инструкций, чтобы лучше использовать конвейер CPU. Для обычного однопоточного кода это почти всегда полезно.</p>
+    </div>
+
+    <pre>// Наивное ожидание программиста:
+data = 42;
+ready = 1;
+
+// В другом потоке:
+if (ready) {
+    use(data);
+}</pre>
+
+    <p>Проблема: если <code>data</code> и <code>ready</code> — обычные переменные без синхронизации, компилятор и CPU могут обращаться с ними так, что другой поток увидит <code>ready = 1</code>, но ещё не увидит корректный <code>data = 42</code>.</p>
+
+    <h3>Барьер памяти для компилятора</h3>
+    <p>Конструкция <code>asm volatile ("" ::: "memory")</code> — это <strong>compiler barrier</strong>, то есть барьер для компилятора.</p>
+
+    <div class="card">
+      <div class="card-title">asm volatile ("" ::: "memory")</div>
+      <p>Пустая inline-assembly инструкция ничего не выполняет на CPU, но часть <code>"memory"</code> говорит компилятору: «считай, что память могла измениться; не переставляй обращения к памяти через этот барьер».</p>
+    </div>
+
+    <div class="note danger">
+      <strong>Критически важно:</strong> compiler barrier не является CPU barrier. Он запрещает переупорядочивание компилятором, но не обязан сбрасывать store buffer, ждать инвалидаций или запрещать аппаратные переупорядочивания.
+    </div>
+
+    <h3>Ключевое слово volatile</h3>
+    <p><code>volatile</code> говорит компилятору, что обращение к объекту имеет наблюдаемый побочный эффект и его нельзя просто выкинуть или заменить старым значением из регистра.</p>
+
+    <div class="grid-2">
+      <div class="badge-card">
+        <span class="badge green">Что volatile делает</span>
+        <strong>Влияет на оптимизации компилятора</strong>
+        <p>Заставляет реально выполнять чтения/записи volatile-объекта и не считать их обычными лишними обращениями.</p>
+      </div>
+      <div class="badge-card">
+        <span class="badge red">Что volatile не делает</span>
+        <strong>Не заменяет атомики и мьютексы</strong>
+        <p>Не гарантирует атомарность сложных операций и не задаёт полноценную межпоточную синхронизацию в C/C++.</p>
+      </div>
+    </div>
+
+    <div class="note warn">
+      <strong>Типичная ловушка:</strong> <code>volatile int x</code> не делает <code>x++</code> атомарным. Операция <code>x++</code> всё равно раскладывается на read → modify → write.
+    </div>
+  </section>
+
+  <section id="cpu-reordering">
+    <div class="section-label">// 04</div>
+    <h2><span class="icon">⚙️</span>CPU memory reordering</h2>
+
+    <p>Даже если компилятор не переставил операции, это может сделать сам процессор. Современные CPU выполняют инструкции не строго «по одной сверху вниз», а стараются выполнять их максимально эффективно.</p>
+
+    <h3>Store buffers</h3>
+    <p><strong>Store buffer</strong> — буфер записей. Когда ядро выполняет запись в память, оно не всегда ждёт, пока запись физически дойдёт до кеша/памяти и станет видна всем ядрам. Запись может временно попасть в store buffer, а ядро продолжит выполнять следующие инструкции.</p>
+
+    <div class="card">
+      <div class="card-title">Зачем нужен store buffer</div>
+      <p>Запись в общую память может быть дорогой: надо получить владение кеш-линией, инвалидировать копии у других ядер, дождаться протокола когерентности. Store buffer позволяет ядру не простаивать всё это время.</p>
+    </div>
+
+    <div class="diagram">
+      Core 0:<br>
+      store x = 1  ── попадает в store buffer<br>
+      load  y      ── может выполниться до того, как x станет виден другим ядрам<br><br>
+      Следствие: другие ядра могут временно не видеть запись x = 1.
+    </div>
+
+    <h3>Invalidation queues</h3>
+    <p><strong>Invalidation queue</strong> — очередь входящих сообщений об инвалидации кеш-линий. Когда другое ядро записывает в кеш-линию, твоя старая копия должна стать недействительной. Но обработка таких сообщений тоже может буферизоваться.</p>
+
+    <div class="note">
+      <strong>Интуиция:</strong> store buffer ускоряет собственные записи, а invalidation queue позволяет не останавливаться мгновенно на обработке всех чужих инвалидаций. Оба механизма полезны для скорости, но усложняют модель памяти.
+    </div>
+
+    <h3>4 типа переупорядочивания</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Тип</th><th>Что означает</th><th>Пример</th><th>Почему опасно</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>StoreStore</td>
+            <td>Две записи могут стать видимыми в другом порядке</td>
+            <td><code>x=1; y=1;</code></td>
+            <td>Другой поток может увидеть <code>y=1</code>, но ещё не увидеть <code>x=1</code>.</td>
+          </tr>
+          <tr>
+            <td>StoreLoad</td>
+            <td>Запись может быть отложена, а последующее чтение выполнено раньше</td>
+            <td><code>x=1; r=y;</code></td>
+            <td>Классическая проблема store buffer; часто самый дорогой порядок для запрета.</td>
+          </tr>
+          <tr>
+            <td>LoadStore</td>
+            <td>Чтение и последующая запись могут наблюдаться не так, как ожидается</td>
+            <td><code>r=x; y=1;</code></td>
+            <td>Опасно в алгоритмах синхронизации и lock-free коде.</td>
+          </tr>
+          <tr>
+            <td>LoadLoad</td>
+            <td>Два чтения могут быть фактически выполнены/увидены не в исходном порядке</td>
+            <td><code>r1=x; r2=y;</code></td>
+            <td>Можно увидеть новый указатель, но старые данные по нему, если нет acquire-барьера.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>CPU memory barriers: mfence, lfence, sfence</h3>
+    <p>Аппаратные барьеры памяти — это инструкции, которые ограничивают переупорядочивание на уровне CPU.</p>
+
+    <div class="grid-3">
+      <div class="badge-card">
+        <span class="badge red">mfence</span>
+        <strong>Memory fence</strong>
+        <p>Полный барьер для операций памяти. Грубо: не даёт чтениям/записям пересекать границу барьера.</p>
+      </div>
+      <div class="badge-card">
+        <span class="badge cyan">lfence</span>
+        <strong>Load fence</strong>
+        <p>Барьер для чтений. Используется, когда важно упорядочить load-операции.</p>
+      </div>
+      <div class="badge-card">
+        <span class="badge amber">sfence</span>
+        <strong>Store fence</strong>
+        <p>Барьер для записей. Используется, когда важно упорядочить store-операции.</p>
+      </div>
+    </div>
+
+    <div class="note warn">
+      <strong>Важно:</strong> барьеры памяти не «делают код быстрее». Наоборот, они часто замедляют выполнение, потому что запрещают CPU некоторые оптимизации. Их ставят не ради скорости, а ради корректности.
+    </div>
+  </section>
+
+  <section id="rmw">
+    <div class="section-label">// 05</div>
+    <h2><span class="icon">🔩</span>Сложные операции: read → modify → write</h2>
+
+    <p>Многие операции, которые в исходном коде выглядят как одна команда, внутри процессора раскладываются на несколько шагов. Общая схема: <strong>read → modify → write</strong>, сокращённо <strong>RMW</strong>.</p>
+
+    <div class="pipeline">
+      <div class="pipeline-step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <strong>Read</strong>
+          <span>Прочитать старое значение из регистра/кеша/памяти.</span>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <strong>Modify</strong>
+          <span>Изменить значение внутри ядра: прибавить, сравнить, заменить и т. д.</span>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <strong>Write</strong>
+          <span>Записать новое значение обратно.</span>
+        </div>
+      </div>
+    </div>
+
+    <h3>Почему x++ не атомарен</h3>
+    <pre>// Два потока одновременно делают:
+x++;
+
+// На уровне идеи это:
+tmp = x;      // read
+tmp = tmp+1;  // modify
+x = tmp;      // write</pre>
+
+    <p>Если два ядра одновременно прочитали старое значение <code>x = 10</code>, оба посчитали <code>11</code> и оба записали <code>11</code>, то один инкремент потерялся. Поэтому <code>x++</code> без синхронизации — не атомарная операция.</p>
+
+    <h3>xadd и cmpxchg</h3>
+    <div class="grid-2">
+      <div class="badge-card">
+        <span class="badge cyan">xadd</span>
+        <strong>Exchange and add</strong>
+        <p>Атомарноподобная RMW-инструкция: взять старое значение, прибавить новое, вернуть старое. Часто используется для атомарных счётчиков.</p>
+      </div>
+      <div class="badge-card">
+        <span class="badge pink">cmpxchg</span>
+        <strong>Compare and exchange</strong>
+        <p>Сравнить текущее значение с ожидаемым; если совпало — заменить. База для многих lock-free алгоритмов.</p>
+      </div>
+    </div>
+
+    <h3>Префикс lock</h3>
+    <p>Префикс <code>lock</code> перед инструкцией нужен, чтобы гарантировать атомарность сложной RMW-операции относительно других ядер.</p>
+
+    <div class="card">
+      <div class="card-title">Что делает lock концептуально</div>
+      <p>Он заставляет процессор выполнить RMW-операцию так, чтобы другие ядра не могли «вклиниться» своими микрооперациями к этой же памяти между read, modify и write. На современных CPU это обычно связано не с буквальной блокировкой всей шины, а с эксклюзивным владением кеш-линией и протоколом когерентности.</p>
+    </div>
+
+    <div class="note danger">
+      <strong>Ловушка:</strong> одна ассемблерная инструкция не всегда означает одну неделимую операцию на уровне памяти. Если инструкция делает RMW, без <code>lock</code> другие ядра могут наблюдать конфликтующие действия.
+    </div>
+  </section>
+
+  <section id="atomics">
+    <div class="section-label">// 06</div>
+    <h2><span class="icon">⚛️</span>Atomics: зачем они нужны в высокоуровневых языках</h2>
+
+    <p>Атомарные операции в языках вроде C/C++ нужны не только для того, чтобы «операция не разорвалась пополам». Их роль шире.</p>
+
+    <div class="grid-3">
+      <div class="badge-card">
+        <span class="badge green">1</span>
+        <strong>Запрещают опасные оптимизации компилятора</strong>
+        <p>Компилятор обязан учитывать правила выбранной memory model.</p>
+      </div>
+      <div class="badge-card">
+        <span class="badge cyan">2</span>
+        <strong>Запрещают нужные виды CPU reordering</strong>
+        <p>Генерируются инструкции/барьеры, которые заставляют CPU соблюдать нужный порядок.</p>
+      </div>
+      <div class="badge-card">
+        <span class="badge amber">3</span>
+        <strong>Гарантируют атомарность сложных операций</strong>
+        <p>Например, атомарный инкремент или compare-exchange не теряет обновления при гонке потоков.</p>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>Формулировка для ответа:</strong> атомики — это договор между программистом, компилятором и процессором о том, какие операции должны быть атомарными и какие переупорядочивания запрещены.
+    </div>
+
+    <h3>Relaxed</h3>
+    <p><strong>Relaxed</strong> — самый слабый режим. Он гарантирует атомарность самой операции, но почти не гарантирует порядок относительно других операций памяти.</p>
+
+    <div class="card">
+      <div class="card-title">Когда relaxed может быть достаточно</div>
+      <p>Например, для счётчика статистики: важно, чтобы инкременты не терялись, но не важно, в каком порядке относительно других данных они видны.</p>
+    </div>
+
+    <div class="note warn">
+      <strong>Ловушка:</strong> relaxed atomic не означает «обычная переменная». Атомарность есть. Но использовать relaxed как флаг готовности данных обычно нельзя: порядок публикации данных он не гарантирует.</div>
+
+    <h3>Acquire / Release</h3>
+    <p><strong>Acquire/Release</strong> — модель для передачи данных между потоками через флаг, указатель, очередь, lock-free структуру и т. д.</p>
+
+    <div class="grid-2">
+      <div class="badge-card">
+        <span class="badge green">Release</span>
+        <strong>Публикация данных</strong>
+        <p>Все записи до release-записи не должны «уехать» после неё. Поток как бы говорит: «данные готовы».</p>
+      </div>
+      <div class="badge-card">
+        <span class="badge cyan">Acquire</span>
+        <strong>Получение данных</strong>
+        <p>Все чтения после acquire-чтения не должны «уехать» до него. Поток как бы говорит: «я увидел флаг, теперь читаю данные».</p>
+      </div>
+    </div>
+
+    <pre>// Поток-писатель:
+data = 42;
+ready.store(true, memory_order_release);
+
+// Поток-читатель:
+if (ready.load(memory_order_acquire)) {
+    // здесь должен быть виден data = 42
+    use(data);
+}</pre>
+
+    <div class="note success">
+      <strong>Интуиция:</strong> release закрывает «пакет» записей, acquire открывает этот пакет на другой стороне. Если acquire увидел значение, записанное release-операцией, данные до release становятся видны после acquire.
+    </div>
+
+    <h3>Sequentially consistent</h3>
+    <p><strong>Sequentially consistent</strong>, или <strong>seq_cst</strong>, — самый строгий и обычно самый понятный режим. Он гарантирует атомарность и глобальный порядок атомарных операций, который согласуется с порядком внутри каждого потока.</p>
+
+    <div class="card">
+      <div class="card-title">Почему seq_cst удобен</div>
+      <p>О нём проще рассуждать: можно представить, что все seq_cst-атомики выстроены в одну общую очередь. Но за простоту иногда приходится платить производительностью.</p>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Memory order</th><th>Атомарность</th><th>Порядок</th><th>Типичный смысл</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Relaxed</td>
+            <td>Да</td>
+            <td>Почти не гарантируется</td>
+            <td>Счётчики, статистика, независимые флаги без публикации данных.</td>
+          </tr>
+          <tr>
+            <td>Acquire</td>
+            <td>Да</td>
+            <td>Запрещает последующим операциям уехать до acquire</td>
+            <td>Чтение флага/указателя перед использованием опубликованных данных.</td>
+          </tr>
+          <tr>
+            <td>Release</td>
+            <td>Да</td>
+            <td>Запрещает предыдущим операциям уехать после release</td>
+            <td>Публикация данных через флаг/указатель.</td>
+          </tr>
+          <tr>
+            <td>Seq_cst</td>
+            <td>Да</td>
+            <td>Строгий глобальный порядок атомиков</td>
+            <td>Самый простой для рассуждений, но потенциально дороже.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="connection">
+    <div class="section-label">// 07</div>
+    <h2><span class="icon">🧪</span>Как всё это связано: от NUMA до atomics</h2>
+
+    <p>Темы семинара связаны одной идеей: чем больше ядер и чем сложнее память, тем сложнее сделать вид, что всё работает как в простом однопоточном коде.</p>
+
+    <div class="pipeline">
+      <div class="pipeline-step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <strong>NUMA</strong>
+          <span>Память распределена физически, локальный доступ быстрее удалённого.</span>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <strong>Кеши и ccNUMA</strong>
+          <span>Кеши должны оставаться согласованными, даже если данные гуляют между сокетами.</span>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <strong>Store buffers / invalidation queues</strong>
+          <span>CPU буферизует записи и инвалидации, чтобы не простаивать.</span>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <strong>Memory barriers</strong>
+          <span>Когда порядок критичен, нужны барьеры, которые ограничивают оптимизации.</span>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <strong>Atomics</strong>
+          <span>Высокоуровневый способ получить атомарность и нужную модель видимости памяти.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="note warn">
+      <strong>Главная ошибка новичка:</strong> думать, что если один поток написал <code>data</code>, а потом <code>ready = true</code>, то другой поток, увидев <code>ready</code>, автоматически увидит и <code>data</code>. Без корректной синхронизации это не гарантировано.</div>
+  </section>
+
+  <section id="practice">
+    <div class="section-label">// 08</div>
+    <h2><span class="icon">🛠️</span>Практические советы</h2>
+
+    <div class="grid-2">
+      <div class="badge-card">
+        <span class="badge green">NUMA-aware</span>
+        <strong>Держать данные рядом с потоком</strong>
+        <p>Горячие данные лучше размещать в памяти того NUMA-узла, где выполняется поток, который с ними работает.</p>
+      </div>
+      <div class="badge-card">
+        <span class="badge cyan">Affinity</span>
+        <strong>Не гонять потоки между сокетами</strong>
+        <p>Миграция потока может привести к тому, что его данные останутся на старом узле, а он начнёт читать их удалённо.</p>
+      </div>
+      <div class="badge-card">
+        <span class="badge amber">Atomics wisely</span>
+        <strong>Выбирать минимально достаточный memory order</strong>
+        <p>Seq_cst проще, но может быть дороже. Relaxed быстрее, но не подходит для публикации данных.</p>
+      </div>
+      <div class="badge-card">
+        <span class="badge red">No volatile sync</span>
+        <strong>Не использовать volatile как замену синхронизации</strong>
+        <p>Для межпоточного кода нужны атомики, мьютексы или другие корректные примитивы.</p>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>Для низкоуровневого кода:</strong> важно понимать, где нужен compiler barrier, где CPU fence, где атомик, а где достаточно обычной переменной под защитой мьютекса.</div>
+  </section>
+
+  <section id="cheatsheet">
+    <div class="section-label">// 09</div>
+    <h2><span class="icon">📌</span>Мини-шпаргалка</h2>
+
+    <div class="cheatsheet">
+      <ul class="list">
+        <li><strong>NUMA</strong> — память распределена по узлам; локальная память быстрее удалённой.</li>
+        <li><strong>NUMA node/socket</strong> — группа ядер + локальный L3/часть кешей + локальный DRAM-контроллер.</li>
+        <li><strong>ccNUMA</strong> — NUMA, где кеши разных ядер/сокетов остаются когерентными.</li>
+        <li><strong>Compiler reordering</strong> — компилятор может переставлять обращения к памяти, если в однопоточной модели это не меняет результат.</li>
+        <li><strong>asm volatile("" ::: "memory")</strong> — барьер для компилятора, не аппаратный fence.</li>
+        <li><strong>volatile</strong> — не атомик и не синхронизация между потоками.</li>
+        <li><strong>Store buffer</strong> — запись может быть отложена и стать видимой другим ядрам позже.</li>
+        <li><strong>Invalidation queue</strong> — обработка сообщений об инвалидации кеш-линий может буферизоваться.</li>
+        <li><strong>mfence/lfence/sfence</strong> — аппаратные барьеры для ограничения CPU reordering.</li>
+        <li><strong>RMW</strong> — read → modify → write; без атомарности такие операции могут конфликтовать.</li>
+        <li><strong>lock</strong> — префикс, делающий RMW-инструкцию атомарной относительно других ядер.</li>
+        <li><strong>Relaxed</strong> — атомарность без сильного порядка.</li>
+        <li><strong>Acquire/Release</strong> — классическая модель публикации и получения данных.</li>
+        <li><strong>Seq_cst</strong> — самый строгий и самый простой для рассуждений порядок.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <div id="questions" class="questions-section">
+    <div class="section-label" style="color:var(--danger);">// вопросы на понимание</div>
+    <h2 style="color:#fff;"><span class="icon">🎯</span>Вопросы на понимание</h2>
+
+    <div class="q-item"><div class="q-num">Q01</div><div class="q-text"><strong>Что означает NUMA и чем NUMA отличается от UMA?</strong><div class="q-hint">→ UMA: все процессоры имеют примерно одинаковую стоимость доступа к памяти. NUMA: память распределена по узлам, локальная память быстрее удалённой.</div></div></div>
+
+    <div class="q-item"><div class="q-num">Q02</div><div class="q-text"><strong>Почему при большом количестве процессоров выгодно разделять память по сокетам?</strong><div class="q-hint">→ Чтобы уменьшить конкуренцию за один общий контроллер памяти/шину и лучше масштабировать систему. Каждый сокет получает свой контроллер DRAM.</div></div></div>
+
+    <div class="q-item"><div class="q-num">Q03</div><div class="q-text"><strong>Может ли ядро одного NUMA node обращаться к памяти другого node?</strong><div class="q-hint">→ Да, может. Но это удалённый доступ: он идёт через межсокетное соединение и обычно медленнее локального.</div></div></div>
+
+    <div class="q-item"><div class="q-num">Q04</div><div class="q-text"><strong>Что означает ccNUMA?</strong><div class="q-hint">→ Cache-coherent NUMA: память неравномерная по стоимости доступа, но кеши разных ядер/сокетов поддерживаются согласованными.</div></div></div>
+
+    <div class="q-item"><div class="q-num">Q05</div><div class="q-text"><strong>Если NUMA cache-coherent, значит ли это, что удалённая память такая же быстрая, как локальная?</strong><div class="q-hint">→ Нет. Когерентность — про корректность видимости кешированных данных, а не про одинаковую скорость доступа.</div></div></div>
+
+    <div class="q-item"><div class="q-num">Q06</div><div class="q-text"><strong>Что такое compiler memory reordering?</strong><div class="q-hint">→ Компилятор может менять порядок чтений/записей, если считает, что в рамках однопоточного выполнения результат не изменится.</div></div></div>
+
+    <div class="q-item"><div class="q-num">Q07</div><div class="q-text"><strong>Что делает <code>asm volatile ("" ::: "memory")</code>?</strong><div class="q-hint">→ Это compiler barrier. Он запрещает компилятору переупорядочивать обращения к памяти через эту точку, но сам CPU-инструкций барьера не выполняет.</div></div></div>
+
+    <div class="q-item"><div class="q-num">Q08</div><div class="q-text"><strong>Почему compiler barrier не равен CPU memory barrier?</strong><div class="q-hint">→ Compiler barrier влияет только на генерацию кода компилятором. CPU всё ещё может использовать store buffer, out-of-order execution и другие аппаратные механизмы.</div></div></div>
+
+    <div class="q-item"><div class="q-num">Q09</div><div class="q-text"><strong>Делает ли <code>volatile</code> переменную атомарной?</strong><div class="q-hint">→ Нет. volatile запрещает некоторые оптимизации компилятора, но не гарантирует атомарность RMW-операций и не задаёт межпоточную синхронизацию.</div></div></div>
+
+    <div class="q-item"><div class="q-num">Q10</div><div class="q-text"><strong>Почему <code>volatile int x; x++;</code> не является атомарным?</strong><div class="q-hint">→ Потому что инкремент — это read → modify → write. Два потока могут прочитать одно старое значение и потерять один инкремент.</div></div></div>
+
+    <div class="q-item"><div class="q-num">Q11</div><div class="q-text"><strong>Что такое store buffer и зачем он нужен?</strong><div class="q-hint">→ Буфер записей ядра. Позволяет CPU продолжать работу, не дожидаясь, пока запись станет видна всем ядрам через кеш-когерентность.</div></div></div>
+
+    <div class="q-item"><div class="q-num">Q12</div><div class="q-text"><strong>Как store buffer может сломать наивные ожидания программиста?</strong><div class="q-hint">→ Поток может выполнить запись, затем чтение, но запись ещё будет сидеть в store buffer и не станет видна другим ядрам.</div></div></div>
+
+    <div class="q-item"><div class="q-num">Q13</div><div class="q-text"><strong>Что такое invalidation queue?</strong><div class="q-hint">→ Очередь сообщений о том, что кеш-линия должна быть инвалидирована. Она помогает производительности, но добавляет задержки в видимость изменений.</div></div></div>
+
+    <div class="q-item"><div class="q-num">Q14</div><div class="q-text"><strong>Назови четыре типа memory reordering.</strong><div class="q-hint">→ StoreStore, StoreLoad, LoadStore, LoadLoad.</div></div></div>
+
+    <div class="q-item"><div class="q-num">Q15</div><div class="q-text"><strong>Какой тип reordering часто считается особенно неприятным?</strong><div class="q-hint">→ StoreLoad: запись может быть отложена, а последующее чтение выполнено раньше с точки зрения видимости.</div></div></div>
+
+    <div class="q-item"><div class="q-num">Q16</div><div class="q-text"><strong>Чем отличаются <code>mfence</code>, <code>lfence</code>, <code>sfence</code>?</strong><div class="q-hint">→ mfence — полный memory fence; lfence — барьер для load; sfence — барьер для store.</div></div></div>
+
+    <div class="q-item"><div class="q-num">Q17</div><div class="q-text"><strong>Что означает RMW?</strong><div class="q-hint">→ Read → Modify → Write: прочитать значение, изменить его, записать обратно. Пример: инкремент, xadd, cmpxchg.</div></div></div>
+
+    <div class="q-item"><div class="q-num">Q18</div><div class="q-text"><strong>Зачем нужен префикс <code>lock</code>?</strong><div class="q-hint">→ Чтобы сделать RMW-инструкцию атомарной относительно других ядер: никто не должен вклиниться между read, modify и write к той же памяти.</div></div></div>
+
+    <div class="q-item"><div class="q-num">Q19</div><div class="q-text"><strong>Что делает <code>cmpxchg</code> и почему он важен?</strong><div class="q-hint">→ Compare-and-exchange: если текущее значение равно ожидаемому, заменить его новым. Это базовая операция для lock-free алгоритмов.</div></div></div>
+
+    <div class="q-item"><div class="q-num">Q20</div><div class="q-text"><strong>Какие три функции атомарных операций в C/C++?</strong><div class="q-hint">→ Запрещают нужные переупорядочивания компилятором, запрещают нужные переупорядочивания CPU, гарантируют атомарность сложных операций.</div></div></div>
+
+    <div class="q-item"><div class="q-num">Q21</div><div class="q-text"><strong>Что гарантирует relaxed atomic?</strong><div class="q-hint">→ Атомарность самой операции, но не общий порядок относительно других операций памяти.</div></div></div>
+
+    <div class="q-item"><div class="q-num">Q22</div><div class="q-text"><strong>Почему relaxed atomic не подходит как флаг готовности данных?</strong><div class="q-hint">→ Потому что другой поток может увидеть флаг, но не обязан увидеть все записи данных, которые логически были до установки флага.</div></div></div>
+
+    <div class="q-item"><div class="q-num">Q23</div><div class="q-text"><strong>Что такое release?</strong><div class="q-hint">→ Операция публикации: записи до release не должны переехать после неё. Используется, чтобы показать другим потокам, что данные готовы.</div></div></div>
+
+    <div class="q-item"><div class="q-num">Q24</div><div class="q-text"><strong>Что такое acquire?</strong><div class="q-hint">→ Операция получения: чтения/записи после acquire не должны переехать до него. Если acquire увидел release, можно читать опубликованные данные.</div></div></div>
+
+    <div class="q-item"><div class="q-num">Q25</div><div class="q-text"><strong>Чем seq_cst отличается от acquire/release?</strong><div class="q-hint">→ Seq_cst задаёт более строгий глобальный порядок всех sequentially consistent атомарных операций. Acquire/release задаёт направленную синхронизацию публикации и получения.</div></div></div>
+
+    <div class="q-item"><div class="q-num">Q26</div><div class="q-text"><strong>Почему барьеры памяти могут ухудшить производительность?</strong><div class="q-hint">→ Они ограничивают оптимизации CPU, могут заставлять ждать завершения буферизованных операций и мешают out-of-order выполнению.</div></div></div>
+
+    <div class="q-item"><div class="q-num">Q27</div><div class="q-text"><strong>Почему обычный мьютекс часто проще и безопаснее ручных atomics?</strong><div class="q-hint">→ Мьютекс уже содержит нужную синхронизацию и понятную модель владения. Ручные atomics требуют точно понимать memory order и легко ломаются.</div></div></div>
+
+    <div class="q-item"><div class="q-num">Q28</div><div class="q-text"><strong>Главная мысль конспекта одним предложением?</strong><div class="q-hint">→ В многопроцессорных системах порядок и видимость операций памяти не очевидны; для корректности нужны NUMA-aware размещение, барьеры и атомарные операции с правильной memory model.</div></div></div>
+
+  </div>
+
+</div>
+
+<script>
+  const progressBar = document.getElementById('progressBar');
+  const sectionIndicator = document.getElementById('sectionIndicator');
+  const trackedSections = Array.from(document.querySelectorAll('section, #questions'));
+
+  const sectionNames = trackedSections.map((section) => {
+    const label = section.querySelector('h2');
+    return label ? label.textContent.replace(/\s+/g, ' ').trim() : 'Вопросы на понимание';
+  });
+
+  function updateReadingUI() {
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    progressBar.style.width = `${Math.min(100, Math.max(0, progress))}%`;
+
+    let currentIndex = 0;
+    const checkpoint = scrollTop + 140;
+    trackedSections.forEach((section, index) => {
+      if (section.offsetTop <= checkpoint) currentIndex = index;
+    });
+
+    sectionIndicator.innerHTML = `<strong>Раздел ${currentIndex} / ${trackedSections.length - 1}</strong>: ${sectionNames[currentIndex]}`;
+  }
+
+  window.addEventListener('scroll', updateReadingUI, { passive: true });
+  window.addEventListener('resize', updateReadingUI);
+  updateReadingUI();
+</script>
+
+</body>
+</html>

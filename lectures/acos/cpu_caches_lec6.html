@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Кеши процессора — конспект по АКОС</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Unbounded:wght@400;700;900&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0e14;
+    --surface: #111520;
+    --surface2: #161c2a;
+    --surface3: #1b2334;
+    --border: #1e2840;
+    --accent: #8b5cf6;
+    --accent2: #22d3ee;
+    --accent3: #f59e0b;
+    --danger: #ef4444;
+    --success: #10b981;
+    --pink: #ec4899;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --text-dim: #94a3b8;
+    --mono: 'JetBrains Mono', monospace;
+    --display: 'Unbounded', sans-serif;
+    --body: 'Noto Sans', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 15px;
+    line-height: 1.75;
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.7;
+  }
+
+  .wrapper {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 60px 32px 100px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Reading progress */
+  .reading-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: rgba(148,163,184,0.12);
+    z-index: 20;
+  }
+
+  .reading-progress__bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent3));
+    box-shadow: 0 0 18px rgba(139,92,246,0.55);
+    transition: width 0.08s linear;
+  }
+
+  .section-progress {
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    z-index: 15;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    background: rgba(17,21,32,0.86);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 9px 13px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+  }
+
+  .source-note {
+    background: linear-gradient(135deg, rgba(139,92,246,0.08), rgba(34,211,238,0.045));
+    border: 1px solid rgba(139,92,246,0.25);
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-top: 22px;
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+
+
+  header {
+    margin-bottom: 56px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--border);
+    animation: fadeDown 0.55s ease both;
+  }
+
+  .meta {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent2);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  h1 {
+    font-family: var(--display);
+    font-size: clamp(30px, 5vw, 48px);
+    font-weight: 900;
+    line-height: 1.12;
+    letter-spacing: -0.03em;
+    color: #fff;
+    margin-bottom: 14px;
+  }
+
+  h1 span { color: var(--accent); }
+
+  .subtitle {
+    color: var(--text-dim);
+    font-size: 15px;
+    max-width: 700px;
+  }
+
+  .toc {
+    background: linear-gradient(135deg, rgba(139,92,246,0.08), rgba(34,211,238,0.04));
+    border: 1px solid rgba(139,92,246,0.28);
+    border-radius: 16px;
+    padding: 24px 28px;
+    margin-bottom: 48px;
+  }
+
+  .toc-title {
+    font-family: var(--display);
+    font-size: 15px;
+    color: #fff;
+    margin-bottom: 14px;
+  }
+
+  .toc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 10px 18px;
+  }
+
+  .toc a {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 14px;
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+    transition: color 0.2s, transform 0.2s;
+  }
+
+  .toc a:hover { color: var(--accent2); transform: translateX(4px); }
+  .toc code { color: var(--accent3); }
+
+  section {
+    margin-bottom: 54px;
+    animation: fadeUp 0.45s ease both;
+  }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  h2 {
+    font-family: var(--display);
+    font-size: 21px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 22px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  h2 .icon {
+    width: 34px;
+    height: 34px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    flex-shrink: 0;
+  }
+
+  h3 {
+    font-family: var(--display);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--accent2);
+    margin: 28px 0 12px;
+    letter-spacing: 0.02em;
+  }
+
+  h4 {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent3);
+    margin: 18px 0 8px;
+  }
+
+  p { margin-bottom: 12px; color: var(--text-dim); }
+  strong { color: var(--text); }
+
+  code {
+    font-family: var(--mono);
+    font-size: 12px;
+    background: rgba(139,92,246,0.1);
+    border: 1px solid rgba(139,92,246,0.23);
+    color: var(--accent2);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 21px 24px;
+    margin-bottom: 16px;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .card:hover {
+    border-color: rgba(139,92,246,0.65);
+    transform: translateX(4px);
+  }
+
+  .card-title {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent3);
+    margin-bottom: 8px;
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+    margin: 16px 0;
+  }
+
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 14px;
+    margin: 16px 0;
+  }
+
+  .badge-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 17px;
+  }
+
+  .badge-card .badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 11px;
+    background: rgba(139,92,246,0.15);
+    color: var(--accent);
+    border: 1px solid rgba(139,92,246,0.35);
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 9px;
+  }
+
+  .badge.amber { background: rgba(245,158,11,0.15); color: var(--accent3); border-color: rgba(245,158,11,0.3); }
+  .badge.cyan  { background: rgba(34,211,238,0.15); color: var(--accent2); border-color: rgba(34,211,238,0.3); }
+  .badge.red   { background: rgba(239,68,68,0.15); color: var(--danger); border-color: rgba(239,68,68,0.3); }
+  .badge.green { background: rgba(16,185,129,0.15); color: var(--success); border-color: rgba(16,185,129,0.3); }
+  .badge.pink  { background: rgba(236,72,153,0.15); color: var(--pink); border-color: rgba(236,72,153,0.3); }
+
+  .badge-card strong {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 5px;
+  }
+
+  .badge-card p { font-size: 13.5px; margin: 0; }
+
+  .note {
+    background: rgba(139,92,246,0.075);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 9px 9px 0;
+    padding: 15px 18px;
+    margin: 17px 0;
+    font-size: 14px;
+    color: var(--text-dim);
+  }
+
+  .note.warn {
+    background: rgba(245,158,11,0.075);
+    border-left-color: var(--accent3);
+  }
+
+  .note.danger {
+    background: rgba(239,68,68,0.075);
+    border-left-color: var(--danger);
+  }
+
+  .note.success {
+    background: rgba(16,185,129,0.075);
+    border-left-color: var(--success);
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+    margin: 17px 0;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  th {
+    background: var(--surface2);
+    padding: 11px 16px;
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-dim);
+    vertical-align: top;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+  td:first-child { font-family: var(--mono); font-size: 12px; color: var(--accent3); }
+
+  ul.list {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0;
+  }
+
+  ul.list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 6px 0;
+    font-size: 14px;
+    color: var(--text-dim);
+  }
+
+  ul.list li::before {
+    content: '→';
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 12px;
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+
+  .pipeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 16px 0;
+  }
+
+  .pipeline-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 15px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .pipeline-step:last-child { border-bottom: none; }
+
+  .step-num {
+    width: 30px;
+    height: 30px;
+    background: var(--surface2);
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .step-content strong { color: var(--text); display: block; margin-bottom: 2px; font-size: 14px; }
+  .step-content span { color: var(--text-muted); font-size: 13px; }
+
+  .diagram {
+    background: linear-gradient(135deg, rgba(17,21,32,0.95), rgba(22,28,42,0.95));
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px;
+    margin: 18px 0;
+  }
+
+  .memory-stack {
+    display: grid;
+    gap: 8px;
+  }
+
+  .mem-row {
+    display: grid;
+    grid-template-columns: 120px 1fr 110px;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+
+  .mem-name {
+    font-family: var(--mono);
+    color: var(--accent2);
+    font-size: 13px;
+  }
+
+  .bar {
+    height: 10px;
+    background: rgba(148,163,184,0.18);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .bar > span {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+
+  .mem-speed {
+    font-family: var(--mono);
+    color: var(--text-dim);
+    font-size: 12px;
+    text-align: right;
+  }
+
+  .address-diagram {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr 0.8fr;
+    gap: 8px;
+    font-family: var(--mono);
+    margin: 16px 0;
+  }
+
+  .addr-part {
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    padding: 14px;
+    background: var(--surface2);
+    text-align: center;
+  }
+
+  .addr-part strong { display: block; color: #fff; margin-bottom: 5px; }
+  .addr-part span { color: var(--text-muted); font-size: 12px; }
+
+  .mesi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 12px;
+    margin: 16px 0;
+  }
+
+  .mesi-state {
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    padding: 16px;
+  }
+
+  .mesi-letter {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(139,92,246,0.15);
+    border: 1px solid rgba(139,92,246,0.35);
+    color: var(--accent2);
+    font-family: var(--display);
+    font-weight: 900;
+    margin-bottom: 10px;
+  }
+
+  .mesi-state strong { display: block; margin-bottom: 5px; }
+  .mesi-state p { font-size: 13px; margin: 0; }
+
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, var(--accent) 0%, transparent 100%);
+    margin: 42px 0;
+    opacity: 0.35;
+  }
+
+  .questions-section {
+    background: linear-gradient(135deg, rgba(239,68,68,0.065), rgba(245,158,11,0.045));
+    border: 1px solid rgba(239,68,68,0.26);
+    border-radius: 16px;
+    padding: 32px;
+    margin-top: 56px;
+  }
+
+  .questions-section h2 {
+    border-color: rgba(239,68,68,0.22);
+    margin-bottom: 24px;
+  }
+
+  .q-item {
+    display: flex;
+    gap: 14px;
+    padding: 15px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.055);
+    align-items: flex-start;
+  }
+
+  .q-item:last-child { border-bottom: none; }
+
+  .q-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--danger);
+    min-width: 34px;
+    padding-top: 2px;
+  }
+
+  .q-text {
+    font-size: 14px;
+    color: var(--text-dim);
+    flex: 1;
+  }
+
+  .q-hint {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    font-style: italic;
+  }
+
+  .cheatsheet {
+    background: rgba(16,185,129,0.055);
+    border: 1px solid rgba(16,185,129,0.24);
+    border-radius: 16px;
+    padding: 28px;
+    margin-top: 42px;
+  }
+
+  .formula {
+    font-family: var(--mono);
+    background: #0f172a;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: var(--accent2);
+    overflow-x: auto;
+    margin: 12px 0;
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  ::-webkit-scrollbar { width: 7px; height: 7px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  @media (max-width: 650px) {
+    .wrapper { padding: 40px 18px 70px; }
+    .mem-row { grid-template-columns: 1fr; gap: 8px; }
+    .mem-speed { text-align: left; }
+    .address-diagram { grid-template-columns: 1fr; }
+    .questions-section { padding: 22px; }
+    .section-progress { left: 18px; right: 18px; bottom: 14px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+<div class="reading-progress" aria-hidden="true"><div class="reading-progress__bar" id="readingProgressBar"></div></div>
+<div class="section-progress" id="sectionProgress">Раздел 1 / 11: Мотивация</div>
+<div class="wrapper">
+
+  <header>
+    <div class="meta">// АКОС · открытый конспект</div>
+    <h1>Кеши <span>процессора</span></h1>
+    <p class="subtitle">Унифицированный открытый конспект по архитектуре компьютеров и операционных систем. Материал подготовлен на основе учебных заметок и адаптирован для самостоятельного изучения: зачем нужны кеши, как они устроены, что такое кеш-линия, associativity, PIPT/VIPT, L1/L2/L3, write-back/write-through, inclusion policies, MESI и false sharing.</p>
+    <div class="source-note">Открытые Конспекты Экстремального Программирования МИФИ по архитектуре компьютера и операционным сетям. Конспект подготовлен студентами и может содержать ошибки</div>
+  </header>
+
+  <div class="toc">
+    <div class="toc-title">Навигация по конспекту</div>
+    <div class="toc-grid">
+      <a href="#motivation"><code>01</code> Мотивация: почему RAM слишком медленная</a>
+      <a href="#memory"><code>02</code> Иерархия памяти</a>
+      <a href="#cache-line"><code>03</code> Кеш-линия и locality</a>
+      <a href="#associativity"><code>04</code> Direct-mapped, associative, N-way</a>
+      <a href="#address"><code>05</code> Index / tag / offset, PIPT / VIPT</a>
+      <a href="#l1"><code>06</code> L1d и L1i</a>
+      <a href="#policies"><code>07</code> Inclusion и write policies</a>
+      <a href="#coherence"><code>08</code> Когерентность и MESI</a>
+      <a href="#false-sharing"><code>09</code> False sharing</a>
+      <a href="#practice"><code>10</code> Практические советы</a>
+      <a href="#questions"><code>11</code> Вопросы на понимание</a>
+    </div>
+  </div>
+
+  <section id="motivation">
+    <div class="section-label">// 01</div>
+    <h2><span class="icon">⚡</span>Мотивация: почему вообще нужны кеши</h2>
+
+    <p>Процессор работает очень быстро. Типовая частота современного CPU — около <strong>5 GHz</strong>. Это означает примерно:</p>
+    <div class="formula">1 такт ≈ 1 / (5 · 10⁹) секунды ≈ 0.2 ns</div>
+
+    <p>А доступ в оперативную память, то есть в <strong>DRAM</strong>, занимает примерно <strong>60–120 ns</strong>. На первый взгляд это тоже очень мало, но для процессора это огромная задержка.</p>
+
+    <div class="card">
+      <div class="card-title">Главная проблема</div>
+      <p>Если CPU работает с тактом 0.2 ns, а RAM отвечает за 100 ns, то один поход в память может стоить примерно <strong>500 тактов</strong>. Это как если бы процессор сделал запрос и очень долго простаивал, ничего полезного не делая.</p>
+    </div>
+
+    <div class="note warn">
+      <strong>Ключевая идея:</strong> кеши нужны не потому, что RAM «плохая», а потому что CPU слишком быстрый. Между скоростью процессора и скоростью памяти огромный разрыв, и кеши пытаются его спрятать.
+    </div>
+
+    <p>Кеш — это маленькая, но очень быстрая память рядом с процессором. Она хранит копии тех участков RAM, к которым процессор недавно обращался или, скорее всего, скоро обратится.</p>
+
+    <h3>Почему кеширование вообще работает?</h3>
+    <p>Потому что у программ обычно есть <strong>локальность обращений</strong>:</p>
+
+    <div class="grid-2">
+      <div class="badge-card">
+        <span class="badge cyan">Temporal locality</span>
+        <strong>Временная локальность</strong>
+        <p>Если программа недавно использовала данные, велика вероятность, что она скоро использует их снова. Пример: переменная в цикле.</p>
+      </div>
+      <div class="badge-card">
+        <span class="badge green">Spatial locality</span>
+        <strong>Пространственная локальность</strong>
+        <p>Если программа обратилась к адресу X, велика вероятность, что скоро понадобится X+1, X+2 и соседние адреса. Пример: проход по массиву.</p>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>Важно понимать:</strong> кеш не хранит «переменные» как сущности языка C/C++. Он хранит куски памяти фиксированного размера — <strong>кеш-линии</strong>. Поэтому соседние переменные могут случайно оказаться в одной кеш-линии.
+    </div>
+  </section>
+
+  <section id="memory">
+    <div class="section-label">// 02</div>
+    <h2><span class="icon">📊</span>Иерархия памяти: от регистра до DRAM</h2>
+
+    <p>Память в компьютере устроена как пирамида: чем ближе к процессору, тем быстрее, меньше и дороже; чем дальше — тем медленнее, больше и дешевле.</p>
+
+    <div class="diagram">
+      <div class="memory-stack">
+        <div class="mem-row">
+          <div class="mem-name">Register</div>
+          <div class="bar"><span style="width: 100%"></span></div>
+          <div class="mem-speed">~0.2 ns</div>
+        </div>
+        <div class="mem-row">
+          <div class="mem-name">L1 cache</div>
+          <div class="bar"><span style="width: 78%"></span></div>
+          <div class="mem-speed">0.5–1 ns</div>
+        </div>
+        <div class="mem-row">
+          <div class="mem-name">L2 cache</div>
+          <div class="bar"><span style="width: 55%"></span></div>
+          <div class="mem-speed">3–5 ns</div>
+        </div>
+        <div class="mem-row">
+          <div class="mem-name">L3 cache</div>
+          <div class="bar"><span style="width: 36%"></span></div>
+          <div class="mem-speed">10–20 ns</div>
+        </div>
+        <div class="mem-row">
+          <div class="mem-name">DRAM</div>
+          <div class="bar"><span style="width: 12%"></span></div>
+          <div class="mem-speed">60–120 ns</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Уровень</th>
+            <th>Типичный размер</th>
+            <th>Типичная скорость</th>
+            <th>Кому принадлежит</th>
+            <th>Что важно понимать</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Регистр</td>
+            <td>8 байт × N</td>
+            <td>~0.2 ns, 1 такт</td>
+            <td>per CPU / per hardware thread</td>
+            <td>Самое быстрое место. Сюда компилятор старается положить активные значения.</td>
+          </tr>
+          <tr>
+            <td>L1 cache</td>
+            <td>~32 KiB</td>
+            <td>0.5–1 ns</td>
+            <td>обычно per core</td>
+            <td>Самый быстрый кеш. Обычно разделён на L1d для данных и L1i для инструкций.</td>
+          </tr>
+          <tr>
+            <td>L2 cache</td>
+            <td>~512 KiB</td>
+            <td>3–5 ns</td>
+            <td>обычно per core</td>
+            <td>Больше L1, но медленнее. Часто служит промежуточным буфером между L1 и L3.</td>
+          </tr>
+          <tr>
+            <td>L3 cache</td>
+            <td>~32 MiB</td>
+            <td>10–20 ns</td>
+            <td>shared между ядрами</td>
+            <td>Общий кеш для нескольких ядер. Помогает обмениваться данными и снижает походы в RAM.</td>
+          </tr>
+          <tr>
+            <td>DRAM</td>
+            <td>GiB–TiB</td>
+            <td>60–120 ns</td>
+            <td>shared</td>
+            <td>Основная память. Большая, но для CPU очень медленная.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note success">
+      <strong>Как читать эту таблицу:</strong> разница между L1 и DRAM — не «в два раза», а на порядки по числу тактов ожидания. Поэтому порядок обхода массива, расположение структур и отсутствие лишних промахов по кешу реально влияют на скорость.
+    </div>
+  </section>
+
+  <section id="cache-line">
+    <div class="section-label">// 03</div>
+    <h2><span class="icon">📦</span>Кеш-линия: минимальная единица кеширования</h2>
+
+    <p><strong>Кеш-линия</strong> — минимальный кусок памяти, который кеш загружает и хранит целиком. Типичный размер кеш-линии — <strong>64 байта</strong>.</p>
+
+    <div class="card">
+      <div class="card-title">Пример</div>
+      <p>Допустим, программа читает один байт по адресу <code>0x1000</code>. Процессор обычно не загружает только этот один байт. Он загружает всю кеш-линию: например, адреса <code>0x1000..0x103F</code>, то есть 64 байта.</p>
+    </div>
+
+    <h3>Зачем грузить сразу 64 байта?</h3>
+    <p>Из-за пространственной локальности. Если ты читаешь элемент массива <code>a[i]</code>, скорее всего, скоро будешь читать <code>a[i+1]</code>, <code>a[i+2]</code> и так далее. Они лежат рядом, значит уже окажутся в кеше.</p>
+
+    <div class="grid-2">
+      <div class="badge-card">
+        <span class="badge green">Хороший случай</span>
+        <strong>Последовательный обход массива</strong>
+        <p><code>for i = 0..n</code>: соседние элементы лежат рядом. Один промах загружает целую линию, потом несколько обращений идут быстро.</p>
+      </div>
+      <div class="badge-card">
+        <span class="badge red">Плохой случай</span>
+        <strong>Прыжки по памяти</strong>
+        <p>Если программа каждый раз прыгает в далёкий участок памяти, почти каждое обращение может давать cache miss.</p>
+      </div>
+    </div>
+
+    <div class="note warn">
+      <strong>Ловушка:</strong> если ты используешь только 1 байт из каждой 64-байтной кеш-линии, то фактически тащишь из памяти много лишнего. Это плохо для производительности, потому что пропускная способность памяти расходуется впустую.
+    </div>
+  </section>
+
+  <section id="associativity">
+    <div class="section-label">// 04</div>
+    <h2><span class="icon">🧩</span>Как адрес попадает в кеш: direct-mapped, fully associative, N-way</h2>
+
+    <p>Кеш не может хранить всю RAM. Поэтому для каждого адреса нужно решить: <strong>в какое место кеша его можно положить</strong>. От этого зависит структура кеша.</p>
+
+    <h3>1. Direct-mapped cache</h3>
+    <div class="badge-card">
+      <span class="badge red">Простой, но конфликтный</span>
+      <strong>Каждая кеш-линия из памяти может попасть ровно в одно место кеша</strong>
+      <p>Плюс: очень просто и быстро искать. Минус: если два часто используемых адреса попадают в один и тот же слот кеша, они будут постоянно вытеснять друг друга.</p>
+    </div>
+
+    <div class="note danger">
+      <strong>Проблема direct-mapped:</strong> даже если кеш почти пустой, два «неудачных» адреса могут конфликтовать из-за одинакового index. Получается много промахов не потому, что кеш маленький, а потому что адреса мапятся в одно место.
+    </div>
+
+    <h3>2. Fully associative cache</h3>
+    <div class="badge-card">
+      <span class="badge cyan">Гибкий, но дорогой</span>
+      <strong>Любая кеш-линия может лежать в любом месте кеша</strong>
+      <p>Плюс: почти нет конфликтов по месту. Минус: чтобы найти линию, нужно сравнить tag сразу со множеством мест. Это сложно, дорого и плохо масштабируется.</p>
+    </div>
+
+    <h3>3. N-way set associative cache</h3>
+    <div class="badge-card">
+      <span class="badge green">Практический компромисс</span>
+      <strong>Кеш делится на sets, а внутри каждого set есть N мест — ways</strong>
+      <p>Адрес выбирает конкретный set по index, но внутри этого set линия может лежать в одном из N ways. Это сильно уменьшает конфликты по сравнению с direct-mapped, но не требует поиска по всему кешу.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Пример 8-way set associative</div>
+      <p>Если кеш 8-way, то для каждого index есть 8 возможных слотов. Адрес по-прежнему попадает только в один set, но внутри него есть 8 вариантов, куда положить кеш-линию.</p>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Тип кеша</th><th>Куда можно положить линию</th><th>Плюсы</th><th>Минусы</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Direct-mapped</td>
+            <td>Только в одно место</td>
+            <td>Простой, быстрый, дешёвый</td>
+            <td>Много conflict misses</td>
+          </tr>
+          <tr>
+            <td>Fully associative</td>
+            <td>В любое место кеша</td>
+            <td>Минимум конфликтов</td>
+            <td>Сложный и дорогой поиск</td>
+          </tr>
+          <tr>
+            <td>N-way set associative</td>
+            <td>В один set, но в любой из N ways</td>
+            <td>Хороший баланс скорости и гибкости</td>
+            <td>Конфликты всё ещё возможны</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <strong>Важно понимать:</strong> современные кеши процессора обычно именно <strong>N-way set associative</strong>. Это «лучшее из двух миров»: не так конфликтно, как direct-mapped, и не так дорого, как fully associative.
+    </div>
+  </section>
+
+  <section id="address">
+    <div class="section-label">// 05</div>
+    <h2><span class="icon">🏷️</span>Структура адреса: index, tag, offset</h2>
+
+    <p>Чтобы понять, как кеш ищет данные, нужно разделить адрес на три части: <strong>offset</strong>, <strong>index</strong> и <strong>tag</strong>.</p>
+
+    <div class="address-diagram">
+      <div class="addr-part">
+        <strong>TAG</strong>
+        <span>какая именно область памяти</span>
+      </div>
+      <div class="addr-part">
+        <strong>INDEX</strong>
+        <span>в какой set кеша идти</span>
+      </div>
+      <div class="addr-part">
+        <strong>OFFSET</strong>
+        <span>байт внутри кеш-линии</span>
+      </div>
+    </div>
+
+    <h3>Offset</h3>
+    <p><strong>Offset</strong> выбирает конкретный байт внутри кеш-линии. Если кеш-линия 64 байта, то нужно 6 бит, потому что <code>2⁶ = 64</code>.</p>
+
+    <h3>Index</h3>
+    <p><strong>Index</strong> выбирает set в кеше. Например, если в кеше 512 sets, нужно 9 бит, потому что <code>2⁹ = 512</code>.</p>
+
+    <h3>Tag</h3>
+    <p><strong>Tag</strong> нужен, чтобы проверить, действительно ли в выбранном set лежит нужная кеш-линия. Потому что много разных адресов могут иметь один и тот же index.</p>
+
+    <div class="pipeline">
+      <div class="pipeline-step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <strong>CPU получает адрес</strong>
+          <span>Например, программа читает переменную по некоторому адресу.</span>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <strong>Offset говорит, какой байт нужен</strong>
+          <span>Но сначала надо найти всю кеш-линию.</span>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <strong>Index выбирает set</strong>
+          <span>Процессор смотрит только в один set, а не во весь кеш.</span>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <strong>Tag сравнивается с tag'ами ways</strong>
+          <span>Если найдено совпадение и линия валидна — cache hit. Если нет — cache miss.</span>
+        </div>
+      </div>
+    </div>
+
+    <h3>PIPT и VIPT addressing</h3>
+    <p>Современные программы работают с <strong>виртуальными адресами</strong>, а RAM и физические кеш-линии существуют по <strong>физическим адресам</strong>. Поэтому возникает вопрос: какими адресами индексировать и тегировать кеш?</p>
+
+    <div class="grid-2">
+      <div class="badge-card">
+        <span class="badge cyan">PIPT</span>
+        <strong>Physically Indexed, Physically Tagged</strong>
+        <p>Кеш индексируется и проверяется по физическому адресу. Это просто для корректности, но надо сначала перевести виртуальный адрес в физический через TLB/page table.</p>
+      </div>
+      <div class="badge-card">
+        <span class="badge green">VIPT</span>
+        <strong>Virtually Indexed, Physically Tagged</strong>
+        <p>Index берётся из виртуального адреса, а tag — из физического. Это ускоряет доступ: поиск в кеше можно начать параллельно с трансляцией адреса.</p>
+      </div>
+    </div>
+
+    <div class="note warn">
+      <strong>Почему VIPT работает аккуратно:</strong> обычно для L1 кеша index берётся из младших бит адреса, которые совпадают у виртуального и физического адреса внутри страницы. Поэтому можно начать доступ быстро, но всё равно проверить физический tag для корректности.
+    </div>
+  </section>
+
+  <section id="l1">
+    <div class="section-label">// 06</div>
+    <h2><span class="icon">✂️</span>Почему L1 делится на L1d и L1i</h2>
+
+    <p>L1 кеш обычно разделён на две части:</p>
+
+    <div class="grid-2">
+      <div class="badge-card">
+        <span class="badge cyan">L1i</span>
+        <strong>Instruction cache</strong>
+        <p>Хранит инструкции программы — то, что CPU должен исполнять.</p>
+      </div>
+      <div class="badge-card">
+        <span class="badge green">L1d</span>
+        <strong>Data cache</strong>
+        <p>Хранит данные программы — переменные, элементы массивов, структуры и т. д.</p>
+      </div>
+    </div>
+
+    <h3>Зачем такое разделение?</h3>
+    <div class="card">
+      <div class="card-title">Причина №1: параллелизм</div>
+      <p>Процессору часто нужно одновременно загружать следующую инструкцию и читать/писать данные. Если инструкции и данные лежат в разных L1-кешах, эти операции проще выполнять параллельно.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Причина №2: разные паттерны доступа</div>
+      <p>Инструкции обычно читаются последовательно, а данные могут читаться и писаться хаотично. Разным типам обращений удобнее иметь отдельные структуры.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Причина №3: защита от вытеснения</div>
+      <p>Если бы инструкции и данные постоянно конкурировали за один маленький L1, активная работа с данными могла бы вытеснять инструкции, и наоборот.</p>
+    </div>
+
+    <div class="note">
+      <strong>Важно:</strong> разделение L1 на instruction/data — это пример Harvard-like подхода внутри CPU, хотя обычная память программы снаружи выглядит как единое адресное пространство.
+    </div>
+  </section>
+
+  <section id="policies">
+    <div class="section-label">// 07</div>
+    <h2><span class="icon">📜</span>Политики кеша: inclusion и write policies</h2>
+
+    <h3>Политики включения: inclusive, exclusive, non-inclusive</h3>
+    <p>Когда есть несколько уровней кеша, возникает вопрос: должна ли линия, лежащая в L1, обязательно лежать ещё и в L2/L3?</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Политика</th><th>Идея</th><th>Плюсы</th><th>Минусы / ловушки</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Inclusive</td>
+            <td>Всё, что есть в L1, есть и в более нижнем уровне, например L3.</td>
+            <td>Проще отслеживать, у какого ядра может быть линия. Удобнее для когерентности.</td>
+            <td>Данные дублируются, эффективная ёмкость меньше. Вытеснение из L3 может заставить вытеснить из L1/L2.</td>
+          </tr>
+          <tr>
+            <td>Exclusive</td>
+            <td>Линия лежит либо в L1, либо в L2/L3, но не дублируется.</td>
+            <td>Больше эффективная ёмкость кешей.</td>
+            <td>Сложнее управление: при перемещении между уровнями надо аккуратно переносить линии.</td>
+          </tr>
+          <tr>
+            <td>Non-inclusive</td>
+            <td>Кеш не гарантирует ни строгого включения, ни строгого исключения.</td>
+            <td>Гибкий компромисс.</td>
+            <td>Сложнее рассуждать на пальцах; детали зависят от конкретной микроархитектуры.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note warn">
+      <strong>Ловушка:</strong> inclusive не значит «лучше», а exclusive не значит «быстрее всегда». Это разные компромиссы между простотой когерентности, эффективным размером кеша и сложностью реализации.
+    </div>
+
+    <h3>Политики модификации: write-through и write-back</h3>
+    <p>Когда процессор пишет в память, запись сначала попадает в кеш. Но когда она должна попасть в следующий уровень или в RAM?</p>
+
+    <div class="grid-2">
+      <div class="badge-card">
+        <span class="badge amber">Write-through</span>
+        <strong>Запись сразу проходит дальше</strong>
+        <p>При записи данные обновляются и в кеше, и в следующем уровне памяти. Проще с точки зрения согласованности, но медленнее и создаёт больше трафика.</p>
+      </div>
+      <div class="badge-card">
+        <span class="badge green">Write-back</span>
+        <strong>Запись откладывается</strong>
+        <p>Сначала меняется только кеш-линия. В следующий уровень данные попадут позже — например, когда линия будет вытеснена. Быстрее, но требует отслеживать «грязные» линии.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Dirty cache line</div>
+      <p>В write-back кеше изменённая линия называется <strong>dirty</strong>, потому что её содержимое отличается от того, что лежит ниже по иерархии. Перед вытеснением dirty-линии её нужно записать обратно.</p>
+    </div>
+
+    <div class="note">
+      <strong>Связь с MESI:</strong> состояние <code>Modified</code> в MESI как раз означает, что линия изменена в этом кеше и отличается от памяти/нижнего уровня.
+    </div>
+  </section>
+
+  <section id="coherence">
+    <div class="section-label">// 08</div>
+    <h2><span class="icon">🔄</span>Когерентность кешей: почему ядра должны договариваться</h2>
+
+    <p>В многоядерном процессоре у каждого ядра есть свои L1/L2 кеши. Но память у программы логически одна. Значит, если одно ядро изменило переменную, другие ядра должны не продолжать бесконечно читать старую копию из своего кеша.</p>
+
+    <div class="card">
+      <div class="card-title">Проблема без когерентности</div>
+      <p>Ядро 1 читает переменную <code>x = 0</code> и кеширует её. Ядро 2 записывает <code>x = 1</code> в свою копию. Если ядро 1 продолжит читать старую кеш-линию, оно увидит <code>0</code>, хотя логически значение уже изменилось.</p>
+    </div>
+
+    <h3>Наивный протокол: инвалидация при записи</h3>
+    <p>Простая идея: когда одно ядро хочет писать в кеш-линию, остальные копии этой линии у других ядер нужно сделать недействительными.</p>
+
+    <div class="pipeline">
+      <div class="pipeline-step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <strong>Несколько ядер читают одну линию</strong>
+          <span>Копия кеш-линии может быть у разных ядер.</span>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <strong>Одно ядро хочет записать</strong>
+          <span>Перед записью оно должно получить эксклюзивное право владеть линией.</span>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <strong>Остальные копии инвалидируются</strong>
+          <span>Другие ядра помечают свои копии как Invalid.</span>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <strong>Запись выполняется</strong>
+          <span>Теперь только одно ядро имеет актуальную изменённую копию.</span>
+        </div>
+      </div>
+    </div>
+
+    <h3>Алгоритм MESI</h3>
+    <p>MESI — это протокол когерентности кешей. У каждой кеш-линии в каждом кеше есть одно из четырёх состояний:</p>
+
+    <div class="mesi-grid">
+      <div class="mesi-state">
+        <div class="mesi-letter">M</div>
+        <strong>Modified</strong>
+        <p>Линия есть только в этом кеше, она изменена и отличается от памяти. При вытеснении её надо записать обратно.</p>
+      </div>
+      <div class="mesi-state">
+        <div class="mesi-letter">E</div>
+        <strong>Exclusive</strong>
+        <p>Линия есть только в этом кеше, но она чистая: совпадает с памятью. Можно писать без рассылки invalidation.</p>
+      </div>
+      <div class="mesi-state">
+        <div class="mesi-letter">S</div>
+        <strong>Shared</strong>
+        <p>Линия может быть в нескольких кешах одновременно. Читать можно, писать нельзя без получения эксклюзивности.</p>
+      </div>
+      <div class="mesi-state">
+        <div class="mesi-letter">I</div>
+        <strong>Invalid</strong>
+        <p>Копия недействительна. Читать её нельзя: нужно заново получить линию из другого кеша/памяти.</p>
+      </div>
+    </div>
+
+    <h3>Типичные переходы состояний</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Ситуация</th><th>Что происходит</th><th>Итоговое состояние</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Ядро читает линию, которой нет у других</td>
+            <td>Линия загружается в кеш, никто больше её не держит.</td>
+            <td>Exclusive</td>
+          </tr>
+          <tr>
+            <td>Ядро читает линию, которая уже есть у других</td>
+            <td>Линия становится общей для нескольких кешей.</td>
+            <td>Shared</td>
+          </tr>
+          <tr>
+            <td>Ядро пишет в Exclusive</td>
+            <td>Инвалидация не нужна: других копий нет.</td>
+            <td>Modified</td>
+          </tr>
+          <tr>
+            <td>Ядро пишет в Shared</td>
+            <td>Нужно инвалидировать копии у других ядер.</td>
+            <td>Modified</td>
+          </tr>
+          <tr>
+            <td>Другое ядро читает Modified-линию</td>
+            <td>Владелец должен отдать актуальные данные; состояние меняется.</td>
+            <td>Shared / зависит от реализации</td>
+          </tr>
+          <tr>
+            <td>Линия вытесняется из Modified</td>
+            <td>Перед удалением из кеша её надо записать в следующий уровень.</td>
+            <td>Invalid после вытеснения</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Зачем нужно состояние E? MESI vs MSI</h3>
+    <p>В MSI есть только <code>Modified</code>, <code>Shared</code>, <code>Invalid</code>. Тогда даже если линия есть только у одного ядра, она часто сначала считается shared, и для записи может потребоваться лишняя операция получения эксклюзивности.</p>
+
+    <div class="note success">
+      <strong>Состояние E — оптимизация:</strong> если ядро прочитало линию и никто другой её не держит, она попадает в <code>Exclusive</code>. Потом при записи она может перейти в <code>Modified</code> локально, без рассылки invalidation. Это уменьшает трафик между ядрами.
+    </div>
+
+    <h3>Модификации MESI: MOESI и MESIF</h3>
+    <div class="grid-2">
+      <div class="badge-card">
+        <span class="badge pink">MOESI</span>
+        <strong>+ Owned</strong>
+        <p>Состояние <code>Owned</code> означает: линия изменена относительно памяти, но может быть shared между ядрами; один кеш отвечает за актуальную копию и запись обратно.</p>
+      </div>
+      <div class="badge-card">
+        <span class="badge cyan">MESIF</span>
+        <strong>+ Forward</strong>
+        <p>Состояние <code>Forward</code> выбирает один кеш, который будет отвечать на запросы других ядер по shared-линии. Это снижает дублирование ответов.</p>
+      </div>
+    </div>
+
+    <div class="note warn">
+      <strong>Важно понимать:</strong> обычно не нужно рисовать всю state machine MESI, но важно понимать смысл состояний и почему запись в shared-линию вызывает инвалидации.
+    </div>
+  </section>
+
+  <section id="false-sharing">
+    <div class="section-label">// 09</div>
+    <h2><span class="icon">💥</span>False sharing: когда разные переменные мешают друг другу</h2>
+
+    <p><strong>False sharing</strong> возникает, когда разные потоки работают с разными переменными, но эти переменные случайно лежат в одной кеш-линии.</p>
+
+    <div class="card">
+      <div class="card-title">Почему это проблема</div>
+      <p>Когерентность работает на уровне кеш-линий, а не отдельных переменных. Если два ядра пишут в разные переменные внутри одной 64-байтной линии, протокол MESI всё равно считает, что они конфликтуют за одну и ту же линию.</p>
+    </div>
+
+    <div class="pipeline">
+      <div class="pipeline-step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <strong>Переменные A и B лежат в одной кеш-линии</strong>
+          <span>Например, два счётчика в одной структуре.</span>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <strong>Поток 1 пишет A, поток 2 пишет B</strong>
+          <span>Логически данные независимы.</span>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <strong>Но железо видит одну кеш-линию</strong>
+          <span>Запись одного ядра инвалидирует копию всей линии у другого ядра.</span>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <strong>Начинается cache line ping-pong</strong>
+          <span>Линия постоянно переезжает между ядрами, производительность резко падает.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="note danger">
+      <strong>Ловушка:</strong> false sharing — это не data race в смысле корректности программы. Потоки могут писать в разные переменные, программа может быть логически правильной, но работать очень медленно.
+    </div>
+
+    <h3>Как избежать false sharing?</h3>
+    <ul class="list">
+      <li><strong>Разносить горячие переменные</strong> по разным кеш-линиям, если они активно изменяются разными потоками.</li>
+      <li><strong>Использовать padding/alignment</strong>, например выравнивание структуры до 64 байт.</li>
+      <li><strong>Группировать данные по потоку</strong>: пусть каждый поток пишет в свой отдельный блок памяти.</li>
+      <li><strong>Собирать результаты в конце</strong>, а не заставлять все потоки постоянно обновлять общий счётчик.</li>
+    </ul>
+
+    <div class="card">
+      <div class="card-title">Мини-пример идеи</div>
+      <p>Плохо: массив счётчиков <code>counter[thread_id]</code>, где соседние счётчики лежат рядом и попадают в одну кеш-линию. Лучше: сделать каждый счётчик отдельной cache-line-aligned структурой или добавить padding.</p>
+    </div>
+  </section>
+
+  <section id="practice">
+    <div class="section-label">// 10</div>
+    <h2><span class="icon">🛠️</span>Практические советы для низкоуровневого кода</h2>
+
+    <p>Понимание кешей полезно не только для экзамена. Оно помогает ускорять реальный код, особенно если код работает с большими массивами, структурами данных, многопоточностью и горячими циклами.</p>
+
+    <div class="grid-2">
+      <div class="badge-card">
+        <span class="badge green">Совет 1</span>
+        <strong>Следить за расположением данных</strong>
+        <p>Горячие данные, которые используются вместе, лучше хранить рядом. Тогда один cache miss принесёт сразу несколько нужных значений.</p>
+      </div>
+      <div class="badge-card">
+        <span class="badge green">Совет 2</span>
+        <strong>Обходить память последовательно</strong>
+        <p>Последовательный проход по массиву обычно намного дружелюбнее к кешу, чем случайные прыжки по памяти.</p>
+      </div>
+      <div class="badge-card">
+        <span class="badge amber">Совет 3</span>
+        <strong>Осторожно со структурами</strong>
+        <p>Иногда выгоднее Structure of Arrays вместо Array of Structures, если горячий код использует только часть полей.</p>
+      </div>
+      <div class="badge-card">
+        <span class="badge red">Совет 4</span>
+        <strong>Избегать false sharing</strong>
+        <p>Если разные потоки часто пишут в разные переменные, проверь, не лежат ли они в одной кеш-линии.</p>
+      </div>
+    </div>
+
+    <h3>Array of Structures vs Structure of Arrays</h3>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">AoS: Array of Structures</div>
+        <p><code>struct Point { float x, y, z; } points[N];</code></p>
+        <p>Удобно, когда часто нужны все поля одной сущности: <code>x</code>, <code>y</code>, <code>z</code> вместе.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">SoA: Structure of Arrays</div>
+        <p><code>float x[N], y[N], z[N];</code></p>
+        <p>Лучше, когда горячий код проходит только по одному полю, например только по <code>x</code>. Тогда кеш не тащит лишние <code>y</code> и <code>z</code>.</p>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>Главная практическая мысль:</strong> быстрый код — это не только меньше операций. Иногда важнее, чтобы данные приходили из L1/L2, а не из DRAM, и чтобы ядра не дрались за одну кеш-линию.
+    </div>
+  </section>
+
+  <div class="cheatsheet">
+    <div class="section-label" style="color:var(--success);">// шпаргалка</div>
+    <h2 style="border-color:rgba(16,185,129,0.22);"><span class="icon">✅</span>Что обязательно запомнить</h2>
+    <ul class="list">
+      <li><strong>CPU быстрый, DRAM медленная:</strong> 1 такт около 0.2 ns, доступ к RAM — десятки/сотни ns.</li>
+      <li><strong>Кеш-линия</strong> — минимальная единица кеширования, обычно 64 байта.</li>
+      <li><strong>Современные кеши</strong> обычно N-way set associative.</li>
+      <li><strong>Адрес делится на tag/index/offset:</strong> offset выбирает байт, index — set, tag проверяет, та ли линия.</li>
+      <li><strong>L1 делится на L1d и L1i</strong>, чтобы данные и инструкции не мешали друг другу и могли грузиться параллельно.</li>
+      <li><strong>Write-back</strong> быстрее, но требует dirty state; <strong>write-through</strong> проще, но создаёт больше трафика.</li>
+      <li><strong>MESI</strong> поддерживает когерентность кешей между ядрами.</li>
+      <li><strong>Exclusive в MESI</strong> нужно, чтобы писать в единственную чистую копию без лишних инвалидаций.</li>
+      <li><strong>False sharing</strong> — разные переменные в одной кеш-линии тормозят многопоточный код.</li>
+    </ul>
+  </div>
+
+  <div class="divider"></div>
+
+  <div id="questions" class="questions-section">
+    <div class="section-label" style="color:var(--danger);">// самопроверка</div>
+    <h2 style="color:#fff;"><span class="icon">🎯</span>Вопросы на понимание</h2>
+
+    <div class="q-item">
+      <div class="q-num">Q01</div>
+      <div class="q-text">
+        <strong>Почему доступ к DRAM считается медленным, если 100 ns — это очень мало?</strong>
+        <div class="q-hint">→ Для человека мало, для CPU много. При 5 GHz один такт ≈ 0.2 ns, значит 100 ns — это около 500 тактов ожидания.</div>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-num">Q02</div>
+      <div class="q-text">
+        <strong>Почему кеш загружает 64 байта, если программа запросила только 4 байта?</strong>
+        <div class="q-hint">→ Кеш работает кеш-линиями. Это использует spatial locality: скорее всего, скоро понадобятся соседние байты.</div>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-num">Q03</div>
+      <div class="q-text">
+        <strong>Чем cache hit отличается от cache miss?</strong>
+        <div class="q-hint">→ Hit: нужная кеш-линия уже есть на нужном уровне кеша. Miss: её нет, нужно идти на следующий уровень — L2/L3/DRAM, что дороже.</div>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-num">Q04</div>
+      <div class="q-text">
+        <strong>Почему direct-mapped cache может плохо работать даже при большом размере кеша?</strong>
+        <div class="q-hint">→ Потому что каждый адрес может попасть только в один слот. Два часто используемых адреса с одинаковым index будут постоянно вытеснять друг друга.</div>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-num">Q05</div>
+      <div class="q-text">
+        <strong>Почему fully associative cache не делают огромным и основным?</strong>
+        <div class="q-hint">→ Нужно сравнивать tag с большим числом возможных мест. Это дорого по железу, энергии и задержке.</div>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-num">Q06</div>
+      <div class="q-text">
+        <strong>Почему N-way set associative cache называют компромиссом?</strong>
+        <div class="q-hint">→ Адрес попадает в конкретный set, но внутри set есть N вариантов. Меньше конфликтов, чем в direct-mapped, но проще, чем fully associative.</div>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-num">Q07</div>
+      <div class="q-text">
+        <strong>Что делают tag, index и offset?</strong>
+        <div class="q-hint">→ Offset выбирает байт внутри кеш-линии, index выбирает set, tag проверяет, что в выбранном set лежит именно нужная линия.</div>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-num">Q08</div>
+      <div class="q-text">
+        <strong>Если кеш-линия 64 байта, сколько бит offset нужно?</strong>
+        <div class="q-hint">→ 6 бит, потому что 2⁶ = 64.</div>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-num">Q09</div>
+      <div class="q-text">
+        <strong>В чём разница между PIPT и VIPT?</strong>
+        <div class="q-hint">→ PIPT: и index, и tag по физическому адресу. VIPT: index по виртуальному, tag по физическому; это позволяет начать доступ к L1 параллельно с трансляцией адреса.</div>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-num">Q10</div>
+      <div class="q-text">
+        <strong>Зачем L1 кеш делят на L1i и L1d?</strong>
+        <div class="q-hint">→ Чтобы инструкции и данные можно было загружать параллельно, чтобы они не вытесняли друг друга и потому что у них разные паттерны доступа.</div>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-num">Q11</div>
+      <div class="q-text">
+        <strong>Чем inclusive cache отличается от exclusive cache?</strong>
+        <div class="q-hint">→ Inclusive: если линия есть в L1, она есть и в нижнем уровне. Exclusive: линия старается не дублироваться между уровнями, что увеличивает эффективную ёмкость.</div>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-num">Q12</div>
+      <div class="q-text">
+        <strong>Почему write-back обычно быстрее write-through?</strong>
+        <div class="q-hint">→ Write-back не пишет каждое изменение сразу дальше по иерархии. Он откладывает запись до вытеснения dirty-линии, уменьшая трафик.</div>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-num">Q13</div>
+      <div class="q-text">
+        <strong>Что такое dirty cache line?</strong>
+        <div class="q-hint">→ Кеш-линия, изменённая в кеше и ещё не записанная в следующий уровень/память. В MESI это соответствует состоянию Modified.</div>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-num">Q14</div>
+      <div class="q-text">
+        <strong>Зачем вообще нужна когерентность кешей?</strong>
+        <div class="q-hint">→ Чтобы разные ядра не работали бесконечно со старыми копиями одной и той же памяти. Если одно ядро изменило линию, другие должны узнать, что их копии устарели.</div>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-num">Q15</div>
+      <div class="q-text">
+        <strong>Что означают состояния MESI?</strong>
+        <div class="q-hint">→ Modified: изменена и только тут. Exclusive: только тут, но чистая. Shared: есть у нескольких, чистая. Invalid: копия недействительна.</div>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-num">Q16</div>
+      <div class="q-text">
+        <strong>Зачем в MESI состояние Exclusive, если есть Shared и Modified?</strong>
+        <div class="q-hint">→ Exclusive позволяет при первой записи перейти в Modified без рассылки invalidation, если известно, что других копий нет.</div>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-num">Q17</div>
+      <div class="q-text">
+        <strong>Что происходит, если ядро хочет писать в Shared-линию?</strong>
+        <div class="q-hint">→ Оно должно получить эксклюзивное владение: отправить invalidation другим ядрам, чтобы их копии стали Invalid, и затем писать.</div>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-num">Q18</div>
+      <div class="q-text">
+        <strong>В чём идея MOESI и состояния Owned?</strong>
+        <div class="q-hint">→ Owned позволяет иметь shared-копии линии, которая при этом модифицирована относительно памяти; один кеш является владельцем актуальной версии.</div>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-num">Q19</div>
+      <div class="q-text">
+        <strong>Что такое false sharing и почему это не обязательно ошибка корректности?</strong>
+        <div class="q-hint">→ Потоки могут писать в разные переменные, но если они лежат в одной кеш-линии, железо считает, что конфликт идёт за всю линию. Программа корректна, но медленная.</div>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-num">Q20</div>
+      <div class="q-text">
+        <strong>Как практически бороться с false sharing?</strong>
+        <div class="q-hint">→ Разносить горячие переменные по разным кеш-линиям, использовать padding/alignment, хранить per-thread данные отдельно и объединять результаты позже.</div>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-num">Q21</div>
+      <div class="q-text">
+        <strong>Почему последовательный обход массива обычно быстрее случайного обхода?</strong>
+        <div class="q-hint">→ Последовательный обход использует spatial locality и prefetching: одна кеш-линия приносит несколько соседних элементов. Случайный обход часто даёт miss на каждом шаге.</div>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-num">Q22</div>
+      <div class="q-text">
+        <strong>Когда Structure of Arrays может быть лучше Array of Structures?</strong>
+        <div class="q-hint">→ Когда горячий код использует только одно поле из многих. SoA позволяет не тащить в кеш ненужные поля.</div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+  const progressBar = document.getElementById('readingProgressBar');
+  const sectionProgress = document.getElementById('sectionProgress');
+  const trackedSections = [
+    ['motivation', 'Мотивация'],
+    ['memory', 'Иерархия памяти'],
+    ['cache-line', 'Кеш-линия'],
+    ['associativity', 'Ассоциативность'],
+    ['address', 'Адресация'],
+    ['l1', 'L1d и L1i'],
+    ['policies', 'Политики кеша'],
+    ['coherence', 'Когерентность и MESI'],
+    ['false-sharing', 'False sharing'],
+    ['practice', 'Практические советы'],
+    ['questions', 'Вопросы на понимание']
+  ].map(([id, title]) => ({ id, title, el: document.getElementById(id) })).filter(item => item.el);
+
+  function updateReadingProgress() {
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = docHeight > 0 ? Math.min(100, Math.max(0, (scrollTop / docHeight) * 100)) : 0;
+    progressBar.style.width = progress + '%';
+
+    let currentIndex = 0;
+    for (let i = 0; i < trackedSections.length; i++) {
+      const top = trackedSections[i].el.getBoundingClientRect().top + window.scrollY;
+      if (scrollTop + 140 >= top) currentIndex = i;
+    }
+    const current = trackedSections[currentIndex];
+    if (current) sectionProgress.textContent = `Раздел ${currentIndex + 1} / ${trackedSections.length}: ${current.title}`;
+  }
+
+  window.addEventListener('scroll', updateReadingProgress, { passive: true });
+  window.addEventListener('resize', updateReadingProgress);
+  updateReadingProgress();
+</script>
+
+</body>
+</html>

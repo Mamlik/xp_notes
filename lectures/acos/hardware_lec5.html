@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Работа с аппаратурой — конспект по АКОС</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Unbounded:wght@400;700;900&family=Noto+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0e14;
+    --surface: #111520;
+    --surface2: #161c2a;
+    --border: #1e2840;
+    --accent: #3b82f6;
+    --accent2: #22d3ee;
+    --accent3: #f59e0b;
+    --danger: #ef4444;
+    --success: #10b981;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --text-dim: #94a3b8;
+    --mono: 'JetBrains Mono', monospace;
+    --display: 'Unbounded', sans-serif;
+    --body: 'Noto Sans', sans-serif;
+    --progress: 0%;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 15px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* Noise texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.6;
+  }
+
+  /* Reading progress */
+  .reading-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    z-index: 1000;
+    background: rgba(30,40,64,0.72);
+    backdrop-filter: blur(8px);
+  }
+
+  .reading-progress__bar {
+    width: var(--progress);
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    box-shadow: 0 0 18px rgba(34,211,238,0.35);
+    transition: width 0.08s linear;
+  }
+
+  .section-progress {
+    position: fixed;
+    top: 14px;
+    right: 18px;
+    z-index: 1000;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    background: rgba(17,21,32,0.86);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 6px 10px;
+    backdrop-filter: blur(10px);
+  }
+
+  .source-note {
+    background: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(34,211,238,0.05));
+    border: 1px solid rgba(59,130,246,0.22);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-top: 24px;
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+
+  .source-note strong { color: var(--text); }
+
+  .wrapper {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 60px 32px 100px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  header {
+    margin-bottom: 64px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--border);
+    animation: fadeDown 0.6s ease both;
+  }
+
+  .meta {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent2);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  h1 {
+    font-family: var(--display);
+    font-size: clamp(26px, 5vw, 42px);
+    font-weight: 900;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: #fff;
+    margin-bottom: 12px;
+  }
+
+  h1 span {
+    color: var(--accent);
+  }
+
+  .subtitle {
+    color: var(--text-dim);
+    font-size: 14px;
+    max-width: 520px;
+  }
+
+  /* Section */
+  section {
+    margin-bottom: 48px;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  section:nth-child(2) { animation-delay: 0.1s; }
+  section:nth-child(3) { animation-delay: 0.15s; }
+  section:nth-child(4) { animation-delay: 0.2s; }
+  section:nth-child(5) { animation-delay: 0.25s; }
+  section:nth-child(6) { animation-delay: 0.3s; }
+  section:nth-child(7) { animation-delay: 0.35s; }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  h2 {
+    font-family: var(--display);
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  h2 .icon {
+    width: 32px;
+    height: 32px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  h3 {
+    font-family: var(--display);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--accent2);
+    margin: 24px 0 10px;
+    letter-spacing: 0.03em;
+  }
+
+  p { margin-bottom: 12px; color: var(--text-dim); }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .card:hover {
+    border-color: var(--accent);
+    transform: translateX(4px);
+  }
+
+  .card-title {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent3);
+    margin-bottom: 8px;
+  }
+
+  .card p { margin: 0; font-size: 14px; }
+
+  /* Grid */
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .badge-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+
+  .badge-card .badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 11px;
+    background: rgba(59,130,246,0.15);
+    color: var(--accent);
+    border: 1px solid rgba(59,130,246,0.3);
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+  }
+
+  .badge-card .badge.amber { background: rgba(245,158,11,0.15); color: var(--accent3); border-color: rgba(245,158,11,0.3); }
+  .badge-card .badge.cyan  { background: rgba(34,211,238,0.15);  color: var(--accent2); border-color: rgba(34,211,238,0.3);  }
+  .badge-card .badge.red   { background: rgba(239,68,68,0.15);   color: var(--danger);  border-color: rgba(239,68,68,0.3);   }
+  .badge-card .badge.green { background: rgba(16,185,129,0.15);  color: var(--success); border-color: rgba(16,185,129,0.3);  }
+
+  .badge-card strong {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .badge-card p { font-size: 13px; margin: 0; }
+
+  /* Code inline */
+  code {
+    font-family: var(--mono);
+    font-size: 12px;
+    background: rgba(59,130,246,0.1);
+    border: 1px solid rgba(59,130,246,0.2);
+    color: var(--accent2);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+
+  /* Warning/note boxes */
+  .note {
+    background: rgba(59,130,246,0.07);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 18px;
+    margin: 16px 0;
+    font-size: 14px;
+    color: var(--text-dim);
+  }
+
+  .note.warn {
+    background: rgba(245,158,11,0.07);
+    border-left-color: var(--accent3);
+  }
+
+  .note.danger {
+    background: rgba(239,68,68,0.07);
+    border-left-color: var(--danger);
+  }
+
+  .note strong { color: var(--text); }
+
+  /* Pipeline */
+  .pipeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 16px 0;
+  }
+
+  .pipeline-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .pipeline-step:last-child { border-bottom: none; }
+
+  .step-num {
+    width: 28px;
+    height: 28px;
+    background: var(--surface2);
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .step-content strong { color: var(--text); display: block; margin-bottom: 2px; font-size: 14px; }
+  .step-content span   { color: var(--text-muted); font-size: 13px; }
+
+  /* Cache modes table */
+  .table-wrap {
+    overflow-x: auto;
+    margin: 16px 0;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  th {
+    background: var(--surface2);
+    padding: 10px 16px;
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+  }
+
+  td {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-dim);
+    vertical-align: top;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+
+  td:first-child { font-family: var(--mono); font-size: 12px; color: var(--accent3); }
+
+  /* Questions section */
+  .questions-section {
+    background: linear-gradient(135deg, rgba(239,68,68,0.06), rgba(245,158,11,0.04));
+    border: 1px solid rgba(239,68,68,0.25);
+    border-radius: 14px;
+    padding: 32px;
+    margin-top: 56px;
+  }
+
+  .questions-section h2 {
+    border-color: rgba(239,68,68,0.2);
+    margin-bottom: 24px;
+  }
+
+  .q-item {
+    display: flex;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    align-items: flex-start;
+  }
+
+  .q-item:last-child { border-bottom: none; }
+
+  .q-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--danger);
+    min-width: 28px;
+    padding-top: 2px;
+  }
+
+  .q-text {
+    font-size: 14px;
+    color: var(--text-dim);
+    flex: 1;
+  }
+
+  .q-hint {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    font-style: italic;
+  }
+
+  /* Animations */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* Divider */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, var(--accent) 0%, transparent 100%);
+    margin: 40px 0;
+    opacity: 0.3;
+  }
+
+  ul.list {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0;
+  }
+
+  ul.list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 6px 0;
+    font-size: 14px;
+    color: var(--text-dim);
+  }
+
+  ul.list li::before {
+    content: '→';
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 12px;
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+</style>
+</head>
+<body>
+<div class="reading-progress" aria-hidden="true"><div class="reading-progress__bar"></div></div>
+<div class="section-progress" id="sectionProgress">Раздел 1 / 7</div>
+<div class="wrapper">
+
+  <header>
+    <div class="meta">// АКОС · открытый конспект</div>
+    <h1>Работа с <span>аппаратурой</span></h1>
+    <p class="subtitle">Детальный конспект по работе ОС с аппаратурой: кольца защиты, механизмы взаимодействия с железом, кеширование памяти, PCI, DMA и устройства Linux.</p>
+    <div class="source-note">Открытые Конспекты Экстремального Программирования МИФИ по архитектуре компьютера и операционным сетям. Конспект подготовлен студентами и может содержать ошибки</div>
+  </header>
+
+  <!-- 1. Как пользователь видит устройства -->
+  <section id="section-1" data-section-title="Взаимодействие с железом">
+    <div class="section-label">// 01</div>
+    <h2><span class="icon">📂</span>Как пользователь взаимодействует с железом</h2>
+
+    <p>С точки зрения userspace-программы никакого "железа" не видно напрямую. Всё взаимодействие с аппаратурой происходит <strong>через файлы</strong> — это основной принцип Unix.</p>
+
+    <div class="card">
+      <div class="card-title">Цепочка вызовов</div>
+      <div class="pipeline">
+        <div class="pipeline-step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <strong>Пользовательский код</strong>
+            <span>читает / пишет в "особый" файл (например <code>/dev/tty</code>, <code>/dev/sda</code>)</span>
+          </div>
+        </div>
+        <div class="pipeline-step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <strong>Ядро ОС</strong>
+            <span>Файловая система распознаёт, что файл — это устройство (device). Вызываются специальные колбеки драйвера.</span>
+          </div>
+        </div>
+        <div class="pipeline-step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <strong>Драйвер устройства</strong>
+            <span>Читает/пишет в "особую" память (MMIO) или использует порты ввода-вывода — и этим управляет реальным железом.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>Ключевой принцип:</strong> пользовательский код никогда не дёргает железо напрямую — только через абстракцию файла и ядро.
+    </div>
+  </section>
+
+  <!-- 2. Кольца защиты -->
+  <section id="section-2" data-section-title="Кольца защиты">
+    <div class="section-label">// 02</div>
+    <h2><span class="icon">🔐</span>Кольца защиты (Protection Rings)</h2>
+
+    <p>x86-архитектура определяет 4 уровня привилегий — кольца 0–3. Но на практике используются только два крайних:</p>
+
+    <div class="grid-3">
+      <div class="badge-card">
+        <span class="badge">Ring 0</span>
+        <strong>Режим ядра (Kernel mode)</strong>
+        <p>Полный доступ к железу, привилегированные инструкции, прямая работа с памятью.</p>
+      </div>
+      <div class="badge-card">
+        <span class="badge amber">Ring 1 / 2</span>
+        <strong>Не используются</strong>
+        <p>Задумывались для драйверов и сервисов ОС. Не прижились из-за сложности реализации и накладных расходов по скорости.</p>
+      </div>
+      <div class="badge-card">
+        <span class="badge cyan">Ring 3</span>
+        <strong>Режим пользователя (User mode)</strong>
+        <p>Обычные программы. Нет прямого доступа к железу — только через системные вызовы.</p>
+      </div>
+    </div>
+
+    <div class="note warn">
+      <strong>Запомни:</strong> кольца 1 и 2 существуют на уровне спецификации Intel, но реальные ОС (Linux, Windows) их игнорируют. Вопрос «зачем они тогда есть?» часто проверяет понимание различия между архитектурной возможностью и практикой реальных ОС.
+    </div>
+  </section>
+
+  <!-- 3. Архитектура чипсета -->
+  <section id="section-3" data-section-title="Архитектура чипсета">
+    <div class="section-label">// 03</div>
+    <h2><span class="icon">🔧</span>Архитектура чипсета: Intel x58 IO Hub</h2>
+
+    <p>Понимание физической компоновки важно для понимания задержек и производительности.</p>
+
+    <div class="card">
+      <div class="card-title">Историческая схема (Intel Core i7, ~2008)</div>
+      <ul class="list">
+        <li><strong>Контроллер памяти (IMC)</strong> — интегрирован прямо в процессор. Цель: ускорить доступ к RAM, убрав лишнюю шину.</li>
+        <li><strong>I/O Hub (IOH)</strong> — отдельная микросхема. Управляла PCI Express (GPU), USB, SATA и пр.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Современная схема (13-е поколение Intel Raptor Lake и т. д.)</div>
+      <ul class="list">
+        <li>Контроллер памяти — в процессоре (было и раньше).</li>
+        <li>PCI Express для GPU и NVMe — тоже <strong>интегрированы в процессор</strong>. IOH как отдельной микросхемы нет.</li>
+        <li><strong>PCH (Platform Controller Hub)</strong> — остался для периферии: USB, SATA, медленный PCIe для Wi-Fi/звука/etc.</li>
+      </ul>
+    </div>
+
+    <div class="note">
+      <strong>Почему это важно?</strong> Путь до памяти и до быстрых устройств (GPU, NVMe) стал короче → меньше задержки. Периферия по-прежнему идёт через PCH → она медленнее.
+    </div>
+  </section>
+
+  <!-- 4. Механизмы взаимодействия -->
+  <section id="section-4" data-section-title="Механизмы взаимодействия">
+    <div class="section-label">// 04</div>
+    <h2><span class="icon">⚡</span>3 механизма взаимодействия с аппаратурой</h2>
+
+    <h3>1. Порты ввода-вывода (I/O Ports)</h3>
+    <div class="badge-card" style="margin-bottom:16px;">
+      <span class="badge red">Устаревший</span>
+      <strong>Отдельное адресное пространство, не пересекается с памятью</strong>
+      <p>Специальные инструкции <code>IN</code> / <code>OUT</code> для чтения и записи. Применяются сейчас редко — только для очень старой периферии (COM-порты, PIC) и конфигурации PCI через <code>0xCF8</code>/<code>0xCFC</code>.</p>
+    </div>
+
+    <h3>2. Ввод/вывод через память (MMIO — Memory-Mapped I/O)</h3>
+    <div class="badge-card" style="margin-bottom:16px;">
+      <span class="badge green">Основной современный способ</span>
+      <strong>Регистры устройства отображаются на физические адреса памяти</strong>
+      <p>Запись по адресу = команда устройству. Чтение по адресу = состояние устройства.</p>
+    </div>
+
+    <div class="note warn">
+      <strong>Важно про кеширование при MMIO:</strong> процессор кеширует обращения к памяти — записи сначала идут в кеш, а не сразу на шину. Для устройств это катастрофа: команда "отправилась" в регистр, но до устройства не дошла. Решение — <strong>отключить кеширование</strong> для MMIO-страниц через PageTable (атрибуты страницы).
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Режим кеша</th><th>Название</th><th>Поведение</th><th>Применение</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>WB</td>
+            <td>Write Back</td>
+            <td>Запись в кеш; в память — отложенно</td>
+            <td>Обычная RAM — максимальная скорость</td>
+          </tr>
+          <tr>
+            <td>WT</td>
+            <td>Write Through</td>
+            <td>Запись и в кеш, и в память одновременно</td>
+            <td>Редко; для согласованности без полного UC</td>
+          </tr>
+          <tr>
+            <td>UC</td>
+            <td>Uncacheable</td>
+            <td>Каждое обращение идёт прямо на шину</td>
+            <td>MMIO-регистры устройств</td>
+          </tr>
+          <tr>
+            <td>WC</td>
+            <td>Write Combining</td>
+            <td>Запись не кешируется, но накапливается в буфере и сбрасывается пакетом</td>
+            <td>Видеопамять (framebuffer) — нет случайного чтения</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <strong>Трюк с буфером (framebuffer):</strong> держать копию экрана в RAM (быстро), а при обновлении — копировать во MMIO framebuffer. WC-режим позволяет пакетно сбрасывать изменения без штрафа за каждую запись.
+    </div>
+
+    <div class="card">
+      <div class="card-title">volatile в драйверах</div>
+      <p>При работе с MMIO-регионами нужен <code>volatile</code>-доступ. Без него компилятор может: убрать "лишние" чтения (мол, значение не менялось), переставить операции, удалить запись (мол, результат нигде не используется). <code>volatile</code> говорит компилятору: "у этих операций есть побочные эффекты — не трогай!"</p>
+    </div>
+
+    <h3>3. Прерывания (Interrupts)</h3>
+    <div class="badge-card">
+      <span class="badge cyan">Асинхронный механизм</span>
+      <strong>Устройство само сигнализирует процессору о готовности</strong>
+      <p>CPU не опрашивает устройство в цикле (polling). Устройство завершает работу → взводит прерывание → CPU прерывает текущий поток → выполняет ISR (interrupt service routine) → возвращается.</p>
+    </div>
+  </section>
+
+  <!-- 5. WrapUp / DMA / типы устройств -->
+  <section id="section-5" data-section-title="DMA и устройства Linux">
+    <div class="section-label">// 05</div>
+    <h2><span class="icon">🔄</span>DMA и типы устройств Linux</h2>
+
+    <h3>DMA — Direct Memory Access</h3>
+    <div class="card">
+      <div class="card-title">Зачем нужен DMA</div>
+      <p>При обычной передаче данных CPU вынужден сам копировать байты из/в устройство — это занимает процессорное время. DMA позволяет устройству <strong>самостоятельно писать в RAM</strong> без участия CPU.</p>
+      <ul class="list">
+        <li>CPU конфигурирует DMA-контроллер: откуда, куда, сколько байт.</li>
+        <li>Устройство записывает данные напрямую в RAM.</li>
+        <li>По завершению устройство поднимает прерывание — CPU узнаёт, что данные готовы.</li>
+        <li>CPU во время передачи полностью свободен.</li>
+      </ul>
+    </div>
+
+    <h3>Два типа устройств в Linux</h3>
+    <div class="grid-3">
+      <div class="badge-card">
+        <span class="badge cyan">Character Devices</span>
+        <strong>Символьные устройства</strong>
+        <p>Примеры: <code>/dev/tty</code>, <code>/dev/input/eventX</code><br><br>Доступ <strong>без кешей ОС</strong> — данные идут напрямую. Поток байт без структуры блоков.</p>
+      </div>
+      <div class="badge-card">
+        <span class="badge amber">Block Devices</span>
+        <strong>Блочные устройства</strong>
+        <p>Примеры: <code>/dev/sda</code>, <code>/dev/nvme0n1</code><br><br>Идут через <strong>block layer</strong>: очереди, планировщики, page cache, объединение запросов.</p>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>Page cache</strong> у блочных устройств — это буфер в RAM, хранящий недавно прочитанные/записанные блоки. Если файл читается повторно — данные из кеша, без обращения к диску. Именно поэтому повторное чтение одного файла в разы быстрее первого.
+    </div>
+  </section>
+
+  <!-- 6. PCI -->
+  <section id="section-6" data-section-title="PCI / PCIe">
+    <div class="section-label">// 06</div>
+    <h2><span class="icon">🔌</span>PCI / PCIe — шина подключения устройств</h2>
+
+    <h3>Идентификация устройств</h3>
+    <div class="card">
+      <div class="card-title">VendorID + DeviceID</div>
+      <p>Каждое PCI-устройство имеет пару 16-битных ID, по которым ОС находит нужный драйвер. Хранятся в базах данных:</p>
+      <ul class="list">
+        <li>Linux: <code>/usr/share/hwdata/pci.ids</code></li>
+        <li>Команда для просмотра устройств: <code>lspci</code></li>
+        <li>Онлайн-базы: pci-ids.ucw.cz и подобные</li>
+      </ul>
+    </div>
+
+    <h3>MSI-прерывания vs. IRQ-линии</h3>
+    <div class="grid-3">
+      <div class="badge-card">
+        <span class="badge red">Старый способ: IRQ-линии</span>
+        <strong>Физические провода прерываний</strong>
+        <p>Устройство поднимает напряжение на линии → контроллер прерываний → CPU. Ограничено числом линий, проблема shared IRQ.</p>
+      </div>
+      <div class="badge-card">
+        <span class="badge green">Современный: MSI</span>
+        <strong>Message Signaled Interrupts</strong>
+        <p>Устройство пишет специальное сообщение в память по заранее настроенному адресу → CPU его читает. Меньше задержек, нет разделяемых линий, поддержка множества векторов на одно устройство.</p>
+      </div>
+    </div>
+
+    <h3>Пайплайн обращения к PCI-устройству</h3>
+    <div class="pipeline">
+      <div class="pipeline-step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <strong>Чтение конфигурации</strong>
+          <span>Через порты <code>0xCF8</code> (Config Address) и <code>0xCFC</code> (Config Data). Записываем в <code>0xCF8</code> адрес нужного регистра конфигурации устройства, читаем результат из <code>0xCFC</code>.</span>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <strong>Получение MMIO-адресов или портов</strong>
+          <span>В конфигурационном пространстве PCI есть BAR (Base Address Registers) — они сообщают, по каким адресам памяти или портам "живут" регистры устройства.</span>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <strong>Работа с устройством</strong>
+          <span>Обращаемся по найденным MMIO-адресам (через маппинг в виртуальное пространство) или читаем/пишем в порты.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="note warn">
+      <strong>Интересный факт:</strong> даже "современный" MMIO читается через старые порты <code>0xCF8/0xCFC</code> на этапе discovery. Порты ввода-вывода умерли не полностью — они нужны для начального обнаружения PCI-устройств.
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ВОПРОСЫ -->
+  <div class="questions-section" id="section-7" data-section-title="Вопросы на понимание">
+    <div class="section-label" style="color:var(--danger);">// самопроверка</div>
+    <h2 style="color:#fff;"><span class="icon">🎯</span>Вопросы на понимание</h2>
+
+    <div class="q-item">
+      <div class="q-num">Q01</div>
+      <div class="q-text">
+        <strong>Почему кольца 1 и 2 не используются в реальных ОС, хотя архитектура их поддерживает?</strong>
+        <div class="q-hint">→ Задумывались для драйверов и сервисов ОС, но оказались слишком сложными в реализации и медленными. Проще работать с двумя уровнями: ядро (0) и пользователь (3).</div>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-num">Q02</div>
+      <div class="q-text">
+        <strong>Чем MMIO принципиально отличается от портов ввода-вывода?</strong>
+        <div class="q-hint">→ Порты — отдельное адресное пространство (инструкции IN/OUT). MMIO — регистры устройства находятся в обычном адресном пространстве памяти. MMIO проще для программиста, удобнее кешировать и работает через обычные инструкции MOV.</div>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-num">Q03</div>
+      <div class="q-text">
+        <strong>Почему для MMIO-регионов нужно отключать кеширование? Что будет, если не отключить?</strong>
+        <div class="q-hint">→ Без UC запись пойдёт в кеш процессора, а не сразу на шину. Устройство не получит команду. Более того, порядок сброса из кеша непредсказуем — команды к устройству могут прийти в неправильном порядке.</div>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-num">Q04</div>
+      <div class="q-text">
+        <strong>Зачем нужен режим кеша WC (Write Combining)? Чем он лучше UC для видеопамяти?</strong>
+        <div class="q-hint">→ UC — каждая запись немедленно идёт на шину. WC — записи накапливаются и сбрасываются пакетом, что сильно увеличивает пропускную способность при последовательной записи (framebuffer). Видеопамять читается редко, но пишется часто и последовательно — WC идеален.</div>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-num">Q05</div>
+      <div class="q-text">
+        <strong>Для чего нужен volatile при работе с MMIO в драйвере?</strong>
+        <div class="q-hint">→ Компилятор может оптимизировать "лишние" обращения к памяти: удалить запись, убрать повторное чтение, переставить операции. volatile запрещает такие оптимизации, гарантируя, что каждое чтение/запись реально идёт на шину.</div>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-num">Q06</div>
+      <div class="q-text">
+        <strong>Как работает DMA и зачем он нужен? В чём выигрыш по сравнению с обычной передачей через CPU?</strong>
+        <div class="q-hint">→ CPU настраивает DMA-контроллер (буфер, размер). Устройство само копирует данные в RAM. CPU свободен. По готовности — прерывание. Выигрыш: CPU не занят побайтовой пересылкой, может выполнять другую работу.</div>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-num">Q07</div>
+      <div class="q-text">
+        <strong>В чём разница между character device и block device с точки зрения работы с ними в ядре?</strong>
+        <div class="q-hint">→ Character device: доступ без кешей ОС, напрямую. Block device: через block layer (page cache, планировщики очередей, объединение запросов). Block-устройства выигрывают от кеширования и сортировки запросов.</div>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-num">Q08</div>
+      <div class="q-text">
+        <strong>Почему контроллер памяти был перенесён с северного моста (northbridge/IOH) внутрь процессора?</strong>
+        <div class="q-hint">→ Чтобы сократить задержку доступа к RAM. Пока контроллер был на IOH, каждое обращение к памяти шло через внешнюю шину. После интеграции — прямой путь внутри чипа.</div>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-num">Q09</div>
+      <div class="q-text">
+        <strong>Чем MSI-прерывания лучше традиционных IRQ-линий?</strong>
+        <div class="q-hint">→ IRQ: физические линии, ограниченное число, проблема shared IRQ (несколько устройств на одной линии → нужно опрашивать все). MSI: сообщение в память, нет ограничений по числу, каждое устройство/очередь может иметь свой вектор, меньше задержки.</div>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-num">Q10</div>
+      <div class="q-text">
+        <strong>Объясни пайплайн: как драйвер узнаёт, по каким адресам работать с PCI-устройством?</strong>
+        <div class="q-hint">→ Через порты 0xCF8/0xCFC читается конфигурационное пространство PCI. Там находятся BAR (Base Address Registers) с MMIO-адресами или номерами портов ввода-вывода конкретного устройства.</div>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-num">Q11</div>
+      <div class="q-text">
+        <strong>Что такое page cache и зачем он у блочных устройств, но не у символьных?</strong>
+        <div class="q-hint">→ Page cache — буфер в RAM, хранящий прочитанные/записанные блоки данных с диска. Повторное чтение — из памяти без обращения к диску. У character devices данные потоковые (tty, input events) — их кешировать нет смысла, нужна немедленная доставка.</div>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-num">Q12</div>
+      <div class="q-text">
+        <strong>Можно ли из userspace напрямую записать что-то в регистр устройства по MMIO-адресу?</strong>
+        <div class="q-hint">→ Напрямую — нельзя. Физический MMIO-адрес нужно сначала отмапить в виртуальное адресное пространство (через /dev/mem или ioctl в драйвере). Ядро контролирует, кто может получить маппинг на физические адреса устройств.</div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+  const root = document.documentElement;
+  const progressLabel = document.getElementById('sectionProgress');
+  const sections = Array.from(document.querySelectorAll('[data-section-title]'));
+
+  function updateProgress() {
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = scrollHeight > 0 ? Math.min(100, Math.max(0, (scrollTop / scrollHeight) * 100)) : 0;
+    root.style.setProperty('--progress', progress.toFixed(2) + '%');
+
+    let activeIndex = 0;
+    const anchor = scrollTop + window.innerHeight * 0.28;
+    sections.forEach((section, index) => {
+      if (section.offsetTop <= anchor) activeIndex = index;
+    });
+
+    const active = sections[activeIndex];
+    if (active && progressLabel) {
+      progressLabel.textContent = `Раздел ${activeIndex + 1} / ${sections.length}: ${active.dataset.sectionTitle}`;
+    }
+  }
+
+  updateProgress();
+  window.addEventListener('scroll', updateProgress, { passive: true });
+  window.addEventListener('resize', updateProgress);
+</script>
+
+</body>
+</html>

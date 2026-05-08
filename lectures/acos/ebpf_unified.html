@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>eBPF</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0d14;
+      --bg2: #0e1320;
+      --surface: #101726;
+      --surface2: #151f31;
+      --surface3: #1b2740;
+      --border: #25324a;
+      --text: #e6edf7;
+      --muted: #9fb0c8;
+      --dim: #6d7f98;
+      --blue: #59a6ff;
+      --cyan: #37d5ff;
+      --green: #39d98a;
+      --yellow: #ffbf47;
+      --red: #ff6b81;
+      --purple: #b588ff;
+      --mono: 'JetBrains Mono', monospace;
+      --sans: 'Manrope', system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--sans);
+      background:
+        radial-gradient(circle at top right, rgba(55,213,255,.08), transparent 30%),
+        radial-gradient(circle at bottom left, rgba(181,136,255,.08), transparent 28%),
+        linear-gradient(180deg, var(--bg2), var(--bg));
+      color: var(--text);
+      line-height: 1.75;
+      font-size: 15px;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 26px 26px;
+      pointer-events: none;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,.75), rgba(0,0,0,.25));
+      z-index: 0;
+    }
+
+    .wrap {
+      position: relative;
+      z-index: 1;
+      width: min(1120px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding-bottom: 80px;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      min-height: 82vh;
+      display: grid;
+      place-items: center;
+      padding: 40px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 70% 20%, rgba(55,213,255,.14), transparent 26%),
+        radial-gradient(circle at 20% 75%, rgba(181,136,255,.14), transparent 26%),
+        linear-gradient(180deg, rgba(8,12,19,.55), rgba(8,12,19,.86));
+      z-index: 0;
+    }
+
+    .code-bg {
+      position: absolute;
+      inset: 0;
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.65;
+      color: rgba(110, 210, 255, 0.18);
+      white-space: pre;
+      padding: 28px;
+      overflow: hidden;
+      z-index: 0;
+      user-select: none;
+    }
+
+    .hero-card {
+      position: relative;
+      z-index: 2;
+      width: min(900px, 100%);
+      padding: 34px 32px;
+      border: 1px solid rgba(255,255,255,0.11);
+      border-radius: 28px;
+      background: linear-gradient(180deg, rgba(20,28,44,.78), rgba(10,14,22,.78));
+      box-shadow: 0 30px 100px rgba(0,0,0,.45);
+      backdrop-filter: blur(10px);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--cyan);
+      background: rgba(55,213,255,.08);
+      border: 1px solid rgba(55,213,255,.22);
+      margin-bottom: 22px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .hero h1 {
+      font-size: clamp(40px, 7vw, 92px);
+      line-height: .95;
+      font-weight: 800;
+      letter-spacing: -.04em;
+      margin-bottom: 14px;
+      text-shadow: 0 8px 40px rgba(55,213,255,.12);
+    }
+    .hero h1 .grad {
+      background: linear-gradient(135deg, #ffffff 0%, #78b8ff 40%, #44f0ff 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      color: var(--muted);
+      font-size: 18px;
+      max-width: 720px;
+      margin-bottom: 22px;
+    }
+
+    .hero-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .pill {
+      padding: 7px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.1);
+      background: rgba(255,255,255,.04);
+      font-size: 13px;
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .toc {
+      margin: 36px 0 28px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 12px;
+    }
+    .toc a {
+      text-decoration: none;
+      color: var(--muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      transition: .18s ease;
+      font-size: 14px;
+    }
+    .toc a:hover { color: var(--text); border-color: var(--blue); transform: translateY(-2px); }
+
+    section {
+      margin-top: 34px;
+      padding: 28px 28px 24px;
+      background: rgba(16,23,38,.88);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      box-shadow: 0 8px 30px rgba(0,0,0,.2);
+    }
+
+    .section-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .num {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      flex: 0 0 44px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(180deg, rgba(89,166,255,.14), rgba(55,213,255,.07));
+      border: 1px solid rgba(89,166,255,.24);
+      color: var(--blue);
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    h2 {
+      font-size: clamp(26px, 3vw, 36px);
+      line-height: 1.15;
+      margin-bottom: 6px;
+    }
+
+    .sub {
+      color: var(--dim);
+      font-size: 14px;
+    }
+
+    h3 {
+      margin: 24px 0 12px;
+      font-size: 20px;
+      color: #fff;
+    }
+
+    h4 {
+      margin: 18px 0 8px;
+      font-size: 16px;
+      color: #fff;
+    }
+
+    p { color: var(--muted); margin: 10px 0; }
+
+    strong { color: var(--text); }
+
+    code {
+      font-family: var(--mono);
+      font-size: 12px;
+      background: rgba(89,166,255,.09);
+      color: #9ad1ff;
+      padding: 2px 6px;
+      border-radius: 6px;
+      border: 1px solid rgba(89,166,255,.14);
+    }
+
+    .grid-3, .grid-2, .grid-4 {
+      display: grid;
+      gap: 14px;
+      margin: 16px 0;
+    }
+    .grid-2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+    .grid-4 { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+
+    .card {
+      background: linear-gradient(180deg, rgba(21,31,49,.95), rgba(16,23,38,.95));
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px 18px 16px;
+    }
+
+    .card .label {
+      display: inline-block;
+      margin-bottom: 8px;
+      font-family: var(--mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--cyan);
+    }
+
+    ul.clean, ol.clean { margin: 12px 0 12px 20px; color: var(--muted); }
+    ul.clean li, ol.clean li { margin: 8px 0; }
+
+    .note, .warn, .tip {
+      padding: 16px 18px;
+      border-radius: 16px;
+      margin: 16px 0;
+      border: 1px solid;
+    }
+    .note { background: rgba(89,166,255,.08); border-color: rgba(89,166,255,.22); }
+    .tip { background: rgba(57,217,138,.08); border-color: rgba(57,217,138,.2); }
+    .warn { background: rgba(255,191,71,.08); border-color: rgba(255,191,71,.2); }
+
+    .note strong, .tip strong, .warn strong { display: block; margin-bottom: 6px; }
+
+    .timeline { position: relative; padding-left: 20px; margin: 18px 0; }
+    .timeline::before {
+      content: ""; position: absolute; left: 7px; top: 4px; bottom: 4px; width: 2px; background: linear-gradient(var(--blue), var(--purple));
+    }
+    .tl-item { position: relative; padding-left: 24px; margin: 16px 0; }
+    .tl-item::before {
+      content: ""; position: absolute; left: -1px; top: 7px; width: 16px; height: 16px; border-radius: 50%; background: var(--surface3); border: 2px solid var(--blue);
+    }
+    .tl-year { font-family: var(--mono); font-size: 12px; color: var(--cyan); margin-bottom: 4px; }
+    .tl-title { font-weight: 700; color: #fff; }
+
+    .codebox {
+      margin: 18px 0;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: #0b1020;
+    }
+    .codehead {
+      display: flex; justify-content: space-between; gap: 8px;
+      padding: 10px 14px;
+      background: rgba(255,255,255,.04);
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--dim);
+      border-bottom: 1px solid var(--border);
+    }
+    pre {
+      margin: 0;
+      padding: 16px 18px;
+      overflow-x: auto;
+      color: #d6e7ff;
+      font-size: 12.8px;
+      line-height: 1.7;
+      font-family: var(--mono);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 14px;
+      overflow: hidden;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+    }
+    th, td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      font-family: var(--mono);
+    }
+    tr:last-child td { border-bottom: none; }
+    td { color: var(--muted); }
+
+    .diagram {
+      margin: 18px 0;
+      padding: 18px;
+      border-radius: 18px;
+      border: 1px dashed rgba(255,255,255,.12);
+      background: rgba(255,255,255,.02);
+    }
+    .flow {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .flow-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+    }
+    .bubble {
+      width: 28px; height: 28px; flex: 0 0 28px;
+      display: grid; place-items: center;
+      border-radius: 50%;
+      background: rgba(89,166,255,.12);
+      border: 1px solid rgba(89,166,255,.22);
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--blue);
+      font-weight: 700;
+    }
+
+    .qa {
+      display: grid;
+      gap: 14px;
+      margin-top: 16px;
+    }
+    .q {
+      padding: 16px 18px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(255,107,129,.06), rgba(255,191,71,.04));
+      border: 1px solid rgba(255,107,129,.16);
+    }
+    .q strong { display: block; margin-bottom: 6px; }
+
+    .footer {
+      margin-top: 34px;
+      padding: 18px 8px 0;
+      color: var(--dim);
+      font-size: 13px;
+      text-align: center;
+    }
+
+    @media (max-width: 720px) {
+      .hero-card, section { padding: 22px 18px; }
+      .hero { min-height: 76vh; }
+      .hero p { font-size: 16px; }
+      .wrap { width: min(1120px, calc(100vw - 18px)); }
+    }
+
+
+    .reading-progress { position: fixed; top: 0; left: 0; height: 4px; width: 0%; background: linear-gradient(90deg, var(--blue), var(--cyan), var(--purple)); z-index: 1000; box-shadow: 0 0 18px rgba(55,213,255,.35); }
+    .section-indicator { position: fixed; right: 18px; bottom: 18px; z-index: 999; max-width: min(360px, calc(100vw - 36px)); padding: 10px 14px; border-radius: 999px; border: 1px solid rgba(89,166,255,.22); background: rgba(10,13,20,.78); color: var(--muted); font: 700 12px var(--mono); backdrop-filter: blur(12px); box-shadow: 0 10px 36px rgba(0,0,0,.28); }
+    .public-note { margin: 18px 0 22px; padding: 14px 16px; border-radius: 16px; border: 1px solid rgba(255,191,71,.22); background: rgba(255,191,71,.08); color: var(--muted); font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="reading-progress" id="readingProgress"></div>
+  <div class="section-indicator" id="sectionIndicator">Раздел 1 / 12</div>
+  <div class="hero">
+    <div class="code-bg">// eBPF program sketch
+SEC("kprobe/__x64_sys_execve")
+int trace_exec(struct pt_regs *ctx) {
+    u64 pid = bpf_get_current_pid_tgid();
+    char comm[16];
+    bpf_get_current_comm(&comm, sizeof(comm));
+    bpf_printk("exec pid=%d comm=%s\\n", pid >> 32, comm);
+    return 0;
+}
+
+struct {
+    __uint(type, BPF_MAP_TYPE_HASH);
+    __type(key, u32);
+    __type(value, u64);
+    __uint(max_entries, 1024);
+} counts SEC(".maps");
+
+ldh [12]
+jeq #ETHERTYPE_IP, L1, L2
+L1: ret #TRUE
+L2: ret #0
+
+// verifier: safe memory, bounded loops, no invalid ptr arithmetic
+// helpers: bpf_map_lookup_elem, bpf_map_update_elem
+// use-cases: XDP / tc / tracing / security / LSM / observability
+// kernel VM + JIT = native speed
+// attach point => event => eBPF bytecode => maps/helpers => result
+</div>
+    <div class="hero-card wrap" style="margin:0;">
+      <div class="eyebrow">Открытые конспекты · АКОС</div>
+      <h1><span class="grad">eBPF</span></h1>
+      <p>
+        Подробный конспект «с нуля»: что такое eBPF, зачем он нужен, как вырос из BPF,
+        как устроен под капотом, что делают <strong>maps</strong>, <strong>helpers</strong>,
+        <strong>verifier</strong>, <strong>syscall bpf</strong>, как eBPF связывается с <strong>kprobes</strong>,
+        networking, observability и security — и чем всё это отличается от обычных модулей ядра.
+      </p>
+      <div class="public-note">Открытые Конспекты Экстремального Программирования МИФИ по архитектуре компьютера и операционным системам. Конспект подготовлен студентами и может содержать ошибки.</div>
+      <div class="hero-pills">
+        <span class="pill">Networking</span>
+        <span class="pill">Observability</span>
+        <span class="pill">Security</span>
+        <span class="pill">Verifier</span>
+        <span class="pill">Maps & Helpers</span>
+        <span class="pill">kprobes / LSM</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="toc">
+      <a href="#what">01 · Что такое eBPF и зачем он нужен</a>
+      <a href="#history">02 · История: BPF → seccomp → eBPF</a>
+      <a href="#why">03 · Где используется</a>
+      <a href="#requirements">04 · Что нужно для работы</a>
+      <a href="#underhood">05 · Как устроен под капотом</a>
+      <a href="#isa">06 · ISA, регистры и инструкции</a>
+      <a href="#maps">07 · Maps, helpers, syscall bpf</a>
+      <a href="#verifier">08 · Verifier</a>
+      <a href="#attach">09 · Attach points, kprobes, LSM</a>
+      <a href="#compare">10 · eBPF vs kernel modules</a>
+      <a href="#proscons">11 · Плюсы, минусы, ограничения</a>
+      <a href="#questions">12 · Вопросы на понимание</a>
+    </div>
+
+    <section id="what">
+      <div class="section-head">
+        <div class="num">01</div>
+        <div>
+          <h2>Что такое eBPF и зачем он нужен</h2>
+          <div class="sub">Базовая интуиция: код из userspace можно динамически загрузить в ядро</div>
+        </div>
+      </div>
+
+      <p><strong>eBPF (extended Berkeley Packet Filter)</strong> — это механизм ядра Linux, который позволяет загружать специальные программы в ядро и выполнять их в ответ на определённые события. Формально говорят: <strong>код пишется в userspace, проверяется, загружается в ядро и выполняется там</strong>.</p>
+
+      <div class="note">
+        <strong>Главная идея.</strong>
+        Мы хотим расширять поведение ядра <em>без перекомпиляции ядра, без перезагрузки машины и без написания полноценного kernel module</em>. eBPF как раз даёт такой управляемый и относительно безопасный способ.
+      </div>
+
+      <div class="grid-3">
+        <div class="card">
+          <div class="label">networking</div>
+          <p>Фильтрация, маршрутизация, балансировка трафика, анализ пакетов, XDP, обработка сетевых событий почти на входе в стек.</p>
+        </div>
+        <div class="card">
+          <div class="label">observability</div>
+          <p>Трассировка системных вызовов, функций ядра, сбор latency/perf-метрик, профилирование, логирование без перезапуска приложений.</p>
+        </div>
+        <div class="card">
+          <div class="label">security</div>
+          <p>Фильтрация системных вызовов, контроль доступа, аудит событий, мониторинг подозрительной активности, LSM BPF.</p>
+        </div>
+      </div>
+
+      <h3>Почему это «ВАУ»</h3>
+      <ul class="clean">
+        <li>Код выполняется <strong>внутри ядра</strong>, то есть близко к событию и без лишних переходов userspace ↔ kernel.</li>
+        <li>Программу можно <strong>загрузить динамически</strong>: не нужно пересобирать ядро и перегружать систему.</li>
+        <li>Один и тот же механизм применим к совершенно разным задачам: сеть, tracing, perf, security.</li>
+        <li>Это особенно удобно в облаках: одно ядро обслуживает много контейнеров и VM, а eBPF даёт единую точку наблюдения и управления.</li>
+      </ul>
+    </section>
+
+    <section id="history">
+      <div class="section-head">
+        <div class="num">02</div>
+        <div>
+          <h2>История: от BPF до eBPF</h2>
+          <div class="sub">Важно понимать эволюцию, потому что eBPF вырос из сетевой фильтрации</div>
+        </div>
+      </div>
+
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-year">1993</div>
+          <div class="tl-title">BPF (Berkeley Packet Filter)</div>
+          <p>Изначально BPF появился как механизм фильтрации сетевых пакетов. Он позволял быстро проверять содержимое пакета по простым правилам и решать: пропускать пакет дальше или нет.</p>
+          <div class="codebox">
+            <div class="codehead"><span>Classic BPF example</span><span>packet filter</span></div>
+            <pre>ldh [12]
+jeq #ETHERTYPE_IP, L1, L2
+L1: ret #TRUE
+L2: ret #0</pre>
+          </div>
+          <p>Смысл примера: взять поле Ethertype из Ethernet-заголовка, проверить, IP ли это, и вернуть «true» или «0».</p>
+        </div>
+
+        <div class="tl-item">
+          <div class="tl-year">1997</div>
+          <div class="tl-title">BPF в Linux</div>
+          <p>BPF приходит в Linux и используется как практический инструмент сетевой фильтрации.</p>
+        </div>
+
+        <div class="tl-item">
+          <div class="tl-year">2012</div>
+          <div class="tl-title">seccomp-bpf</div>
+          <p><strong>seccomp-bpf</strong> использует BPF для фильтрации системных вызовов. Это уже важный шаг: BPF перестаёт быть только сетевой технологией и начинает применяться как механизм безопасности.</p>
+        </div>
+
+        <div class="tl-item">
+          <div class="tl-year">2014</div>
+          <div class="tl-title">eBPF (extended BPF)</div>
+          <p>Происходит большой редизайн: расширяется набор инструкций, появляются <strong>maps</strong>, <strong>helper functions</strong>, системный вызов <code>bpf()</code>, а главное — <strong>verifier</strong>, который проверяет безопасность загружаемой программы.</p>
+        </div>
+
+        <div class="tl-item">
+          <div class="tl-year">2015</div>
+          <div class="tl-title">Связка с kprobes</div>
+          <p>В ядре давно существовали <strong>kprobes</strong> — ловушки на вход/выход функций ядра. Они прекрасно сочетаются с eBPF: теперь eBPF можно привязывать к функциям ядра и использовать для трассировки.</p>
+        </div>
+
+        <div class="tl-item">
+          <div class="tl-year">2018</div>
+          <div class="tl-title">eBPF становится отдельной подсистемой</div>
+          <p>Это уже не «маленькая сетёвая фича», а полноценная и крупная часть Linux.</p>
+        </div>
+
+        <div class="tl-item">
+          <div class="tl-year">2020</div>
+          <div class="tl-title">LSM BPF</div>
+          <p>eBPF начинают использовать и для политик безопасности через <strong>Linux Security Module</strong> интерфейс.</p>
+        </div>
+      </div>
+
+      <div class="tip">
+        <strong>Главная мысль по истории.</strong>
+        BPF начинался как фильтр пакетов. Потом его идея оказалась настолько удачной, что из неё вырос универсальный механизм «маленьких программ внутри ядра» — eBPF.
+      </div>
+    </section>
+
+    <section id="why">
+      <div class="section-head">
+        <div class="num">03</div>
+        <div>
+          <h2>Основные области применения</h2>
+          <div class="sub">Что именно делают программы eBPF на практике</div>
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <div class="card">
+          <div class="label">1. Networking</div>
+          <ul class="clean">
+            <li>ранняя фильтрация пакетов;</li>
+            <li>нагрузочное распределение;</li>
+            <li>контроль трафика;</li>
+            <li>XDP, tc, socket filtering;</li>
+            <li>сетевые firewall-политики.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="label">2. Observability</div>
+          <ul class="clean">
+            <li>трассировка системных вызовов;</li>
+            <li>сбор latency;</li>
+            <li>анализ CPU / IO / networking bottlenecks;</li>
+            <li>профилирование без модификации приложения;</li>
+            <li>runtime-метрики в проде.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="label">3. Security</div>
+          <ul class="clean">
+            <li>seccomp-bpf для syscalls;</li>
+            <li>LSM hooks;</li>
+            <li>мониторинг процессов, файлов и сетевой активности;</li>
+            <li>обнаружение подозрительного поведения;</li>
+            <li>аудит и ограничение доступа.</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>Почему eBPF особенно полезен в продакшене</h3>
+      <p>Если тебе нужно, например, отследить системный вызов <code>open</code> или <code>execve</code>, то eBPF можно загрузить <strong>прямо сейчас</strong>, и он начнёт видеть все новые вызовы на работающей системе. Не надо заранее запускать приложение «под отладчиком», не надо его пересобирать, не надо перезагружать ядро.</p>
+    </section>
+
+    <section id="requirements">
+      <div class="section-head">
+        <div class="num">04</div>
+        <div>
+          <h2>Что требуется, чтобы eBPF вообще заработал</h2>
+          <div class="sub">Три базовых требования из лекции + что они означают на практике</div>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr><th>Требование</th><th>Что это означает</th><th>Почему важно</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Версия ядра</td>
+            <td>Ядро должно быть достаточно новым и поддерживать нужный тип BPF-программ / attach point.</td>
+            <td>Разные фичи eBPF появлялись в разные версии Linux.</td>
+          </tr>
+          <tr>
+            <td>Собрано с поддержкой</td>
+            <td>В конфигурации ядра должны быть включены опции, связанные с BPF/eBPF, JIT и т.п.</td>
+            <td>Если ядро собрано без поддержки, загрузка программы не сработает.</td>
+          </tr>
+          <tr>
+            <td>Привилегии</td>
+            <td>Нужны права на загрузку BPF-программ и работу с соответствующими подсистемами.</td>
+            <td>Иначе любой пользователь мог бы подсовывать код в ядро, что опасно.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="warn">
+        <strong>Важно.</strong>
+        eBPF — это не «всем доступный пользовательский скриптинг внутри ядра». Это сильно привилегированная штука. Даже с verifier система должна контролировать, кто вообще имеет право загружать такие программы.
+      </div>
+    </section>
+
+    <section id="underhood">
+      <div class="section-head">
+        <div class="num">05</div>
+        <div>
+          <h2>Как eBPF работает под капотом</h2>
+          <div class="sub">Виртуальная машина в ядре + загрузка байткода + привязка к событию</div>
+        </div>
+      </div>
+
+      <p>Под капотом eBPF — это <strong>виртуальная машина внутри ядра</strong>. Программа eBPF загружается как последовательность инструкций специального ISA. Ядро проверяет её через verifier, после чего программа может интерпретироваться или JIT-компилироваться в нативный машинный код.</p>
+
+      <div class="diagram">
+        <strong>Общий pipeline</strong>
+        <div class="flow">
+          <div class="flow-step"><div class="bubble">1</div><div><strong>Пишем программу в userspace.</strong><br><span style="color:var(--muted)">Обычно на C, потом компилируем в eBPF bytecode.</span></div></div>
+          <div class="flow-step"><div class="bubble">2</div><div><strong>Загружаем в ядро через <code>bpf()</code>.</strong><br><span style="color:var(--muted)">Передаём массив инструкций и описание программы.</span></div></div>
+          <div class="flow-step"><div class="bubble">3</div><div><strong>Verifier проверяет безопасность.</strong><br><span style="color:var(--muted)">Нет ли опасных обращений к памяти, бесконечных циклов и т.д.</span></div></div>
+          <div class="flow-step"><div class="bubble">4</div><div><strong>Ядро создаёт объект программы.</strong><br><span style="color:var(--muted)">При необходимости JIT-компилирует в нативный код CPU.</span></div></div>
+          <div class="flow-step"><div class="bubble">5</div><div><strong>Программа attach-ится к событию.</strong><br><span style="color:var(--muted)">Например, вход пакета, sys_enter, kprobe на функцию ядра, LSM hook.</span></div></div>
+          <div class="flow-step"><div class="bubble">6</div><div><strong>При событии программа исполняется.</strong><br><span style="color:var(--muted)">Она читает контекст события, использует maps/helpers и возвращает результат.</span></div></div>
+        </div>
+      </div>
+
+      <h3>Почему это быстро</h3>
+      <ul class="clean">
+        <li>Код исполняется <strong>в ядре</strong>, рядом с источником события.</li>
+        <li>Нет постоянных переключений kernel ↔ userspace на каждый интересующий нас факт.</li>
+        <li>JIT превращает eBPF bytecode в <strong>нативные инструкции процессора</strong>.</li>
+      </ul>
+
+      <div class="tip">
+        <strong>Но важно не путать.</strong>
+        eBPF — это не полноценный «свободный язык программирования в ядре». Это очень ограниченная, строго проверяемая модель исполнения.
+      </div>
+    </section>
+
+    <section id="isa">
+      <div class="section-head">
+        <div class="num">06</div>
+        <div>
+          <h2>ISA, регистры и типы инструкций</h2>
+          <div class="sub">То, что прямо перечислено в лекции: виртуальная машина, регистры, calling convention, массив структур</div>
+        </div>
+      </div>
+
+      <h3>Регистры</h3>
+      <p>В eBPF есть <strong>11 программных регистров</strong>. Из них <strong>10 general-purpose</strong> обычно обозначают как <code>r0</code> ... <code>r9</code>, а <code>r10</code> используется как <strong>frame pointer</strong> на стек программы.</p>
+
+      <table>
+        <thead>
+          <tr><th>Регистр</th><th>Назначение</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>r0</code></td><td>Регистр возвращаемого значения. В него функция кладёт результат.</td></tr>
+          <tr><td><code>r1-r5</code></td><td>Обычно используются для передачи аргументов helper-функциям и подпрограммам.</td></tr>
+          <tr><td><code>r6-r9</code></td><td>Callee-saved регистры — можно хранить промежуточное состояние.</td></tr>
+          <tr><td><code>r10</code></td><td>Frame pointer: опорная точка для адресации локального стека.</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Calling convention</h3>
+      <p>У eBPF есть собственное соглашение о вызовах: аргументы передаются через регистры, результат возвращается через <code>r0</code>. Это важно, потому что helper functions вызываются именно по такому протоколу.</p>
+
+      <h3>Типы инструкций</h3>
+      <div class="grid-3">
+        <div class="card"><div class="label">load / store</div><p>Загрузка данных и запись данных: работа с регистрами, стеком, контекстом, map-values и т.д.</p></div>
+        <div class="card"><div class="label">arithmetic</div><p>Арифметические и логические операции: сложение, вычитание, сдвиги, сравнения.</p></div>
+        <div class="card"><div class="label">control-flow</div><p>Переходы, условные ветвления, вызовы helper-ов, возврат из программы.</p></div>
+      </div>
+
+      <h3>Как инструкции выглядят в ядре</h3>
+      <p>Когда bytecode загружается в ядро, он передаётся как <strong>массив простых структур</strong>. То есть программа eBPF для ядра — это не «текст кода», а линейный набор описаний инструкций.</p>
+
+      <div class="codebox">
+        <div class="codehead"><span>Идея представления инструкций</span><span>concept</span></div>
+        <pre>struct bpf_insn {
+    __u8  code;     // тип/класс инструкции
+    __u8  dst_reg:4;
+    __u8  src_reg:4;
+    __s16 off;
+    __s32 imm;
+};</pre>
+      </div>
+
+      <p>Verifier фактически работает именно по этому массиву: анализирует инструкции, возможные пути исполнения, типы указателей, доступ к памяти и т.д.</p>
+    </section>
+
+    <section id="maps">
+      <div class="section-head">
+        <div class="num">07</div>
+        <div>
+          <h2>Maps, helper functions и системный вызов <code>bpf()</code></h2>
+          <div class="sub">Три вещи, без которых современный eBPF невозможно представить</div>
+        </div>
+      </div>
+
+      <h3>Maps — зачем они понадобились</h3>
+      <p>Классический BPF был очень ограничен. В eBPF появились <strong>maps</strong> — специальные структуры данных, которые живут под управлением ядра и позволяют программе хранить и разделять состояние.</p>
+
+      <div class="note">
+        <strong>Интуиция.</strong>
+        Программа eBPF часто вызывается много раз на разных событиях. Если ей нельзя хранить состояние между вызовами, то она почти бесполезна. <strong>Maps</strong> решают эту проблему: можно, например, считать число событий по PID, сохранять таймстемпы, агрегировать статистику.
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="label">Что можно хранить</div>
+          <ul class="clean">
+            <li>счётчики;</li>
+            <li>таблицы ключ → значение;</li>
+            <li>конфигурацию;</li>
+            <li>агрегированные метрики;</li>
+            <li>shared state между eBPF и userspace.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="label">Почему это важно</div>
+          <ul class="clean">
+            <li>состояние переживает отдельные вызовы eBPF программы;</li>
+            <li>userspace и eBPF могут обмениваться данными;</li>
+            <li>одна программа может накапливать статистику, а другая читать её.</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>Helper functions</h3>
+      <p>eBPF-программе нельзя просто так вызывать любой код ядра. Вместо этого ядро предоставляет <strong>helper functions</strong> — контролируемый набор «разрешённых сервисов».</p>
+      <p>Например, helper-ы позволяют:</p>
+      <ul class="clean">
+        <li>читать/обновлять map;</li>
+        <li>получать PID, UID, текущее имя процесса;</li>
+        <li>считывать время;</li>
+        <li>писать события или трассировочную информацию;</li>
+        <li>работать с сетевыми пакетами и контекстом.</li>
+      </ul>
+
+      <h3>Системный вызов <code>bpf()</code></h3>
+      <p>Системный вызов <code>bpf()</code> — это основной интерфейс общения userspace с eBPF-подсистемой ядра. Через него можно:</p>
+      <ul class="clean">
+        <li>загружать программу;</li>
+        <li>создавать и настраивать maps;</li>
+        <li>получать дескрипторы BPF-объектов;</li>
+        <li>выполнять операции над maps;</li>
+        <li>делать attach/detach программ в зависимости от типа.</li>
+      </ul>
+
+      <div class="codebox">
+        <div class="codehead"><span>Типичный фрагмент eBPF C</span><span>maps + helper</span></div>
+        <pre>struct {
+    __uint(type, BPF_MAP_TYPE_HASH);
+    __uint(max_entries, 1024);
+    __type(key, u32);
+    __type(value, u64);
+} counts SEC(".maps");
+
+SEC("kprobe/__x64_sys_execve")
+int trace_exec(struct pt_regs *ctx) {
+    u32 key = bpf_get_current_pid_tgid() >> 32;
+    u64 *val = bpf_map_lookup_elem(&counts, &key);
+    u64 one = 1;
+    if (val)
+        __sync_fetch_and_add(val, 1);
+    else
+        bpf_map_update_elem(&counts, &key, &one, BPF_ANY);
+    return 0;
+}</pre>
+      </div>
+
+      <p>Здесь видно сразу несколько ключевых идей: объявлена map, программа привязана к <code>kprobe</code>, она получает PID через helper и обновляет статистику в map.</p>
+    </section>
+
+    <section id="verifier">
+      <div class="section-head">
+        <div class="num">08</div>
+        <div>
+          <h2>Verifier — главный охранник eBPF</h2>
+          <div class="sub">Именно verifier делает загрузку программ в ядро хотя бы относительно безопасной</div>
+        </div>
+      </div>
+
+      <p><strong>eBPF-verifier</strong> — это компонент ядра, который проверяет программу <em>до того</em>, как разрешить её исполнение. Без verifier идея «разрешить userspace загружать код в ядро» была бы слишком опасной.</p>
+
+      <h3>Что он проверяет концептуально</h3>
+      <ul class="clean">
+        <li>корректность потока управления: нет ли недопустимых переходов;</li>
+        <li>безопасность обращений к памяти;</li>
+        <li>корректность доступа к стеку;</li>
+        <li>валидность указателей и контекста;</li>
+        <li>допустимость вызовов helper functions;</li>
+        <li>завершаемость и отсутствие очевидных бесконечных/неконтролируемых путей исполнения.</li>
+      </ul>
+
+      <div class="warn">
+        <strong>Зачем verifier так строг.</strong>
+        Программа eBPF работает в ядре. Ошибка здесь — это не просто crash пользовательской программы, а потенциальный крах системы, утечка данных или нарушение безопасности.
+      </div>
+
+      <h3>Почему verifier иногда «мешает жить»</h3>
+      <p>С точки зрения разработчика verifier может казаться излишне придирчивым: программа логически кажется корректной, но он всё равно её отвергает. Причина в том, что verifier обязан быть консервативным: если он <em>не может доказать безопасность</em>, он скорее запретит программу.</p>
+
+      <div class="tip">
+        <strong>Главная формула.</strong>
+        Для verifier недостаточно, чтобы программа «наверное работала». Нужно, чтобы ядро могло <strong>доказать</strong>, что все пути исполнения безопасны.
+      </div>
+    </section>
+
+    <section id="attach">
+      <div class="section-head">
+        <div class="num">09</div>
+        <div>
+          <h2>К чему прикрепляется eBPF: события, kprobes, LSM</h2>
+          <div class="sub">Каждая eBPF-программа должна быть привязана к какому-то событию</div>
+        </div>
+      </div>
+
+      <p>Из лекции важный тезис: <strong>каждая программа привязывается к какому-либо событию</strong>. eBPF не «крутится сама по себе». Она выполняется только когда происходит attach-событие.</p>
+
+      <h3>Типичная картина</h3>
+      <ul class="clean">
+        <li>пришёл пакет в сеть;</li>
+        <li>произошёл системный вызов;</li>
+        <li>вызвалась функция ядра;</li>
+        <li>сработал tracepoint;</li>
+        <li>произошло security-событие LSM.</li>
+      </ul>
+
+      <h3>kprobes</h3>
+      <p><strong>kprobes</strong> — это механизм ядра (ещё с 2005 года), который позволяет поставить ловушку почти на любую функцию ядра. На практике это значит: когда ядро входит в эту функцию или выходит из неё, можно выполнить дополнительный код.</p>
+      <p>eBPF отлично ложится на эту идею: eBPF-программа может быть привязана к kprobe и получать аргументы/контекст вызова. Это делает kprobes мощным инструментом трассировки и observability.</p>
+
+      <div class="diagram">
+        <strong>Как выглядит kprobe + eBPF</strong>
+        <div class="flow">
+          <div class="flow-step"><div class="bubble">1</div><div>Выбираем функцию ядра, например системный вызов или внутреннюю функцию.</div></div>
+          <div class="flow-step"><div class="bubble">2</div><div>Ставим на неё kprobe/kretprobe.</div></div>
+          <div class="flow-step"><div class="bubble">3</div><div>Привязываем eBPF-программу к этому probe.</div></div>
+          <div class="flow-step"><div class="bubble">4</div><div>При входе/выходе функции программа читает аргументы, считает latency, пишет статистику в map или отдаёт событие в userspace.</div></div>
+        </div>
+      </div>
+
+      <h3>LSM BPF</h3>
+      <p><strong>LSM (Linux Security Module) BPF</strong> позволяет использовать eBPF на security hooks — местах в ядре, где принимаются решения о безопасности. Это уже не просто «посмотреть на событие», а возможность влиять на security-политику: разрешать, запрещать, логировать.</p>
+
+      <h3>Почему attach points так важны</h3>
+      <p>Именно attach point определяет контекст программы, её возможности, ограничения и смысл. Сетевая eBPF-программа и kprobe-программа могут использовать один и тот же общий механизм eBPF, но запускаются в совершенно разных условиях и решают разные задачи.</p>
+    </section>
+
+    <section id="compare">
+      <div class="section-head">
+        <div class="num">10</div>
+        <div>
+          <h2>eBPF и kernel modules: сходство и различие</h2>
+          <div class="sub">Оба расширяют ядро, но eBPF делает это по-другому</div>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr><th>Свойство</th><th>eBPF</th><th>Kernel Module</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Загрузка</td><td>Динамическая, через BPF API, без перезагрузки</td><td>Тоже динамическая, но через механизм модулей</td></tr>
+          <tr><td>Безопасность</td><td>Есть verifier и ограниченная модель исполнения</td><td>Модуль — полноценный код ядра, может сломать всё</td></tr>
+          <tr><td>Гибкость</td><td>Сильно ограниченная, только в рамках BPF-модели</td><td>Максимальная, почти полный доступ к ядру</td></tr>
+          <tr><td>Производительность</td><td>Очень высокая, JIT и работа в ядре</td><td>Тоже высокая</td></tr>
+          <tr><td>Типовые задачи</td><td>Трассировка, сети, observability, security hooks</td><td>Драйверы, файловые системы, сложные расширения ядра</td></tr>
+        </tbody>
+      </table>
+
+      <div class="note">
+        <strong>Ключевая идея.</strong>
+        eBPF не заменяет kernel modules полностью. Он закрывает большой класс задач, где нужно безопасно, быстро и динамически «подключить логику» к ядру, но не даёт той свободы, которую дают модули.
+      </div>
+    </section>
+
+    <section id="proscons">
+      <div class="section-head">
+        <div class="num">11</div>
+        <div>
+          <h2>Плюсы, минусы и ограничения</h2>
+          <div class="sub">Что важно помнить: не только преимущества, но и границы применимости</div>
+        </div>
+      </div>
+
+      <h3>Плюсы из лекции</h3>
+      <div class="grid-3">
+        <div class="card">
+          <div class="label">Dynamic load</div>
+          <p>Можно начать наблюдение или фильтрацию немедленно, на уже работающей системе. Никакой перезагрузки и никакой необходимости заранее готовить приложение.</p>
+        </div>
+        <div class="card">
+          <div class="label">High performance</div>
+          <p>Код исполняется в ядре и может JIT-компилироваться в нативные инструкции. Минимум накладных расходов на переходы user↔kernel.</p>
+        </div>
+        <div class="card">
+          <div class="label">Cloud friendly</div>
+          <p>Одно ядро обслуживает множество контейнеров и VM. eBPF даёт централизованную точку наблюдения и управления этой средой.</p>
+        </div>
+      </div>
+
+      <h3>Недостатки / ограничения</h3>
+      <ul class="clean">
+        <li>Зависимость от версии ядра и доступных возможностей.</li>
+        <li>Verifier может быть строгим и усложнять разработку.</li>
+        <li>Это всё же ограниченная VM, а не «настоящий произвольный код ядра».</li>
+        <li>Нужны привилегии и понимание устройства ядра; «магии без знания Linux» не получится.</li>
+      </ul>
+
+      <div class="warn">
+        <strong>Почему “код в ядре быстрее” — не полный ответ.</strong>
+        Да, код внутри ядра избегает лишних context switch. Но производительность eBPF объясняется ещё и тем, что он работает близко к событию, может быть JIT-компилирован и часто позволяет не копировать данные туда-сюда между ядром и userspace.
+      </div>
+
+      <h3>Мини-шпаргалка по всей лекции</h3>
+      <div class="grid-4">
+        <div class="card"><div class="label">BPF</div><p>Старый фильтр пакетов.</p></div>
+        <div class="card"><div class="label">eBPF</div><p>Расширенный, универсальный механизм программ в ядре.</p></div>
+        <div class="card"><div class="label">Maps</div><p>State между вызовами и канал общения с userspace.</p></div>
+        <div class="card"><div class="label">Helpers</div><p>Разрешённые функции ядра для eBPF.</p></div>
+        <div class="card"><div class="label">Verifier</div><p>Проверяет безопасность до загрузки.</p></div>
+        <div class="card"><div class="label">bpf()</div><p>Системный вызов для работы с eBPF.</p></div>
+        <div class="card"><div class="label">Attach point</div><p>Событие, к которому привязана программа.</p></div>
+        <div class="card"><div class="label">kprobe</div><p>Ловушка на функцию ядра.</p></div>
+      </div>
+    </section>
+
+    <section id="questions">
+      <div class="section-head">
+        <div class="num">12</div>
+        <div>
+          <h2>Вопросы на понимание</h2>
+          <div class="sub">Проверяют, понимаешь ли ты механику, а не только определения</div>
+        </div>
+      </div>
+
+      <div class="qa">
+        <div class="q"><strong>1. Почему eBPF считают безопаснее, чем обычные модули ядра?</strong><p>Потому что программа проходит verifier и исполняется в ограниченной модели: нельзя делать всё подряд, как в kernel module.</p></div>
+        <div class="q"><strong>2. Почему eBPF вырос именно из BPF, а не появился «с нуля»?</strong><p>Потому что исходная идея фильтрации пакетов через маленькую VM уже показала эффективность, а затем её расширили до универсального механизма.</p></div>
+        <div class="q"><strong>3. Зачем нужны maps, если у eBPF уже есть стек и регистры?</strong><p>Стек и регистры живут в рамках одного запуска программы. Maps позволяют хранить состояние между вызовами и обмениваться данными с userspace.</p></div>
+        <div class="q"><strong>4. Почему helper functions необходимы?</strong><p>Иначе eBPF не смог бы безопасно взаимодействовать с ядром. Helper-ы — это контролируемый API вместо произвольных вызовов внутриядерных функций.</p></div>
+        <div class="q"><strong>5. Что делает syscall <code>bpf()</code>?</strong><p>Это основной интерфейс для загрузки программ, создания maps и управления BPF-объектами.</p></div>
+        <div class="q"><strong>6. Почему “код выполняется в ядре” — это и плюс, и опасность?</strong><p>Плюс — высокая скорость и близость к событию. Опасность — любая ошибка потенциально влияет на ядро, поэтому нужен verifier и строгие ограничения.</p></div>
+        <div class="q"><strong>7. Чем seccomp-bpf отличается от eBPF?</strong><p>seccomp-bpf — конкретное применение BPF для фильтрации системных вызовов. eBPF — более общий и мощный механизм.</p></div>
+        <div class="q"><strong>8. Почему kprobes так хорошо сочетаются с eBPF?</strong><p>Потому что kprobe даёт событие на функции ядра, а eBPF даёт код, который удобно запускать на этом событии.</p></div>
+        <div class="q"><strong>9. Что значит, что каждая eBPF-программа “привязана к событию”?</strong><p>Она не исполняется автономно как обычный процесс; она запускается только когда случается attach-событие.</p></div>
+        <div class="q"><strong>10. Зачем eBPF отдельные регистры и свой ISA?</strong><p>Потому что это отдельная VM внутри ядра. Ей нужен собственный машинно-независимый байткод, который можно проверить и при желании JIT-компилировать.</p></div>
+        <div class="q"><strong>11. Почему verifier работает по массиву инструкций, а не по исходному C-коду?</strong><p>Потому что в ядро загружается именно байткод / набор инструкций. Исходный C — только удобная форма для разработчика.</p></div>
+        <div class="q"><strong>12. Почему eBPF полезен в контейнерных и облачных системах?</strong><p>Потому что даёт единый уровень наблюдения и контроля поверх общего ядра, на котором сидят все контейнеры и часто множество рабочих нагрузок.</p></div>
+        <div class="q"><strong>13. Можно ли сказать, что eBPF полностью заменил kernel modules?</strong><p>Нет. Он закрыл большой класс задач, но для драйверов и глубоких расширений ядра по-прежнему нужны модули.</p></div>
+        <div class="q"><strong>14. Почему verifier может отклонить вроде бы корректную программу?</strong><p>Потому что ему нужно не «верить», а доказать безопасность. Если доказать не удалось, программа отклоняется.</p></div>
+        <div class="q"><strong>15. Что даёт JIT-компиляция в eBPF?</strong><p>Преобразует eBPF bytecode в нативный машинный код CPU, что снижает накладные расходы исполнения.</p></div>
+      </div>
+    </section>
+
+    <div class="footer">
+      Открытый HTML-конспект по eBPF: история, устройство, maps, helper-ы, verifier, attach points, kprobes, LSM, плюсы, ограничения и вопросы на понимание.
+    </div>
+  </div>
+
+<script>
+  const progress = document.getElementById('readingProgress');
+  const indicator = document.getElementById('sectionIndicator');
+  const sections = Array.from(document.querySelectorAll('section[id]'));
+  const titles = sections.map((section, index) => {
+    const h2 = section.querySelector('h2');
+    return { id: section.id, index: index + 1, title: h2 ? h2.textContent.trim() : `Раздел ${index + 1}` };
+  });
+
+  function updateReadingUI() {
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = docHeight > 0 ? Math.min(100, Math.max(0, (scrollTop / docHeight) * 100)) : 0;
+    progress.style.width = pct + '%';
+
+    let current = titles[0];
+    for (const item of titles) {
+      const el = document.getElementById(item.id);
+      if (el && el.getBoundingClientRect().top <= 140) current = item;
+    }
+    if (current) indicator.textContent = `Раздел ${current.index} / ${titles.length}: ${current.title}`;
+  }
+
+  updateReadingUI();
+  window.addEventListener('scroll', updateReadingUI, { passive: true });
+  window.addEventListener('resize', updateReadingUI);
+</script>
+</body>
+</html>

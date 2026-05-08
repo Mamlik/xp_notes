@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Примитивы синхронизации — открытый конспект</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Unbounded:wght@400;700;900&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0e14;
+    --surface: #111520;
+    --surface2: #161c2a;
+    --surface3: #1b2435;
+    --border: #1e2840;
+    --accent: #8b5cf6;
+    --accent2: #22d3ee;
+    --accent3: #f59e0b;
+    --danger: #ef4444;
+    --success: #10b981;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --text-dim: #94a3b8;
+    --mono: 'JetBrains Mono', monospace;
+    --display: 'Unbounded', sans-serif;
+    --body: 'Noto Sans', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 15px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.6;
+  }
+
+  .wrapper {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 60px 32px 100px;
+    position: relative;
+    z-index: 1;
+  }
+
+  header {
+    margin-bottom: 64px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--border);
+    animation: fadeDown 0.6s ease both;
+  }
+
+  .meta {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent2);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  h1 {
+    font-family: var(--display);
+    font-size: clamp(28px, 5vw, 46px);
+    font-weight: 900;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: #fff;
+    margin-bottom: 12px;
+  }
+
+  h1 span { color: var(--accent); }
+
+  .subtitle {
+    color: var(--text-dim);
+    font-size: 14px;
+    max-width: 700px;
+  }
+
+  section {
+    margin-bottom: 52px;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  section:nth-child(2) { animation-delay: 0.08s; }
+  section:nth-child(3) { animation-delay: 0.12s; }
+  section:nth-child(4) { animation-delay: 0.16s; }
+  section:nth-child(5) { animation-delay: 0.20s; }
+  section:nth-child(6) { animation-delay: 0.24s; }
+  section:nth-child(7) { animation-delay: 0.28s; }
+  section:nth-child(8) { animation-delay: 0.32s; }
+  section:nth-child(9) { animation-delay: 0.36s; }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  h2 {
+    font-family: var(--display);
+    font-size: 21px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  h2 .icon {
+    width: 34px;
+    height: 34px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    flex-shrink: 0;
+  }
+
+  h3 {
+    font-family: var(--display);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--accent2);
+    margin: 26px 0 10px;
+    letter-spacing: 0.02em;
+  }
+
+  p { margin-bottom: 12px; color: var(--text-dim); }
+  strong { color: var(--text); }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .card:hover {
+    border-color: var(--accent);
+    transform: translateX(4px);
+  }
+
+  .card-title {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent3);
+    margin-bottom: 8px;
+  }
+
+  .card p { margin-bottom: 8px; font-size: 14px; }
+  .card p:last-child { margin-bottom: 0; }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .badge-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    padding: 16px;
+  }
+
+  .badge-card .badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 11px;
+    background: rgba(139,92,246,0.15);
+    color: var(--accent);
+    border: 1px solid rgba(139,92,246,0.3);
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+  }
+
+  .badge-card .badge.amber { background: rgba(245,158,11,0.15); color: var(--accent3); border-color: rgba(245,158,11,0.3); }
+  .badge-card .badge.cyan  { background: rgba(34,211,238,0.15);  color: var(--accent2); border-color: rgba(34,211,238,0.3);  }
+  .badge-card .badge.red   { background: rgba(239,68,68,0.15);   color: var(--danger);  border-color: rgba(239,68,68,0.3);   }
+  .badge-card .badge.green { background: rgba(16,185,129,0.15);  color: var(--success); border-color: rgba(16,185,129,0.3);  }
+
+  .badge-card strong {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 5px;
+  }
+
+  .badge-card p { font-size: 13px; margin: 0; }
+
+  code {
+    font-family: var(--mono);
+    font-size: 12px;
+    background: rgba(139,92,246,0.1);
+    border: 1px solid rgba(139,92,246,0.2);
+    color: var(--accent2);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+
+  pre {
+    background: #080b11;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    overflow-x: auto;
+    margin: 14px 0;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  pre code {
+    background: transparent;
+    border: none;
+    padding: 0;
+    color: inherit;
+  }
+
+  .note {
+    background: rgba(139,92,246,0.07);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 18px;
+    margin: 16px 0;
+    font-size: 14px;
+    color: var(--text-dim);
+  }
+
+  .note.warn { background: rgba(245,158,11,0.07); border-left-color: var(--accent3); }
+  .note.danger { background: rgba(239,68,68,0.07); border-left-color: var(--danger); }
+  .note.good { background: rgba(16,185,129,0.07); border-left-color: var(--success); }
+  .note strong { color: var(--text); }
+
+  .pipeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 16px 0;
+  }
+
+  .pipeline-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .pipeline-step:last-child { border-bottom: none; }
+
+  .step-num {
+    width: 29px;
+    height: 29px;
+    background: var(--surface2);
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .step-content strong { color: var(--text); display: block; margin-bottom: 2px; font-size: 14px; }
+  .step-content span { color: var(--text-muted); font-size: 13px; }
+
+  .table-wrap {
+    overflow-x: auto;
+    margin: 16px 0;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  th {
+    background: var(--surface2);
+    padding: 10px 16px;
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+  }
+
+  td {
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-dim);
+    vertical-align: top;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+  td:first-child { font-family: var(--mono); font-size: 12px; color: var(--accent3); white-space: nowrap; }
+
+  ul.list {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0;
+  }
+
+  ul.list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 6px 0;
+    font-size: 14px;
+    color: var(--text-dim);
+  }
+
+  ul.list li::before {
+    content: '→';
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 12px;
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin: 16px 0;
+  }
+
+  @media (max-width: 720px) {
+    .compare { grid-template-columns: 1fr; }
+    .wrapper { padding: 42px 20px 80px; }
+  }
+
+  .side {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+  }
+
+  .side.bad { border-color: rgba(239,68,68,0.32); }
+  .side.good { border-color: rgba(16,185,129,0.32); }
+  .side h4 {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent2);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .side.bad h4 { color: var(--danger); }
+  .side.good h4 { color: var(--success); }
+  .side p { font-size: 13px; margin-bottom: 8px; }
+
+  .questions-section {
+    background: linear-gradient(135deg, rgba(239,68,68,0.06), rgba(245,158,11,0.04));
+    border: 1px solid rgba(239,68,68,0.25);
+    border-radius: 14px;
+    padding: 32px;
+    margin-top: 56px;
+  }
+
+  .questions-section h2 {
+    border-color: rgba(239,68,68,0.2);
+    margin-bottom: 24px;
+  }
+
+  .q-item {
+    display: flex;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    align-items: flex-start;
+  }
+
+  .q-item:last-child { border-bottom: none; }
+
+  .q-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--danger);
+    min-width: 34px;
+    padding-top: 2px;
+  }
+
+  .q-text {
+    font-size: 14px;
+    color: var(--text-dim);
+    flex: 1;
+  }
+
+  .q-text strong { color: #fff; }
+
+  .q-hint {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    font-style: italic;
+  }
+
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, var(--accent) 0%, transparent 100%);
+    margin: 40px 0;
+    opacity: 0.3;
+  }
+
+  .formula {
+    font-family: var(--mono);
+    background: rgba(34,211,238,0.06);
+    border: 1px solid rgba(34,211,238,0.18);
+    border-radius: 10px;
+    padding: 13px 16px;
+    color: var(--accent2);
+    margin: 14px 0;
+    font-size: 13px;
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+
+  html { scroll-behavior: smooth; }
+
+  .read-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: rgba(30,40,64,0.65);
+    z-index: 20;
+  }
+
+  .read-progress span {
+    display: block;
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    box-shadow: 0 0 16px rgba(139,92,246,0.45);
+    transition: width 0.08s linear;
+  }
+
+  .section-indicator {
+    position: fixed;
+    right: 18px;
+    top: 18px;
+    z-index: 19;
+    max-width: min(360px, calc(100vw - 36px));
+    padding: 9px 12px;
+    border: 1px solid rgba(139,92,246,0.35);
+    border-radius: 999px;
+    background: rgba(17,21,32,0.86);
+    backdrop-filter: blur(12px);
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .toc {
+    background: linear-gradient(135deg, rgba(139,92,246,0.08), rgba(34,211,238,0.04));
+    border: 1px solid rgba(139,92,246,0.28);
+    border-radius: 16px;
+    padding: 24px 28px;
+    margin-bottom: 48px;
+  }
+
+  .toc-title {
+    font-family: var(--display);
+    font-size: 15px;
+    color: #fff;
+    margin-bottom: 14px;
+  }
+
+  .toc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 10px 18px;
+  }
+
+  .toc a {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 14px;
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+    transition: color 0.2s, transform 0.2s;
+  }
+
+  .toc a:hover { color: var(--accent2); transform: translateX(4px); }
+  .toc code { color: var(--accent3); }
+
+  @media (max-width: 720px) {
+    .section-indicator {
+      left: 12px;
+      right: 12px;
+      top: 10px;
+      text-align: center;
+    }
+  }
+
+</style>
+</head>
+<body>
+<div class="read-progress" aria-hidden="true"><span id="readProgressBar"></span></div>
+<div class="section-indicator" id="sectionIndicator">Раздел 00 / 11: Карта темы</div>
+<div class="wrapper">
+
+<header>
+  <div class="meta">// АКОС · открытый конспект</div>
+  <h1>Примитивы <span>синхронизации</span></h1>
+  <p class="subtitle">Открытые Конспекты Экстремального Программирования МИФИ по архитектуре компьютера и операционным системам. Конспект подготовлен студентами и может содержать ошибки.</p>
+</header>
+
+<nav class="toc" aria-label="Навигация по конспекту">
+  <div class="toc-title">Навигация по конспекту</div>
+  <div class="toc-grid">
+    <a href="#overview"><code>00</code> Карта темы</a>
+    <a href="#spinlock"><code>01</code> Spinlock</a>
+    <a href="#busy-loop"><code>02</code> Busy loop и atomic write</a>
+    <a href="#mutex"><code>03</code> Mutex</a>
+    <a href="#futex"><code>04</code> Futex</a>
+    <a href="#rwlock"><code>05</code> RWLock</a>
+    <a href="#cpu-local-lock"><code>06</code> CPU local lock</a>
+    <a href="#tradeoffs"><code>07</code> Достоинства и недостатки</a>
+    <a href="#fairness"><code>08</code> Fairness и starvation</a>
+    <a href="#bugs"><code>09</code> Типичные баги</a>
+    <a href="#cheatsheet"><code>10</code> Мини-шпаргалка</a>
+    <a href="#questions"><code>Q</code> Вопросы на понимание</a>
+  </div>
+</nav>
+
+<section id="overview" data-title="Карта темы">
+  <div class="section-label">// 00</div>
+  <h2><span class="icon">🧭</span>Карта темы: что такое синхронизация</h2>
+
+  <p><strong>Синхронизация</strong> нужна, когда несколько потоков, процессов или ядер могут одновременно работать с общими данными. Без синхронизации возникает <strong>race condition</strong>: результат зависит от случайного порядка выполнения.</p>
+
+  <div class="card">
+    <div class="card-title">Главная идея lock-а</div>
+    <p>Lock выделяет <strong>критическую секцию</strong> — участок кода, где поток работает с общим состоянием и должен быть один.</p>
+    <div class="formula">lock → critical section → unlock</div>
+    <p>Пока один поток держит lock, остальные либо <strong>крутятся</strong>, либо <strong>спят</strong>, либо пытаются использовать гибридный подход.</p>
+  </div>
+
+  <div class="grid-3">
+    <div class="badge-card">
+      <span class="badge red">Проблема 1</span>
+      <strong>Гонки данных</strong>
+      <p>Два ядра одновременно меняют одну переменную: одно изменение может потеряться.</p>
+    </div>
+    <div class="badge-card">
+      <span class="badge amber">Проблема 2</span>
+      <strong>Кеши и атомики</strong>
+      <p>Lock часто заставляет ядра перекидывать одну кеш-линию туда-сюда.</p>
+    </div>
+    <div class="badge-card">
+      <span class="badge cyan">Проблема 3</span>
+      <strong>Системные вызовы</strong>
+      <p>Сон и пробуждение требуют помощи ОС, а переход в ядро стоит дорого.</p>
+    </div>
+  </div>
+
+  <div class="note warn">
+    <strong>Ключевой вопрос темы:</strong> что дешевле в конкретной ситуации — немного покрутиться на CPU или уйти спать через ОС?
+  </div>
+</section>
+
+<section id="spinlock" data-title="Spinlock">
+  <div class="section-label">// 01</div>
+  <h2><span class="icon">🔁</span>Spinlock: крутимся, пока lock не освободится</h2>
+
+  <p><strong>Spinlock</strong> — самый простой lock. Если lock занят, поток не засыпает, а продолжает в цикле проверять, можно ли его захватить. Такой цикл называется <strong>busy loop</strong> или <strong>busy waiting</strong>.</p>
+
+  <pre><code>// Упрощённая идея spinlock
+while (atomic_exchange(&lock, 1) == 1) {
+    // lock занят — крутимся
+}
+
+// critical section
+
+atomic_store(&lock, 0);</code></pre>
+
+  <div class="pipeline">
+    <div class="pipeline-step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <strong>Поток пытается атомарно поставить lock = 1</strong>
+        <span>Операция должна быть атомарной, иначе два потока могут одновременно “увидеть”, что lock свободен.</span>
+      </div>
+    </div>
+    <div class="pipeline-step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <strong>Если получилось — входим в критическую секцию</strong>
+        <span>Теперь текущий поток владеет lock-ом.</span>
+      </div>
+    </div>
+    <div class="pipeline-step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <strong>Если не получилось — повторяем попытку</strong>
+        <span>Поток не отдаёт CPU, а постоянно проверяет lock.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="compare">
+    <div class="side good">
+      <h4>Когда spinlock хорош</h4>
+      <p><strong>Критическая секция очень короткая.</strong> Например, несколько инструкций в ядре.</p>
+      <p><strong>Нельзя спать.</strong> Например, код выполняется в контексте, где планировщик недоступен.</p>
+      <p><strong>Ожидание меньше цены системного вызова.</strong> Тогда выгоднее покрутиться.</p>
+    </div>
+    <div class="side bad">
+      <h4>Когда spinlock плох</h4>
+      <p><strong>Критическая секция длинная.</strong> Поток сжигает CPU впустую.</p>
+      <p><strong>Держатель lock-а вытеснен.</strong> Остальные крутятся, а тот, кто должен освободить lock, вообще не работает.</p>
+      <p><strong>Много ядер спорят за один lock.</strong> Начинается сильный cache-line bouncing.</p>
+    </div>
+  </div>
+
+  <div class="note danger">
+    <strong>Почему busy loop плох:</strong> он тратит CPU-время, мешает другим потокам, гоняет кеш-линию между ядрами, нагревает процессор и повышает энергопотребление. На мобильных устройствах это особенно важно: чем выше активность CPU, тем быстрее садится батарея.
+  </div>
+</section>
+
+<section id="busy-loop" data-title="Busy loop и atomic write">
+  <div class="section-label">// 02</div>
+  <h2><span class="icon">⚙️</span>Почему busy loop + atomic write — ужасно</h2>
+
+  <p>Наивный spinlock часто делают так: каждый ожидающий поток постоянно выполняет атомарную операцию записи, пытаясь захватить lock. Это очень дорого.</p>
+
+  <pre><code>// Плохо: каждая итерация делает atomic write / exchange
+while (atomic_exchange(&lock, 1) == 1) {
+    // каждый раз пытаемся записать в lock
+}</code></pre>
+
+  <div class="card">
+    <div class="card-title">Почему atomic write бьёт по производительности</div>
+    <p>Lock обычно лежит в одной кеш-линии. Чтобы ядро могло записать в эту кеш-линию, оно должно получить её в эксклюзивное/modified состояние. Если много ядер постоянно пишут в одну и ту же линию, она всё время переезжает между кешами разных ядер.</p>
+  </div>
+
+  <div class="note warn">
+    <strong>Итог:</strong> busy loop с постоянной атомарной записью создаёт огромный трафик когерентности кешей. Потоки не просто ждут — они активно мешают друг другу.
+  </div>
+
+  <h3>Улучшение: busy loop + atomic read</h3>
+  <p>Менее ужасный вариант: сначала читать lock обычной/атомарной загрузкой, а дорогую атомарную запись делать только когда кажется, что lock свободен.</p>
+
+  <pre><code>// Идея test-and-test-and-set
+while (true) {
+    while (atomic_load(&lock) == 1) {
+        // только читаем, не пишем
+    }
+    if (atomic_exchange(&lock, 1) == 0) {
+        break; // захватили
+    }
+}</code></pre>
+
+  <div class="compare">
+    <div class="side bad">
+      <h4>busy loop + atomic write</h4>
+      <p>Каждая попытка ожидания — запись.</p>
+      <p>Постоянная инвалидация кеш-линий.</p>
+      <p>Очень плохо при конкуренции.</p>
+    </div>
+    <div class="side good">
+      <h4>busy loop + atomic read</h4>
+      <p>Пока lock занят, в основном идут чтения.</p>
+      <p>Кеш-линия может быть shared у многих ядер.</p>
+      <p>Дорогая запись только при попытке захвата.</p>
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>Но:</strong> даже atomic read loop всё равно сжигает CPU. Это не универсальное решение, а просто менее плохой spinlock.
+  </div>
+</section>
+
+<section id="mutex" data-title="Mutex">
+  <div class="section-label">// 03</div>
+  <h2><span class="icon">😴</span>Mutex: если не можешь захватить — спи</h2>
+
+  <p><strong>Mutex</strong> решает главную проблему spinlock-а: поток не обязан крутиться, если lock занят. Он может отдать CPU другому процессу или треду.</p>
+
+  <div class="card">
+    <div class="card-title">Интуиция</div>
+    <p>Если критическая секция длинная, ждать в busy loop бессмысленно. Лучше сказать ОС: “разбуди меня, когда lock освободится”, и дать процессору заняться полезной работой.</p>
+  </div>
+
+  <div class="pipeline">
+    <div class="pipeline-step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <strong>Поток пытается захватить mutex</strong>
+        <span>Если mutex свободен — захват быстрый.</span>
+      </div>
+    </div>
+    <div class="pipeline-step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <strong>Если mutex занят — поток уходит спать</strong>
+        <span>Нужна поддержка ОС: системный вызов переводит поток в состояние ожидания.</span>
+      </div>
+    </div>
+    <div class="pipeline-step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <strong>Владелец освобождает mutex</strong>
+        <span>ОС будит одного или нескольких ожидающих.</span>
+      </div>
+    </div>
+    <div class="pipeline-step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <strong>Проснувшийся поток снова конкурирует за lock</strong>
+        <span>Пробуждение не всегда означает мгновенный захват.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="note warn">
+    <strong>Ключевая цена mutex-а:</strong> если приходится спать/будить, нужны системные вызовы и работа планировщика. Это дороже, чем несколько итераций spinlock-а, но дешевле, чем долго жечь CPU.
+  </div>
+
+  <h3>Mutex в xv6</h3>
+  <p>В учебной ОС xv6 идея mutex-а хорошо показывает роль ядра: нужен один механизм, который <strong>усыпит</strong> текущий поток/процесс, и парный механизм, который его <strong>разбудит</strong>. Без ОС поток не может сам “исчезнуть” с CPU корректно и проснуться по событию.</p>
+
+  <div class="grid-2">
+    <div class="badge-card">
+      <span class="badge cyan">sleep</span>
+      <strong>Отправить процесс спать</strong>
+      <p>Процесс перестаёт занимать CPU и ждёт события.</p>
+    </div>
+    <div class="badge-card">
+      <span class="badge green">wakeup</span>
+      <strong>Разбудить ожидающих</strong>
+      <p>Когда lock освобождён, ядро может вернуть ожидающий процесс в очередь готовых.</p>
+    </div>
+  </div>
+</section>
+
+<section id="futex" data-title="Futex">
+  <div class="section-label">// 04</div>
+  <h2><span class="icon">🧪</span>Futex: быстрый путь в userspace, сон — только если надо</h2>
+
+  <p><strong>Futex</strong> расшифровывают как <strong>fast userspace mutex</strong>. Идея: не ходить в ядро, если lock можно захватить быстро в пользовательском пространстве.</p>
+
+  <div class="card">
+    <div class="card-title">Почему futex вообще появился</div>
+    <p>Системные вызовы дорогие. Но чистый spinlock тоже плох, если ждать приходится долго. Futex соединяет два подхода: сначала быстрые атомики в userspace, а если не получилось — системный вызов, чтобы заснуть.</p>
+  </div>
+
+  <div class="pipeline">
+    <div class="pipeline-step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <strong>Пробуем захватить lock атомарно в userspace</strong>
+        <span>Если lock свободен, ядро вообще не участвует.</span>
+      </div>
+    </div>
+    <div class="pipeline-step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <strong>Если lock занят — можно немного покрутиться</strong>
+        <span>Это выгодно, если владелец скоро освободит lock.</span>
+      </div>
+    </div>
+    <div class="pipeline-step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <strong>Если не вышло — futex_wait</strong>
+        <span>Поток просит ядро усыпить его, но только если значение futex-слова всё ещё ожидаемое.</span>
+      </div>
+    </div>
+    <div class="pipeline-step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <strong>При unlock — futex_wake</strong>
+        <span>Освобождающий поток будит ожидающих через ядро, если они есть.</span>
+      </div>
+    </div>
+  </div>
+
+  <pre><code>// Упрощённая логика futex-lock
+if (atomic_try_lock(&lock)) {
+    return; // fast path: без syscall
+}
+
+for (int i = 0; i < SPIN_LIMIT; i++) {
+    if (atomic_try_lock(&lock)) return;
+}
+
+futex_wait(&lock, LOCKED); // slow path: syscall, сон</code></pre>
+
+  <div class="note good">
+    <strong>Главное:</strong> futex нормален именно потому, что uncontended case не требует syscall. Если lock свободен, всё происходит через обычные атомарные операции в userspace.
+  </div>
+
+  <div class="note warn">
+    <strong>Ловушка:</strong> futex — это не “готовый mutex”, а низкоуровневый механизм ядра для сна/пробуждения по адресу в памяти. Из него уже строят mutex, condition variable и другие примитивы.
+  </div>
+</section>
+
+<section id="rwlock" data-title="RWLock">
+  <div class="section-label">// 05</div>
+  <h2><span class="icon">📚</span>RWLock: много читателей или один писатель</h2>
+
+  <p><strong>RWLock</strong> — read-write lock. Он полезен, когда есть данные, которые часто читают и редко изменяют.</p>
+
+  <div class="grid-2">
+    <div class="badge-card">
+      <span class="badge cyan">rlock / runlock</span>
+      <strong>Режим чтения</strong>
+      <p>Несколько читателей могут держать lock одновременно, потому что они не меняют данные.</p>
+    </div>
+    <div class="badge-card">
+      <span class="badge amber">wlock / wunlock</span>
+      <strong>Режим записи</strong>
+      <p>Писатель должен быть один. Пока пишет один поток, читатели и другие писатели ждут.</p>
+    </div>
+  </div>
+
+  <div class="formula">Много читателей одновременно OR один писатель эксклюзивно</div>
+
+  <h3>Зачем настраивать приоритет</h3>
+  <p>В зависимости от workload-а RWLock может быть настроен по-разному:</p>
+
+  <div class="compare">
+    <div class="side">
+      <h4>Приоритет читателей</h4>
+      <p>Новые читатели могут проходить, даже если писатель уже ждёт.</p>
+      <p><strong>Плюс:</strong> высокая пропускная способность чтений.</p>
+      <p><strong>Минус:</strong> писатель может голодать, если читатели идут непрерывно.</p>
+    </div>
+    <div class="side">
+      <h4>Приоритет писателей</h4>
+      <p>Если писатель ждёт, новых читателей могут блокировать.</p>
+      <p><strong>Плюс:</strong> писатель не ждёт бесконечно.</p>
+      <p><strong>Минус:</strong> падает параллелизм чтений.</p>
+    </div>
+  </div>
+
+  <div class="note warn">
+    <strong>Ловушка:</strong> RWLock не всегда быстрее mutex-а. Если записей много или критическая секция короткая, накладные расходы RWLock-а могут съесть всю пользу.
+  </div>
+</section>
+
+<section id="cpu-local-lock" data-title="CPU local lock">
+  <div class="section-label">// 06</div>
+  <h2><span class="icon">🧷</span>CPU local lock: локальная защита внутри ядра</h2>
+
+  <p><strong>CPU local lock</strong> — особый тип примитива, который используется в ядре. Его смысл отличается от обычного mutex-а или spinlock-а.</p>
+
+  <div class="card">
+    <div class="card-title">Что значит local</div>
+    <p>Local означает, что lock защищает не от всех ядер сразу, а от <strong>асинхронных обработчиков на текущем CPU</strong>: например, interrupt handler, softirq, preemption-зависимых ситуаций.</p>
+  </div>
+
+  <div class="grid-3">
+    <div class="badge-card">
+      <span class="badge cyan">Только ядро</span>
+      <strong>Не userspace-примитив</strong>
+      <p>Обычные программы не используют CPU local lock напрямую.</p>
+    </div>
+    <div class="badge-card">
+      <span class="badge amber">Асинхронность</span>
+      <strong>Защита от обработчиков</strong>
+      <p>Код может быть прерван обработчиком, который трогает те же per-CPU данные.</p>
+    </div>
+    <div class="badge-card">
+      <span class="badge green">Локальность</span>
+      <strong>Один CPU</strong>
+      <p>Главная цель — выделить участок, где локальные асинхронные события не вмешаются.</p>
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>Интуиция:</strong> обычный lock отвечает на вопрос “что если другой поток на другом ядре?”. CPU local lock отвечает на вопрос “что если меня прямо сейчас прервёт локальный обработчик?”.
+  </div>
+</section>
+
+<section id="tradeoffs" data-title="Достоинства и недостатки">
+  <div class="section-label">// 07</div>
+  <h2><span class="icon">⚖️</span>Достоинства и недостатки подходов</h2>
+
+  <p>Выбор примитива синхронизации — это всегда компромисс между задержкой, расходом CPU, числом системных вызовов, справедливостью и поведением кешей.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Подход</th>
+          <th>Что делает ожидающий поток</th>
+          <th>Плюсы</th>
+          <th>Минусы</th>
+          <th>Когда выбирать</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Spinlock</td>
+          <td>Крутится в busy loop</td>
+          <td>Нет syscall, очень быстрый при коротком ожидании</td>
+          <td>Жжёт CPU, cache-line bouncing, плохо при длинном ожидании</td>
+          <td>Очень короткие критические секции, kernel-код, нельзя спать</td>
+        </tr>
+        <tr>
+          <td>Mutex</td>
+          <td>Уходит спать через ОС</td>
+          <td>Не тратит CPU во время ожидания</td>
+          <td>Syscall, планировщик, context switch</td>
+          <td>Длинные критические секции, ожидание может быть долгим</td>
+        </tr>
+        <tr>
+          <td>Futex</td>
+          <td>Сначала userspace, потом сон</td>
+          <td>Fast path без syscall, slow path через ядро</td>
+          <td>Сложная реализация, надо аккуратно избегать lost wakeup</td>
+          <td>Практические mutex-ы в userspace</td>
+        </tr>
+        <tr>
+          <td>RWLock</td>
+          <td>Читатели делят доступ, писатели ждут эксклюзивности</td>
+          <td>Хорош для read-mostly структур</td>
+          <td>Сложность, starvation, накладные расходы</td>
+          <td>Много чтений, мало записей, чтения достаточно длинные</td>
+        </tr>
+        <tr>
+          <td>CPU local lock</td>
+          <td>Ограничивает локальную асинхронность</td>
+          <td>Подходит для per-CPU структур в ядре</td>
+          <td>Не заменяет глобальную синхронизацию между ядрами</td>
+          <td>Kernel-код, защита от локальных interrupt/softirq/preemption ситуаций</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>О чём думать при выборе lock-а</h3>
+  <ul class="list">
+    <li><strong>Большая ли критическая секция?</strong> Чем она длиннее, тем хуже spinlock.</li>
+    <li><strong>Заставляем ли ядра перекидывать кеш-линии?</strong> Частый atomic write по одному адресу плохо масштабируется.</li>
+    <li><strong>Делаем ли лишние системные вызовы?</strong> Если lock почти всегда свободен, syscall на каждый lock/unlock — лишняя цена.</li>
+    <li><strong>Можно ли избежать syscall-ов?</strong> Futex старается делать быстрый путь без ядра.</li>
+    <li><strong>Есть ли гарантия, что процесс захватит lock?</strong> Некоторые lock-и могут приводить к starvation.</li>
+    <li><strong>Честно ли захватывается lock?</strong> Fair lock обычно предсказуемее, но может быть медленнее.</li>
+  </ul>
+</section>
+
+<section id="fairness" data-title="Fairness и starvation">
+  <div class="section-label">// 08</div>
+  <h2><span class="icon">🎛️</span>Fairness, starvation и гарантии прогресса</h2>
+
+  <p>Lock может быть быстрым, но “нечестным”. Это значит, что один поток может долго ждать, пока другие снова и снова успевают захватить lock раньше него.</p>
+
+  <div class="grid-3">
+    <div class="badge-card">
+      <span class="badge red">Starvation</span>
+      <strong>Голодание</strong>
+      <p>Поток формально может захватить lock, но на практике очень долго не получает шанс.</p>
+    </div>
+    <div class="badge-card">
+      <span class="badge amber">Fair lock</span>
+      <strong>Честный lock</strong>
+      <p>Обычно обслуживает ожидающих в порядке очереди или близко к нему.</p>
+    </div>
+    <div class="badge-card">
+      <span class="badge cyan">Unfair lock</span>
+      <strong>Нечестный lock</strong>
+      <p>Может быть быстрее из-за меньших накладных расходов, но хуже по предсказуемости.</p>
+    </div>
+  </div>
+
+  <div class="note warn">
+    <strong>Компромисс:</strong> честность часто стоит производительности. Очередной lock может меньше гонять потоки хаотично, но требует дополнительных структур данных и атомарных операций.
+  </div>
+
+  <h3>Пример: почему “разбудили” не значит “захватил”</h3>
+  <p>Если поток спал на mutex-е/futex-е и его разбудили, он ещё должен получить CPU и снова выполнить попытку захвата. За это время другой поток может успеть забрать lock.</p>
+
+  <div class="note">
+    <strong>Вывод:</strong> после пробуждения условие всегда проверяют заново. Нельзя считать, что wakeup автоматически передал владение lock-ом.
+  </div>
+</section>
+
+<section id="bugs" data-title="Типичные баги">
+  <div class="section-label">// 09</div>
+  <h2><span class="icon">🧨</span>Типичные баги с синхронизацией</h2>
+
+  <div class="grid-2">
+    <div class="badge-card">
+      <span class="badge red">Deadlock</span>
+      <strong>Взаимная блокировка</strong>
+      <p>Поток A держит lock1 и ждёт lock2, поток B держит lock2 и ждёт lock1. Никто не продолжит выполнение.</p>
+    </div>
+    <div class="badge-card">
+      <span class="badge red">Lost wakeup</span>
+      <strong>Потерянное пробуждение</strong>
+      <p>Поток собирался заснуть, но событие произошло прямо перед сном. Если не проверить состояние атомарно, поток может уснуть навсегда.</p>
+    </div>
+    <div class="badge-card">
+      <span class="badge amber">Priority inversion</span>
+      <strong>Инверсия приоритетов</strong>
+      <p>Низкоприоритетный поток держит lock, высокоприоритетный ждёт, а среднеприоритетные мешают низкому освободить lock.</p>
+    </div>
+    <div class="badge-card">
+      <span class="badge amber">Convoying</span>
+      <strong>Эффект колонны</strong>
+      <p>Много потоков выстраиваются за одним lock-ом, и производительность падает из-за пробуждений и переключений контекста.</p>
+    </div>
+  </div>
+
+  <div class="note danger">
+    <strong>Главное правило:</strong> синхронизация должна защищать не “кусок кода ради куска кода”, а конкретный инвариант данных. Если непонятно, какой инвариант защищается, lock почти наверняка используется неправильно.
+  </div>
+</section>
+
+<section id="cheatsheet" data-title="Мини-шпаргалка">
+  <div class="section-label">// 10</div>
+  <h2><span class="icon">🧾</span>Мини-шпаргалка</h2>
+
+  <div class="card">
+    <div class="card-title">Что обязательно помнить</div>
+    <ul class="list">
+      <li><strong>Spinlock</strong> — busy loop, хорош только при очень коротком ожидании или когда нельзя спать.</li>
+      <li><strong>Busy loop + atomic write</strong> — плохо из-за постоянных записей и перекидывания кеш-линии между ядрами.</li>
+      <li><strong>Busy loop + atomic read</strong> — лучше, потому что ожидание в основном читает shared кеш-линию.</li>
+      <li><strong>Mutex</strong> — при занятости lock-а поток спит, нужна поддержка ОС: sleep/wakeup.</li>
+      <li><strong>Futex</strong> — fast path в userspace без syscall, slow path через futex_wait/futex_wake.</li>
+      <li><strong>RWLock</strong> — много читателей или один писатель; полезен при read-mostly нагрузке.</li>
+      <li><strong>CPU local lock</strong> — kernel-only примитив для защиты от локальных асинхронных обработчиков на CPU.</li>
+      <li><strong>Fairness</strong> — честность захвата; повышает предсказуемость, но может стоить скорости.</li>
+      <li><strong>Starvation</strong> — поток долго не получает lock, хотя система в целом работает.</li>
+      <li><strong>Выбор lock-а</strong> зависит от длины критической секции, конкуренции, syscall-ов, кешей и требований к честности.</li>
+    </ul>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<div id="questions" class="questions-section" data-title="Вопросы на понимание">
+  <div class="section-label" style="color:var(--danger);">// вопросы</div>
+  <h2 style="color:#fff;"><span class="icon">🎯</span>Вопросы на понимание</h2>
+
+  <div class="q-item">
+    <div class="q-num">Q01</div>
+    <div class="q-text"><strong>Почему spinlock не отправляет поток спать?</strong><div class="q-hint">→ Потому что его идея — ждать активным циклом. Это выгодно, если ожидание очень короткое или если в данном контексте нельзя вызывать планировщик.</div></div>
+  </div>
+
+  <div class="q-item">
+    <div class="q-num">Q02</div>
+    <div class="q-text"><strong>Почему spinlock плох для длинной критической секции?</strong><div class="q-hint">→ Ожидающие потоки всё время занимают CPU, хотя не делают полезной работы. Если владелец lock-а долго не освобождает его, busy waiting превращается в чистую потерю ресурсов.</div></div>
+  </div>
+
+  <div class="q-item">
+    <div class="q-num">Q03</div>
+    <div class="q-text"><strong>Почему busy loop + atomic write хуже, чем busy loop + atomic read?</strong><div class="q-hint">→ Atomic write требует эксклюзивного владения кеш-линией и инвалидирует копии у других ядер. Atomic read может использовать shared состояние кеш-линии и создаёт меньше трафика когерентности.</div></div>
+  </div>
+
+  <div class="q-item">
+    <div class="q-num">Q04</div>
+    <div class="q-text"><strong>Что такое test-and-test-and-set?</strong><div class="q-hint">→ Сначала в цикле читаем lock, пока он занят, и только когда он выглядит свободным, делаем дорогую атомарную попытку записи/exchange.</div></div>
+  </div>
+
+  <div class="q-item">
+    <div class="q-num">Q05</div>
+    <div class="q-text"><strong>Почему высокая частота CPU делает busy loop особенно неприятным?</strong><div class="q-hint">→ Чем активнее CPU крутится, тем больше энергии он потребляет и тем сильнее греется. На мобильных устройствах это напрямую бьёт по батарее.</div></div>
+  </div>
+
+  <div class="q-item">
+    <div class="q-num">Q06</div>
+    <div class="q-text"><strong>Почему mutex требует поддержки ОС?</strong><div class="q-hint">→ Чтобы поток перестал выполняться и не занимал CPU, его должен усыпить планировщик ядра. Потом ядро должно разбудить его при освобождении lock-а.</div></div>
+  </div>
+
+  <div class="q-item">
+    <div class="q-num">Q07</div>
+    <div class="q-text"><strong>Почему mutex может быть медленнее spinlock-а при очень коротком ожидании?</strong><div class="q-hint">→ Сон и пробуждение требуют системных вызовов, работы планировщика и, возможно, переключения контекста. Это может быть дороже, чем несколько итераций spin.</div></div>
+  </div>
+
+  <div class="q-item">
+    <div class="q-num">Q08</div>
+    <div class="q-text"><strong>Что такое futex и почему он быстрее обычного “всегда syscall” mutex-а?</strong><div class="q-hint">→ Futex делает fast path в userspace: если lock свободен, системный вызов не нужен. В ядро идём только при реальном ожидании.</div></div>
+  </div>
+
+  <div class="q-item">
+    <div class="q-num">Q09</div>
+    <div class="q-text"><strong>Почему futex_wait должен проверять значение слова перед сном?</strong><div class="q-hint">→ Чтобы избежать lost wakeup: если lock уже освободился до сна, поток не должен засыпать по старому состоянию.</div></div>
+  </div>
+
+  <div class="q-item">
+    <div class="q-num">Q10</div>
+    <div class="q-text"><strong>Почему futex — это не сам mutex?</strong><div class="q-hint">→ Futex — низкоуровневый механизм wait/wake по адресу в памяти. Политика mutex-а строится поверх него в библиотеке/рантайме.</div></div>
+  </div>
+
+  <div class="q-item">
+    <div class="q-num">Q11</div>
+    <div class="q-text"><strong>Когда RWLock лучше обычного mutex-а?</strong><div class="q-hint">→ Когда данные читаются часто, пишутся редко, а чтения достаточно долгие, чтобы параллелизм читателей окупал накладные расходы RWLock-а.</div></div>
+  </div>
+
+  <div class="q-item">
+    <div class="q-num">Q12</div>
+    <div class="q-text"><strong>Почему RWLock может оказаться хуже mutex-а?</strong><div class="q-hint">→ Если записей много, критические секции короткие или высокая конкуренция, накладные расходы и блокировки писателей/читателей могут сделать RWLock медленнее.</div></div>
+  </div>
+
+  <div class="q-item">
+    <div class="q-num">Q13</div>
+    <div class="q-text"><strong>Что значит “приоритет читателей” в RWLock-е и чем это опасно?</strong><div class="q-hint">→ Новые читатели могут проходить, пока писатель ждёт. Это повышает throughput чтений, но писатель может голодать.</div></div>
+  </div>
+
+  <div class="q-item">
+    <div class="q-num">Q14</div>
+    <div class="q-text"><strong>Что значит “приоритет писателей” в RWLock-е?</strong><div class="q-hint">→ Если писатель ждёт, новых читателей могут не пускать, чтобы писатель не голодал. Минус — меньше параллелизма чтений.</div></div>
+  </div>
+
+  <div class="q-item">
+    <div class="q-num">Q15</div>
+    <div class="q-text"><strong>Что защищает CPU local lock?</strong><div class="q-hint">→ Он защищает критические секции ядра от локальных асинхронных обработчиков на текущем CPU, а не является обычным межпоточным userspace-lock-ом.</div></div>
+  </div>
+
+  <div class="q-item">
+    <div class="q-num">Q16</div>
+    <div class="q-text"><strong>Почему CPU local lock не заменяет глобальный lock между ядрами?</strong><div class="q-hint">→ Он локален для CPU. Если данные реально общие между ядрами, нужна синхронизация, которая учитывает параллельный доступ с других CPU.</div></div>
+  </div>
+
+  <div class="q-item">
+    <div class="q-num">Q17</div>
+    <div class="q-text"><strong>Что такое cache-line bouncing в контексте lock-ов?</strong><div class="q-hint">→ Кеш-линия с lock-ом постоянно переходит между кешами ядер, потому что разные ядра пытаются читать/писать её, особенно при atomic write.</div></div>
+  </div>
+
+  <div class="q-item">
+    <div class="q-num">Q18</div>
+    <div class="q-text"><strong>Почему “разбудили поток” не значит “он уже владеет lock-ом”?</strong><div class="q-hint">→ После wakeup поток только становится runnable. Ему ещё надо получить CPU и снова попытаться захватить lock; другой поток может опередить его.</div></div>
+  </div>
+
+  <div class="q-item">
+    <div class="q-num">Q19</div>
+    <div class="q-text"><strong>Что такое fair lock?</strong><div class="q-hint">→ Lock, который старается выдавать доступ ожидающим потокам в справедливом порядке, например FIFO. Это снижает starvation, но может стоить производительности.</div></div>
+  </div>
+
+  <div class="q-item">
+    <div class="q-num">Q20</div>
+    <div class="q-text"><strong>Почему unfair lock иногда быстрее fair lock-а?</strong><div class="q-hint">→ Ему не нужно строго поддерживать очередь и дополнительные гарантии. Он может позволить только что работавшему потоку быстро перезахватить lock, что иногда лучше для кешей.</div></div>
+  </div>
+
+  <div class="q-item">
+    <div class="q-num">Q21</div>
+    <div class="q-text"><strong>Какие вопросы надо задать себе при выборе примитива синхронизации?</strong><div class="q-hint">→ Длина критической секции, вероятность конкуренции, цена syscall-ов, cache-line bouncing, возможность сна, требования к справедливости и гарантии прогресса.</div></div>
+  </div>
+
+  <div class="q-item">
+    <div class="q-num">Q22</div>
+    <div class="q-text"><strong>Почему нельзя всегда использовать самый “умный” lock?</strong><div class="q-hint">→ Более сложный lock имеет свои накладные расходы: очереди, атомики, syscall-ы, дополнительные состояния. На простых сценариях он может быть хуже простого spinlock-а или mutex-а.</div></div>
+  </div>
+
+  <div class="q-item">
+    <div class="q-num">Q23</div>
+    <div class="q-text"><strong>Что такое deadlock?</strong><div class="q-hint">→ Ситуация, когда потоки ждут друг друга по циклу: A держит lock1 и ждёт lock2, B держит lock2 и ждёт lock1.</div></div>
+  </div>
+
+  <div class="q-item">
+    <div class="q-num">Q24</div>
+    <div class="q-text"><strong>Что такое lost wakeup?</strong><div class="q-hint">→ Пробуждение произошло до того, как поток реально заснул. Если состояние не проверяется атомарно, поток может уснуть и уже никогда не проснуться.</div></div>
+  </div>
+
+  <div class="q-item">
+    <div class="q-num">Q25</div>
+    <div class="q-text"><strong>Почему критическая секция должна быть минимальной?</strong><div class="q-hint">→ Чем дольше держится lock, тем больше ожидание, выше конкуренция, больше риск convoying и хуже масштабируемость.</div></div>
+  </div>
+
+  <div class="q-item">
+    <div class="q-num">Q26</div>
+    <div class="q-text"><strong>Почему lock может ухудшить масштабируемость на многоядерной системе?</strong><div class="q-hint">→ Все ядра начинают конкурировать за одну точку сериализации. Плюс возникает трафик когерентности кешей вокруг кеш-линии с lock-ом.</div></div>
+  </div>
+
+  <div class="q-item">
+    <div class="q-num">Q27</div>
+    <div class="q-text"><strong>Когда loop + sleep приемлемее чистого busy loop?</strong><div class="q-hint">→ Когда ожидание может быть заметным. Небольшой spin может поймать быстрый unlock, а sleep не даст потоку бесконечно тратить CPU.</div></div>
+  </div>
+
+  <div class="q-item">
+    <div class="q-num">Q28</div>
+    <div class="q-text"><strong>Что важнее: атомарность операции или правильная политика ожидания?</strong><div class="q-hint">→ Нужно и то и другое. Атомарность защищает корректность захвата, а политика ожидания определяет производительность и поведение под нагрузкой.</div></div>
+  </div>
+
+  <div class="q-item">
+    <div class="q-num">Q29</div>
+    <div class="q-text"><strong>Почему lock — это не только про корректность, но и про производительность?</strong><div class="q-hint">→ Разные lock-и по-разному влияют на CPU, кеши, syscall-и, планировщик, справедливость и энергопотребление.</div></div>
+  </div>
+
+  <div class="q-item">
+    <div class="q-num">Q30</div>
+    <div class="q-text"><strong>Какой главный принцип выбора между spinlock и mutex?</strong><div class="q-hint">→ Если ждать очень недолго и нельзя/невыгодно спать — spinlock. Если ожидание может быть длинным — mutex/futex, чтобы не жечь CPU.</div></div>
+  </div>
+
+</div>
+
+</div>
+
+<script>
+  const progressBar = document.getElementById('readProgressBar');
+  const indicator = document.getElementById('sectionIndicator');
+  const trackedSections = Array.from(document.querySelectorAll('section[id], .questions-section[id]'));
+
+  function updateReadingUI() {
+    const doc = document.documentElement;
+    const scrollTop = doc.scrollTop || document.body.scrollTop;
+    const scrollMax = doc.scrollHeight - doc.clientHeight;
+    const progress = scrollMax > 0 ? (scrollTop / scrollMax) * 100 : 0;
+    progressBar.style.width = `${Math.min(100, Math.max(0, progress))}%`;
+
+    let currentIndex = 0;
+    for (let idx = 0; idx < trackedSections.length; idx++) {
+      const rect = trackedSections[idx].getBoundingClientRect();
+      if (rect.top <= 120) currentIndex = idx;
+      else break;
+    }
+
+    const current = trackedSections[currentIndex];
+    const title = current?.dataset.title || current?.querySelector('h2')?.innerText?.trim() || 'Раздел';
+    indicator.textContent = `Раздел ${String(currentIndex).padStart(2, '0')} / ${trackedSections.length - 1}: ${title}`;
+  }
+
+  updateReadingUI();
+  window.addEventListener('scroll', updateReadingUI, { passive: true });
+  window.addEventListener('resize', updateReadingUI);
+</script>
+
+</body>
+</html>
