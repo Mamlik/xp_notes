@@ -1,0 +1,21 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install SSH key
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/xp_notes_deploy
+          chmod 600 ~/.ssh/xp_notes_deploy
+          ssh-keyscan -H 213.171.29.190 >> ~/.ssh/known_hosts
+
+      - name: Deploy
+        run: |
+          ssh -i ~/.ssh/xp_notes_deploy mamlik@213.171.29.190 '/home/mamlik/deploy_xp_notes.sh'
