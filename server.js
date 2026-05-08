@@ -91,6 +91,13 @@ function loadDotEnv() {
 async function serveStatic(pathname, response, headOnly) {
   const decodedPath = decodeURIComponent(pathname);
   const safePath = decodedPath === "/" ? "/index.html" : decodedPath;
+  const pathSegments = safePath.split("/").filter(Boolean);
+
+  if (pathSegments.some((segment) => segment.startsWith("."))) {
+    sendText(response, 404, "Not found");
+    return;
+  }
+
   const filePath = normalize(join(rootDir, safePath));
 
   if (!filePath.startsWith(rootDir)) {
