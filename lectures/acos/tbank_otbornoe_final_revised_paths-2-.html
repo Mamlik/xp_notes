@@ -1,0 +1,2639 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Отборочное Т-Банк — Мини-CEO · Дмитрий Ярочкин</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Onest:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23FFDD2D'/%3E%3Cpath d='M30 32h40v10H58v36H42V42H30z' fill='%23000'/%3E%3C/svg%3E">
+<style>
+:root {
+  --bg: #FFFFFF;
+  --bg-warm: #FAF8F3;
+  --bg-cream: #F4F1EA;
+  --ink: #0D0D0D;
+  --ink-soft: #2B2B2B;
+  --ink-mute: #6B6B6B;
+  --rule: #E8E4DA;
+  --yellow: #FFDD2D;
+  --yellow-soft: #FFF4B0;
+  --red: #E63946;
+  --green: #2B8A3E;
+  --blue: #1E5FBF;
+  --max-w: 760px;
+  --wide-w: 1080px;
+  --serif: 'Instrument Serif', 'Times New Roman', serif;
+  --sans: 'Onest', -apple-system, system-ui, sans-serif;
+  --mono: 'JetBrains Mono', 'SF Mono', monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; overflow-x: clip; }
+body {
+  font-family: var(--sans);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--ink);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* TOPBAR */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  border-bottom: 1px solid var(--rule);
+  backdrop-filter: blur(8px);
+  background: rgba(255,255,255,0.92);
+}
+.topbar-inner {
+  max-width: var(--wide-w); margin: 0 auto;
+  padding: 14px 28px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 24px;
+}
+.topbar-brand {
+  display: flex; align-items: center; gap: 10px;
+  font-weight: 600; font-size: 14px; letter-spacing: -0.01em;
+}
+.topbar-brand .badge {
+  width: 28px; height: 28px; background: var(--yellow);
+  border-radius: 8px; display: grid; place-items: center;
+  font-weight: 700; font-size: 16px; color: #000;
+}
+.topbar-brand .meta { color: var(--ink-mute); font-weight: 400; font-size: 13px; }
+.topbar-nav { display: flex; gap: 4px; flex-wrap: wrap; }
+.topbar-nav a {
+  font-size: 13px; font-weight: 500;
+  color: var(--ink-soft); text-decoration: none;
+  padding: 6px 12px; border-radius: 6px; transition: background 0.15s;
+}
+.topbar-nav a:hover { background: var(--yellow-soft); color: var(--ink); }
+@media (max-width: 720px) {
+  .topbar-inner { padding: 10px 16px; flex-direction: column; align-items: flex-start; }
+  .topbar-nav { width: 100%; overflow-x: auto; }
+  .topbar-brand .meta { display: none; }
+}
+
+/* HERO */
+.hero {
+  max-width: var(--wide-w); margin: 0 auto;
+  padding: 72px 28px 48px;
+  border-bottom: 1px solid var(--rule);
+}
+.hero-eyebrow {
+  font-family: var(--mono); font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--ink-mute); margin-bottom: 24px;
+  display: flex; align-items: center; gap: 12px;
+}
+.hero-eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--yellow); }
+.hero h1 {
+  font-family: var(--serif); font-weight: 400;
+  font-size: clamp(40px, 7vw, 84px);
+  line-height: 0.98; letter-spacing: -0.02em;
+  margin-bottom: 20px; max-width: 14ch;
+}
+.hero h1 em {
+  font-style: italic; color: var(--ink-soft);
+  background: linear-gradient(180deg, transparent 62%, var(--yellow) 62%);
+  padding: 0 4px;
+}
+.hero-sub {
+  font-size: 18px; color: var(--ink-mute);
+  max-width: 60ch; line-height: 1.5; margin-bottom: 36px;
+}
+.hero-meta {
+  display: flex; flex-wrap: wrap; gap: 24px 40px;
+  padding-top: 24px; border-top: 1px solid var(--rule);
+  font-size: 13px;
+}
+.hero-meta div { display: flex; flex-direction: column; gap: 2px; }
+.hero-meta .label {
+  font-family: var(--mono); font-size: 10px;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--ink-mute);
+}
+.hero-meta .val { font-weight: 500; }
+
+/* TLDR */
+.tldr { background: var(--bg-cream); padding: 56px 0; }
+.tldr-inner { max-width: var(--wide-w); margin: 0 auto; padding: 0 28px; }
+.tldr-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 48px;
+}
+@media (max-width: 820px) { .tldr-grid { grid-template-columns: 1fr; gap: 32px; } }
+.tldr-section .label {
+  font-family: var(--mono); font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--ink-mute); margin-bottom: 12px;
+}
+.tldr-section h2 {
+  font-family: var(--serif); font-weight: 400;
+  font-size: 28px; line-height: 1.15;
+  margin-bottom: 16px; letter-spacing: -0.01em;
+}
+.tldr-section p { color: var(--ink-soft); line-height: 1.6; }
+.tldr-section p + p { margin-top: 12px; }
+.tldr-section strong { font-weight: 600; color: var(--ink); }
+.tldr-pushback {
+  background: #000; color: #fff;
+  padding: 28px; border-radius: 4px; position: relative;
+}
+.tldr-pushback .label { color: var(--yellow); }
+.tldr-pushback h3 {
+  font-family: var(--serif); font-weight: 400;
+  font-size: 24px; line-height: 1.15;
+  margin: 12px 0 14px; letter-spacing: -0.01em;
+}
+.tldr-pushback p { color: #d8d8d8; font-size: 15px; }
+.tldr-pushback strong { color: var(--yellow); font-weight: 600; }
+
+/* MAIN */
+main { max-width: var(--max-w); margin: 0 auto; padding: 0 28px; }
+section { padding: 80px 0 24px; }
+
+.block-marker {
+  display: flex; align-items: baseline; gap: 18px;
+  border-top: 2px solid var(--ink);
+  padding-top: 16px; margin-bottom: 40px;
+}
+.block-marker .num {
+  font-family: var(--mono); font-size: 12px; font-weight: 500;
+  color: var(--ink-mute); letter-spacing: 0.1em;
+}
+.block-marker h2 {
+  font-family: var(--serif); font-weight: 400;
+  font-size: clamp(36px, 5vw, 56px); line-height: 1; letter-spacing: -0.02em;
+}
+
+h3 {
+  font-family: var(--serif); font-weight: 400;
+  font-size: 28px; line-height: 1.15;
+  letter-spacing: -0.015em; margin: 48px 0 16px;
+}
+h3 .sub-num {
+  font-family: var(--mono); font-size: 12px; font-weight: 500;
+  color: var(--ink-mute); margin-right: 12px; vertical-align: middle;
+}
+h4 {
+  font-family: var(--sans); font-weight: 600;
+  font-size: 16px; margin: 24px 0 8px; letter-spacing: -0.005em;
+}
+
+p { margin: 0 0 14px; max-width: 68ch; }
+p strong { font-weight: 600; }
+em { font-style: italic; }
+a { color: var(--ink); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; transition: all 0.15s; }
+a:hover { color: var(--blue); text-decoration-color: var(--yellow); text-decoration-thickness: 2px; }
+
+ul, ol { margin: 0 0 18px; padding-left: 0; max-width: 68ch; }
+ul li, ol li {
+  list-style: none; position: relative;
+  padding-left: 24px; margin-bottom: 10px; line-height: 1.6;
+}
+ul li::before {
+  content: ''; position: absolute; left: 4px; top: 11px;
+  width: 8px; height: 8px; background: var(--yellow); border-radius: 50%;
+}
+ol { counter-reset: olcounter; }
+ol li { counter-increment: olcounter; padding-left: 32px; }
+ol li::before {
+  content: counter(olcounter);
+  position: absolute; left: 0; top: 0;
+  font-family: var(--mono); font-size: 11px; font-weight: 600;
+  color: var(--ink-mute); width: 22px; text-align: right; padding-top: 4px;
+}
+
+/* TABLES */
+.table-wrap {
+  margin: 24px 0 32px; overflow-x: auto;
+  border: 1px solid var(--rule); border-radius: 4px;
+}
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th {
+  background: var(--bg-cream); text-align: left; font-weight: 600;
+  padding: 12px 16px; border-bottom: 1px solid var(--rule);
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--ink-soft); vertical-align: top;
+}
+td {
+  padding: 12px 16px; border-bottom: 1px solid var(--rule); vertical-align: top;
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,221,45,0.06); }
+td strong { font-weight: 600; }
+td.num, th.num { font-family: var(--mono); font-size: 13px; }
+
+/* CALLOUTS */
+.callout {
+  border-left: 3px solid var(--yellow); background: var(--bg-warm);
+  padding: 20px 24px; margin: 24px 0; border-radius: 0 4px 4px 0;
+}
+.callout .label {
+  font-family: var(--mono); font-size: 10px;
+  text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--ink-mute); margin-bottom: 8px;
+}
+.callout p:last-child { margin-bottom: 0; }
+.callout.warn { border-left-color: var(--red); background: #FDF3F3; }
+.callout.warn .label { color: var(--red); }
+.callout.note { border-left-color: var(--blue); background: #F0F5FB; }
+.callout.note .label { color: var(--blue); }
+.callout.dark { border-left-color: var(--yellow); background: #0D0D0D; color: #d8d8d8; }
+.callout.dark .label { color: var(--yellow); }
+.callout.dark strong { color: var(--yellow); }
+
+.quote {
+  font-family: var(--serif); font-style: italic;
+  font-size: 22px; line-height: 1.35; color: var(--ink-soft);
+  border-left: 3px solid var(--yellow);
+  padding: 8px 0 8px 24px; margin: 28px 0; max-width: 60ch;
+}
+.quote-attr {
+  font-family: var(--mono); font-style: normal;
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--ink-mute); margin-top: 12px;
+}
+
+/* DETAILS */
+details {
+  border: 1px solid var(--rule); border-radius: 4px;
+  margin: 16px 0 24px; overflow: hidden; transition: all 0.2s;
+}
+details[open] { border-color: var(--ink); }
+summary {
+  padding: 14px 18px; cursor: pointer;
+  font-weight: 500; font-size: 14px;
+  display: flex; align-items: center; justify-content: space-between;
+  list-style: none; user-select: none;
+  background: var(--bg-warm); transition: background 0.15s;
+}
+summary::-webkit-details-marker { display: none; }
+summary:hover { background: var(--yellow-soft); }
+summary::after {
+  content: '+'; font-family: var(--mono);
+  font-size: 18px; font-weight: 400;
+  color: var(--ink-mute); transition: transform 0.2s;
+}
+details[open] summary::after { content: '−'; }
+.details-body { padding: 20px 24px; background: white; border-top: 1px solid var(--rule); }
+.details-body p:last-child, .details-body table:last-child { margin-bottom: 0; }
+
+/* ROLES */
+.role-list {
+  list-style: none; padding: 0; margin: 0 0 20px;
+  border-top: 1px solid var(--rule);
+}
+.role-list li {
+  display: grid; grid-template-columns: 220px 1fr;
+  gap: 24px; padding: 12px 0;
+  border-bottom: 1px solid var(--rule);
+  align-items: baseline; font-size: 15px;
+  list-style: none; padding-left: 0; margin: 0;
+}
+.role-list li::before { display: none; }
+.role-list .who { font-weight: 600; font-size: 14px; }
+.role-list .what { color: var(--ink-soft); }
+@media (max-width: 600px) {
+  .role-list li { grid-template-columns: 1fr; gap: 4px; }
+}
+
+.role-group-header {
+  font-family: var(--mono); font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--ink-mute); margin: 28px 0 8px;
+}
+
+/* STATS */
+.stat-row {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1px; background: var(--rule);
+  border: 1px solid var(--rule); margin: 24px 0;
+  border-radius: 4px; overflow: hidden;
+}
+.stat { background: var(--bg); padding: 16px 18px; }
+.stat .val {
+  font-family: var(--serif); font-size: 32px;
+  line-height: 1; margin-bottom: 6px;
+}
+.stat .lbl {
+  font-family: var(--mono); font-size: 10px;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--ink-mute);
+}
+
+/* UX SCREENSHOTS */
+.ux-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 32px; margin: 32px 0; align-items: start;
+}
+@media (max-width: 760px) { .ux-grid { grid-template-columns: 1fr; } }
+.ux-card {
+  background: var(--bg-cream); padding: 20px; border-radius: 8px;
+}
+.ux-card img {
+  width: 100%; height: auto; border-radius: 6px;
+  display: block; border: 1px solid var(--rule);
+}
+.ux-card .caption {
+  font-family: var(--mono); font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--ink-mute); margin-top: 12px;
+}
+.ux-card .caption strong { color: var(--ink); font-weight: 600; }
+.ux-annot {
+  font-size: 14px; color: var(--ink-soft);
+  margin-top: 12px; padding-top: 12px;
+  border-top: 1px dashed var(--rule); line-height: 1.5;
+}
+.ux-annot .marker {
+  display: inline-block; background: var(--yellow); color: #000;
+  font-family: var(--mono); font-size: 10px; font-weight: 600;
+  padding: 2px 6px; border-radius: 3px;
+  margin-right: 6px; vertical-align: middle;
+}
+.ux-annot .marker.red { background: #FFD0D0; color: var(--red); }
+
+/* MOCKUP */
+.mockup-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 24px; margin: 32px 0;
+}
+@media (max-width: 700px) { .mockup-grid { grid-template-columns: 1fr; } }
+.phone {
+  background: #1A1A1A; border-radius: 28px;
+  padding: 16px 14px 18px; color: #fff;
+  font-size: 13px; line-height: 1.4; position: relative;
+  border: 6px solid #2A2A2A; min-height: 380px;
+}
+.phone-label {
+  font-family: var(--mono); font-size: 10px;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--ink-mute);
+  text-align: center; margin-bottom: 10px;
+}
+.phone-label.bad { color: var(--red); }
+.phone-label.good { color: var(--green); }
+.phone-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 4px 0 12px; border-bottom: 1px solid #333;
+  margin-bottom: 12px; font-size: 12px;
+}
+.phone-header .ava {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--yellow); display: grid; place-items: center;
+  color: #000; font-weight: 700; font-size: 13px;
+}
+.phone-bubble {
+  background: #2A2A2A; padding: 10px 12px; border-radius: 14px;
+  margin-bottom: 8px; font-size: 12px; line-height: 1.4; max-width: 85%;
+}
+.phone-bubble.user { background: #2563EB; margin-left: auto; color: white; }
+.phone-instr {
+  font-size: 10px; color: #888;
+  text-align: center; margin: 12px 0;
+}
+.phone-cancel {
+  border: 1px solid #444; padding: 10px;
+  text-align: center; font-size: 12px; color: #999;
+  border-radius: 12px; margin-top: 10px;
+}
+.phone-button-three {
+  display: flex; flex-direction: column; gap: 8px; margin-top: 12px;
+}
+.phone-btn {
+  border: 1px solid #444; padding: 10px;
+  text-align: center; font-size: 12px;
+  border-radius: 12px; color: #ccc;
+}
+.phone-btn.good { background: var(--yellow); color: #000; border-color: var(--yellow); font-weight: 600; }
+.phone-btn.muted { color: #888; }
+
+.phone-topbar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 4px 0; margin-bottom: 8px;
+}
+.phone-operator-pill {
+  background: #FFDD2D; color: #000;
+  padding: 4px 8px; border-radius: 999px;
+  font-size: 10px; font-weight: 600;
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.phone-operator-pill::before {
+  content: ''; width: 5px; height: 5px;
+  background: var(--green); border-radius: 50%;
+}
+
+/* HYPOTHESIS TABLE */
+.hyp-row {
+  display: grid;
+  grid-template-columns: 50px 1fr 70px 90px 60px;
+  gap: 12px; padding: 12px 16px;
+  align-items: center;
+  border-bottom: 1px solid var(--rule);
+  font-size: 13.5px;
+}
+.hyp-row.head {
+  background: var(--bg-cream);
+  font-family: var(--mono); font-size: 10px;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--ink-mute); font-weight: 500;
+  padding: 10px 16px;
+}
+.hyp-row .id {
+  font-family: var(--mono); font-weight: 700;
+  background: var(--yellow); color: #000;
+  padding: 4px 8px; border-radius: 4px;
+  text-align: center; font-size: 12px;
+}
+.hyp-row .name { font-weight: 500; line-height: 1.35; }
+.hyp-row .delta { font-family: var(--mono); font-weight: 600; color: var(--green); font-size: 13px; }
+.hyp-row .money { font-family: var(--mono); color: var(--ink-soft); font-size: 12px; }
+.hyp-row .conf { font-size: 11px; color: var(--ink-mute); text-align: right; }
+.hyp-row.total { background: #000; color: #fff; font-weight: 600; }
+.hyp-row.total .delta, .hyp-row.total .money { color: var(--yellow); }
+@media (max-width: 700px) {
+  .hyp-row { grid-template-columns: 50px 1fr; row-gap: 4px; }
+  .hyp-row .delta, .hyp-row .money, .hyp-row .conf {
+    grid-column: 2; font-size: 12px;
+  }
+  .hyp-row.head .delta, .hyp-row.head .money, .hyp-row.head .conf { display: none; }
+}
+
+/* TIMELINE */
+.timeline {
+  border-left: 2px solid var(--ink);
+  padding-left: 28px; margin: 32px 0 32px 6px;
+}
+.timeline-item { padding-bottom: 24px; position: relative; }
+.timeline-item::before {
+  content: ''; position: absolute; left: -36px; top: 4px;
+  width: 14px; height: 14px;
+  background: var(--yellow); border: 2px solid var(--ink);
+  border-radius: 50%;
+}
+.timeline-item .quarter {
+  font-family: var(--mono); font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--ink-mute); margin-bottom: 4px;
+}
+.timeline-item .title { font-weight: 600; font-size: 15px; margin-bottom: 6px; }
+
+/* SPRINT FLOW */
+.sprint-flow {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 12px; margin: 28px 0;
+}
+@media (max-width: 760px) { .sprint-flow { grid-template-columns: 1fr 1fr; } }
+.sprint-card {
+  background: var(--bg-warm); padding: 16px;
+  border-radius: 6px; border-top: 3px solid var(--yellow);
+}
+.sprint-card .day {
+  font-family: var(--mono); font-size: 10px;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--ink-mute); margin-bottom: 4px;
+}
+.sprint-card .phase { font-weight: 600; font-size: 14px; margin-bottom: 8px; }
+.sprint-card .who { font-size: 12px; color: var(--ink-soft); line-height: 1.4; }
+
+/* FOOTER */
+.footer {
+  background: #0D0D0D; color: #d8d8d8;
+  padding: 64px 0 48px; margin-top: 80px;
+}
+.footer-inner { max-width: var(--wide-w); margin: 0 auto; padding: 0 28px; }
+.footer-eyebrow {
+  font-family: var(--mono); font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--yellow); margin-bottom: 16px;
+}
+.footer h2 {
+  font-family: var(--serif); font-weight: 400;
+  font-size: 36px; line-height: 1; margin-bottom: 32px;
+  color: white; letter-spacing: -0.01em;
+}
+.footer details { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); }
+.footer details[open] { border-color: var(--yellow); }
+.footer summary { background: rgba(255,255,255,0.06); color: white; }
+.footer summary:hover { background: rgba(255,221,45,0.15); }
+.footer .details-body {
+  background: rgba(0,0,0,0.3);
+  border-top-color: rgba(255,255,255,0.1); color: #b8b8b8;
+}
+.footer .details-body a { color: var(--yellow); text-decoration-color: rgba(255,221,45,0.4); }
+.footer .details-body a:hover { color: white; }
+.footer .details-body ul li::before { background: var(--yellow); }
+.footer-sign {
+  margin-top: 48px; padding-top: 24px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  font-size: 13px; color: #888;
+  display: flex; flex-wrap: wrap; gap: 12px 32px; justify-content: space-between;
+}
+
+/* utility */
+.divider { border: none; height: 1px; background: var(--rule); margin: 48px 0; }
+.tag {
+  display: inline-block; font-family: var(--mono); font-size: 10px;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  background: var(--yellow); color: #000;
+  padding: 3px 8px; border-radius: 3px;
+  vertical-align: middle; margin-left: 6px; font-weight: 600;
+}
+.tag.red { background: #FDD; color: var(--red); }
+.tag.green { background: #DEF7E0; color: var(--green); }
+.tag.gray { background: var(--bg-cream); color: var(--ink-mute); }
+.highlight {
+  background: linear-gradient(180deg, transparent 60%, var(--yellow) 60%);
+  padding: 0 2px;
+}
+
+/* CASE CARDS */
+.case-card{border:1px solid var(--rule);border-radius:6px;overflow:hidden;margin:36px 0;max-width:72ch;}
+.case-card-header{background:#0D0D0D;padding:24px 28px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+.case-card-header h3{font-family:var(--serif);font-weight:400;font-size:22px;color:white;margin:0;letter-spacing:-.01em;line-height:1.2;}
+.case-tag{font-family:var(--mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;padding:4px 10px;border-radius:4px;white-space:nowrap;flex-shrink:0;}
+.case-tag.success{background:rgba(46,160,67,.2);color:#4caf6e;}
+.case-tag.failure{background:rgba(217,48,48,.2);color:#f07070;}
+.case-tag.insight{background:rgba(255,221,45,.18);color:#C9AC00;}
+.case-card-context{background:rgba(0,0,0,.04);border-bottom:1px solid var(--rule);padding:12px 28px;font-size:13px;color:var(--ink-mute);font-style:italic;}
+.case-card-body{padding:24px 28px;background:white;}
+.case-card-body p{color:var(--ink-soft);max-width:100%;}
+.case-card-body p+p{margin-top:10px;}
+.case-card-body ol{max-width:100%;}
+.case-card-lesson{background:var(--bg-cream);border-top:1px solid var(--rule);padding:20px 28px;}
+.case-card-lesson .lesson-label{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-mute);margin-bottom:8px;}
+.case-card-lesson p,.case-card-lesson ol li{font-size:14px;color:var(--ink-soft);max-width:100%;}
+
+.skip { position: absolute; left: -9999px; }
+.skip:focus { left: 16px; top: 16px; background: #000; color: #fff; padding: 8px 12px; z-index: 1000; }
+
+/* print */
+@media print {
+  .topbar { display: none; }
+  details { border: none; }
+  details summary { display: none; }
+  details[open] .details-body { border: none; }
+  details > * { display: block !important; }
+  body { font-size: 11pt; }
+  .footer { background: white; color: black; }
+  .footer summary { color: black; }
+}
+
+/* ============ ENHANCEMENTS v2: SCROLL PROGRESS, PHONE FRAMES, INTERACTIONS ============ */
+
+/* Scroll progress bar */
+.scroll-progress {
+  position: fixed; top: 0; left: 0;
+  height: 3px; width: 0%;
+  background: linear-gradient(90deg, var(--yellow), #FFB800);
+  z-index: 200;
+  transition: width 0.08s ease-out;
+  box-shadow: 0 1px 6px rgba(255, 184, 0, 0.4);
+}
+
+/* Scrollspy active state in nav */
+.topbar-nav a.active {
+  background: var(--yellow);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* Reveal on scroll */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.7s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* === UX STAGE v4: break out of narrow main + auto-fit (always side-by-side when there's room) === */
+.ux-stage {
+  /* Stay in normal document flow — anchor to the same left edge as the rest of the text */
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  margin: 36px 0 12px;
+  width: 100%;
+}
+
+/* Row A: two phones side by side, autofit fallback only on truly narrow viewports */
+.ux-phones-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 24px;
+  justify-items: center;
+  align-items: start;
+}
+.ux-phone-block {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 14px;
+  max-width: 280px; width: 100%;
+}
+
+/* Row B: hotspot cards side by side, autofit fallback */
+.ux-hotspots-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+/* Compact phone (240×480 instead of 280×560) */
+.phone-mock {
+  position: relative;
+  width: 240px;
+  height: 480px;
+  background: #0A0A0A;
+  border-radius: 44px;
+  padding: 8px;
+  box-shadow:
+    0 24px 50px -18px rgba(0, 0, 0, 0.35),
+    0 6px 20px -6px rgba(0, 0, 0, 0.22),
+    inset 0 0 0 1.5px rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+.phone-mock-notch {
+  position: absolute;
+  top: 14px; left: 50%;
+  transform: translateX(-50%);
+  width: 88px; height: 22px;
+  background: #0A0A0A;
+  border-radius: 999px;
+  z-index: 3;
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.04);
+}
+.phone-mock-home {
+  position: absolute;
+  bottom: 4px; left: 50%;
+  transform: translateX(-50%);
+  width: 84px; height: 4px;
+  background: rgba(255,255,255,0.5);
+  border-radius: 2px;
+  z-index: 3;
+}
+.phone-mock-screen {
+  width: 100%; height: 100%;
+  border-radius: 36px;
+  background: #000;
+  overflow-y: auto; overflow-x: hidden;
+  position: relative;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,221,45,0.4) transparent;
+}
+.phone-mock-screen::-webkit-scrollbar { width: 4px; }
+.phone-mock-screen::-webkit-scrollbar-track { background: transparent; }
+.phone-mock-screen::-webkit-scrollbar-thumb { background: rgba(255,221,45,0.35); border-radius: 3px; }
+.phone-mock-screen::-webkit-scrollbar-thumb:hover { background: rgba(255,221,45,0.6); }
+
+.phone-mock-img {
+  width: 100%; height: auto; display: block; background: #000;
+}
+
+.scroll-fade-bottom {
+  position: sticky;
+  bottom: 0; left: 0; right: 0;
+  height: 36px;
+  background: linear-gradient(180deg, transparent, rgba(0,0,0,0.7));
+  pointer-events: none;
+  margin-top: -36px;
+}
+
+.phone-zoom {
+  position: absolute;
+  top: 14px; right: 14px;
+  width: 28px; height: 28px;
+  background: rgba(255,255,255,0.14);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.22);
+  color: #fff;
+  border-radius: 50%; cursor: pointer;
+  font-size: 12px;
+  display: grid; place-items: center;
+  z-index: 4;
+  transition: all 0.18s;
+  opacity: 0;
+}
+.phone-mock:hover .phone-zoom { opacity: 1; }
+.phone-zoom:hover { background: var(--yellow); color: #000; border-color: var(--yellow); }
+@media (hover: none) { .phone-zoom { opacity: 1; } }
+
+.phone-scroll-hint {
+  position: absolute;
+  bottom: 14px; right: 14px;
+  background: var(--yellow); color: #000;
+  padding: 3px 9px; border-radius: 999px;
+  font-family: var(--mono); font-size: 9.5px; font-weight: 600;
+  letter-spacing: 0.05em;
+  z-index: 4; pointer-events: none;
+  animation: bob 2.4s ease-in-out infinite;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+@keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+
+.ux-caption {
+  text-align: center;
+  font-size: 13px;
+  color: var(--ink-soft);
+  max-width: 260px;
+  line-height: 1.5;
+}
+.ux-caption-tag {
+  display: inline-block;
+  font-family: var(--mono); font-size: 10px;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  background: var(--ink); color: var(--yellow);
+  padding: 3px 8px; border-radius: 3px;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+.ux-caption strong {
+  display: block; font-weight: 600;
+  color: var(--ink); margin-bottom: 4px;
+  font-size: 14px;
+}
+.ux-caption em { color: var(--red); font-style: normal; font-weight: 600; }
+
+/* Hotspot cards */
+.hotspot-card {
+  background: var(--bg-warm);
+  border-radius: 10px;
+  padding: 18px 20px;
+  border: 1px solid var(--rule);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  display: flex; flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+.hotspot-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: var(--red);
+  opacity: 0.3;
+  transition: opacity 0.2s, width 0.2s;
+}
+.hotspot-card:hover {
+  background: #FFF8DC;
+  border-color: var(--yellow);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px -8px rgba(0,0,0,0.12);
+}
+.hotspot-card:hover::before { opacity: 1; width: 6px; }
+.hotspot-card.flash {
+  animation: flashPulse 0.8s ease-out;
+}
+@keyframes flashPulse {
+  0% { background: var(--yellow); transform: translateY(-2px) scale(1.01); }
+  50% { background: var(--yellow); }
+  100% { background: var(--bg-warm); transform: translateY(0) scale(1); }
+}
+
+.hotspot-card-head {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.hotspot-card-head strong {
+  font-size: 15px; font-weight: 600; color: var(--ink);
+  letter-spacing: -0.005em;
+}
+.hotspot-card p {
+  font-size: 13.5px; line-height: 1.5;
+  color: var(--ink-soft); margin: 0;
+}
+.hotspot-card p em {
+  font-style: italic;
+  background: var(--yellow-soft);
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+.hotspot-card .hotspot-cta {
+  font-family: var(--mono); font-size: 10px;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--ink-mute); font-weight: 500;
+  margin-top: 2px;
+  transition: color 0.15s;
+}
+.hotspot-card:hover .hotspot-cta { color: var(--ink); }
+
+.hotspot-marker {
+  display: inline-block;
+  font-family: var(--mono); font-size: 10px; font-weight: 700;
+  padding: 2px 7px; border-radius: 3px;
+  background: var(--yellow); color: #000;
+  vertical-align: middle;
+}
+.hotspot-marker.red { background: #FFD0D0; color: var(--red); }
+
+/* === LIGHTBOX === */
+.lightbox {
+  position: fixed; inset: 0;
+  background: rgba(10, 10, 10, 0.92);
+  backdrop-filter: blur(8px);
+  z-index: 300;
+  display: none;
+  align-items: center; justify-content: center;
+  padding: 40px 20px;
+  cursor: zoom-out;
+  animation: fadeIn 0.2s ease-out;
+}
+.lightbox.open { display: flex; }
+.lightbox img {
+  max-width: 90vw;
+  max-height: 88vh;
+  border-radius: 8px;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+  animation: zoomIn 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.lightbox-close {
+  position: absolute;
+  top: 24px; right: 24px;
+  width: 44px; height: 44px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  display: grid; place-items: center;
+  transition: all 0.15s;
+}
+.lightbox-close:hover { background: var(--yellow); color: #000; border-color: var(--yellow); }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes zoomIn {
+  from { transform: scale(0.92); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* === BACK TO TOP === */
+.back-to-top {
+  position: fixed;
+  bottom: 24px; right: 24px;
+  width: 48px; height: 48px;
+  background: var(--ink);
+  color: var(--yellow);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 20px;
+  display: grid; place-items: center;
+  z-index: 50;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px);
+  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.back-to-top.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+.back-to-top:hover {
+  background: var(--yellow);
+  color: var(--ink);
+  transform: translateY(-3px) scale(1.05);
+}
+
+/* Animated stat counter "preparing" state */
+.stat .val[data-target] { font-variant-numeric: tabular-nums; }
+
+/* small accessibility flourish: focus visible */
+button:focus-visible, a:focus-visible, summary:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Reduce motion respect */
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+  .phone-scroll-hint { animation: none; }
+  .scroll-progress { transition: none; }
+  * { scroll-behavior: auto !important; }
+}
+
+@media print {
+  .scroll-progress, .back-to-top, .phone-zoom, .phone-scroll-hint, .lightbox { display: none !important; }
+  .reveal { opacity: 1 !important; transform: none !important; }
+  .phone-mock-screen { overflow: visible !important; height: auto !important; }
+  .phone-mock { height: auto !important; }
+}
+
+</style>
+</head>
+<body>
+<div class="scroll-progress" id="scroll-progress"></div>
+
+<a class="skip" href="#main-content">Перейти к содержанию</a>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-brand">
+      <span class="badge">Я</span>
+      <span>Дмитрий Ярочкин <span class="meta">· Мини-CEO · май 2026</span></span>
+    </div>
+    <nav class="topbar-nav">
+      <a href="#tldr">TL;DR</a>
+      <a href="#block-1">Блок 1</a>
+      <a href="#block-2">Блок 2</a>
+      <a href="#block-3">Блок 3</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="hero-eyebrow"><span class="dot"></span>Отборочное задание · Мини-CEO Т-Банк</div>
+  <h1>Отборочное задание <em>Мини-CEO</em></h1>
+  <p class="hero-sub">Три блока: профиль и продуктовые кейсы, разбор UX чата поддержки Т-Банка, план автоматизации с командой 9 человек на 24 месяца. Внутри плана главный pushback: 60% при CSAT 3,2 — плохая цель. Встречная цель — устойчивые 55% с guard-rails и stretch-задачами на случай ускорения.</p>
+  <div class="hero-meta">
+    <div><span class="label">Кандидат</span><span class="val">Дмитрий Ярочкин</span></div>
+    <div><span class="label">Email</span><span class="val">blackbonik@gmail.com</span></div>
+    <div><span class="label">Telegram</span><span class="val">@YaFufig</span></div>
+    <div><span class="label">Дата</span><span class="val">май 2026</span></div>
+    <div><span class="label">Объём</span><span class="val">3 блока · полный комплект</span></div>
+  </div>
+</div>
+
+<section class="tldr" id="tldr" style="padding: 56px 0;">
+  <div class="tldr-inner">
+    <div class="tldr-grid">
+      <div class="tldr-pushback">
+        <div class="label">Главное возражение к постановке цели</div>
+        <h3>Цель «60% при CSAT 3,2» — плохая цель. Расширять охват плохого бота тиражирует недовольство.</h3>
+        <p>Встречная цель: <strong>55% + CSAT ≥ 3,8 + per-scenario ≥ 3,5.</strong> Потенциал портфеля — <strong>+29 п.п. ≈ 125 млн ₽/год</strong> (sensitivity 52–165 млн). Подробно — в 3.4.</p>
+      </div>
+      <div class="tldr-section">
+        <div class="label">Что внутри</div>
+        <h2>Три блока.</h2>
+        <p><strong>Блок 1 — Профиль:</strong> кейс успеха (FM Logistic, согласие CEO до встречи), кейс провала (Quest, нет плана Б), кейс метрики (Яндекс HSTU: data leakage в positional embedding — офлайн выросло, продукт нет).</p>
+        <p><strong>Блок 2 — Продуктовое мышление:</strong> главный сбой чата — кнопка «Отмена» молча эскалирует (~4,5 млн ₽/год). Duolingo: streak + лиги через loss aversion.</p>
+        <p><strong>Блок 3 — Автоматизация:</strong> 10 гипотез одним бэклогом по приоритету, плюс 3 stretch-задачи если идём быстрее. Команда 9 человек, 24 месяца.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<main id="main-content">
+
+<!-- ============ BLOCK 1 ============ -->
+<section id="block-1">
+  <div class="block-marker">
+    <span class="num">Блок 1</span>
+    <h2>Профиль</h2>
+  </div>
+
+  <h3><span class="sub-num">1.1</span> Контекст</h3>
+  <p>ML-инженер с уклоном в продукт, на 2 курсе бакалавриата Центрального Университета (трек «Искусственный интеллект»). Веду несколько проектов командой студентов — от AI-продуктов до агентных систем для реальных клиентов. Во всех проектах нашёл контакты сам, выстроил коммуникацию с заказчиками и собираю MVP вместе с командой.</p>
+
+  <div class="role-group-header">Текущие проекты</div>
+  <div class="table-wrap" style="margin-top:8px">
+    <table>
+      <thead>
+        <tr><th style="width:180px">Проект</th><th>Что делаем</th><th style="width:240px">Моя роль</th><th>Статус</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Your Own Site (YOS)</strong></td>
+          <td>AI-конструктор сайтов на агентной архитектуре. SMB-клиентам российских банков — сайт за 30 мин диалога вместо недель и сотен тысяч ₽.</td>
+          <td>ML/AI-архитектура; акселераторы — выступаю с докладами, организую работу команды, бизнес-анализ для акселератора Фактики</td>
+          <td><span class="tag gray">В работе</span></td>
+        </tr>
+        <tr>
+          <td><strong>Сеченовский университет</strong></td>
+          <td>Агент для записи пациентов в медучреждения. RAG-стек, интеграция с расписанием врачей.</td>
+          <td>Главный по агентам и по продукту: сам вышел на заказчика, веду коммуникацию, собираю требования, реализую с командой</td>
+          <td><span class="tag gray">Пилот</span></td>
+        </tr>
+        <tr>
+          <td><strong>РЖД</strong></td>
+          <td>Пилот RAG-поддержки. Автоматизация операционных запросов.</td>
+          <td>Продукт и агенты: нашёл контакт, общаюсь с заказчиком, веду продуктовую работу с командой студентов</td>
+          <td><span class="tag gray">Пилот</span></td>
+        </tr>
+        <tr>
+          <td><strong>Соцпродукт для студентов</strong></td>
+          <td>Поиск мероприятий и компании. Победители хакатона Т-Банк × МГУ — <strong>получили поддержку МГУ</strong>.</td>
+          <td>Продукт, разработка</td>
+          <td><span class="tag green">Поддержка МГУ</span></td>
+        </tr>
+        <tr>
+          <td><strong>AR-очки для складов (Аэрочки)</strong></td>
+          <td>AR-навигация и ассистент для складских работников. Совместно с китайской командой.</td>
+          <td>Продукт</td>
+          <td><span class="tag gray">В работе</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="role-group-header">Прошлые роли</div>
+  <ul class="role-list">
+    <li><span class="who">Яндекс</span><span class="what">ML-стажёр, команда рекомендательных систем; обучение HSTU, обнаружил data leakage через positional embedding timeline (кейс 1.4)</span></li>
+    <li><span class="who">Сбер</span><span class="what">стажёр-разработчик ИИ-агентов в направлении автоматизации операционных процессов; в основном аналитические задачи</span></li>
+    <li><span class="who">«Даркстор у дома»</span><span class="what">бизнес-аналитик стратегии экспансии (фокус: выход на рынок Мексики)</span></li>
+    <li><span class="who">Hired Minds (Qatar, remote)</span><span class="what">ML-инженер; собрал MVP веб-приложения на LLM и поставил процесс команды по Scrum</span></li>
+  </ul>
+
+  <div class="callout">
+    <div class="label">Соревнования</div>
+    <p>Победитель 5+ хакатонов (в т.ч. первые места — кейс-хакатон Центрального Университета по внутренним сервисам и хакатон Т-Банк × МГУ по студенческим сервисам); 1 место на Дататоне; топ-5 на VTB Hack; победитель российского этапа FTC по робототехнике.</p>
+  </div>
+
+  
+
+  <h3><span class="sub-num">1.2</span> Кейс успеха — FM Logistic × «Даркстор у дома»</h3>
+  <p><strong>Контекст.</strong> Студенческий проект «Логистика 2.0», апрель 2026. Задача — стратегическая инициатива для FM Logistic Россия (выручка 30,1 млрд ₽ за 2024, +24,6% YoY; 19 складских платформ, 6+ млн заказов/год через фулфилмент). Я вёл проект соло, отвечая за весь цикл: discovery, партнёрский трек, финмодель, презентация.</p>
+  <p><strong>Что обнаружил.</strong> Аудит публичного стека FM Logistic в РФ показал отсутствие Express-вертикали ≤60 мин на пяти уровнях (микрофулфилмент, прямые API маркетплейсов Express, real-time диспатч, маршрутизация, self-service тарифы). Это критично: доля независимых 3PL в e-com РФ упала за 7 лет с 34% до 5,2% — в 6,5× (<a href="https://www.kommersant.ru/doc/8590703" target="_blank">Коммерсантъ, 16.04.2026</a>); карточки с Express на Ozon показывают +30% к обороту. Express заявлен в стратегии Powering 2030 (2021), но за 5 лет в РФ ни одного публичного запуска.</p>
+
+  <h4>Что предложил — три варианта с цифрами</h4>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Вариант</th><th>Стоимость</th><th>Срок</th><th>Покрытие</th><th>Риск</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Build</strong> (строить самим)</td><td class="num">148 млн ₽/1-й год<br><span style="font-size: 11px; color: var(--ink-mute);">~40 CAPEX + ~108 OPEX</span></td><td>12–18 мес</td><td>1 город</td><td><span class="tag red">Высокий</span></td></tr>
+        <tr><td><strong>Buy</strong> (партнёрство с «Даркстор у дома»)</td><td class="num">2,7 млн ₽ OPEX<br><span style="font-size: 11px; color: var(--ink-mute);">~1 разраб FM × 8 мес + операционка</span></td><td>1 квартал</td><td>88 городов</td><td><span class="tag green">Минимальный</span></td></tr>
+        <tr><td><strong>Do Nothing</strong></td><td class="num">0 ₽</td><td>—</td><td>—</td><td><span class="tag">Сохранение позиций при потере роста</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>Что сделал лично</h4>
+  <ol>
+    <li><strong>Discovery без NDA-данных</strong> — все цифры из публичных источников, отдельно подсвечены допущения для валидации с клиентом.</li>
+    <li><strong>Партнёрский трек</strong> — через личный контракт с DarkStoryDom лично вышел на CEO Кирилла Чеканова (<a href="https://www.forbes.ru/30-under-30/2025" target="_blank">Forbes 30-under-30, 2025</a>) и получил предварительное согласие на пилот.</li>
+    <li><strong>Финмодель</strong> — 4 листа, более 70 формул, цветовая разметка вход/формула/допущение. Unit-экономика Express-заказа 565 ₽ из 4 компонент; точка безубыточности — месяц 6, ROI пилота 1,4× за 8 месяцев (annualized ≈ 2,1×).</li>
+    <li><strong>KPI-гейты</strong> на 7 операционных метриках с порогами GO / PIVOT / STOP — фиксируются до старта, гейт-решение в декабре 2026.</li>
+  </ol>
+
+  <p><strong>Что считаю результатом.</strong> Вышел на CEO «Даркстор у дома» Кирилла Чеканова, получил предварительное согласие на пилот и подтвердил партнёрскую позицию до встречи с FM. Проект прошёл в финал конкурса FM Logistic — следующий шаг: очная презентация команде компании. Финмодель и build-vs-buy с явным разделением подтверждённых данных и допущений готовы к защите.</p>
+
+  <h3><span class="sub-num">1.3</span> Кейс провала — Quest by Spiritual Data</h3>
+  <p><strong>Контекст.</strong> Зима 2024–2025. Команда из 4 человек (я отвечал за коммуникации). На хакатоне за выходные сделали MVP мобильного приложения для бросания зависимостей: AI-коуч, анонимные чаты, трекинг, геймификация. После хакатона — интерес у пары университетов как у канала тестирования.</p>
+  <p><strong>Что предложил.</strong> Идея — не строить продукт самим, а прийти к американскому стартапу <strong>Quest by Spiritual Data</strong> (приложение для прививания полезных привычек через AI) с предложением: «<em>мы делаем форк под смежный сегмент — отказ от зависимостей, тестируем на российской аудитории, а потом интегрируем наработки обратно к вам как международный growth/use-case</em>». За ~месяц подготовил pitch и довёл диалог до созвона.</p>
+  <p><strong>Что произошло.</strong> Стартап отказал по ключевой для нас части: они <strong>уже сами разрабатывали сценарий зависимостей</strong>, просто ещё не выкатили его публично. Более мягкий вариант от них был — использовать их API без форка и протестировать продукт на российской аудитории. Но для нас это убирало главный hook: не было международной экспансии, совместного продукта и ownership над гипотезой; оставался локальный API-тест чужой платформы. В такой формат мы не пошли. Плана Б не было — проект изначально был хакатоновским и это была попытка развить его через сильного партнёра, а не полноценный standalone-стартап.</p>
+  <p><strong>Что пошло не так и как я это понял.</strong> Я построил pitch вокруг конкретной формы партнёрства до того, как проверил, нужна ли эта форма другой стороне. Понял на самом созвоне, когда они спокойно сказали «у нас уже есть наработки в этом направлении» и фактически оставили нам только API-режим без стратегического upside. Стоимость провала — не MVP, а месяц команды на outbound-стратегию, у которой не было сильного независимого сценария после отказа.</p>
+
+  <div class="callout note">
+    <div class="label">Урок</div>
+    <p>Перед outbound к партнёру теперь делаю три проверки <strong>до</strong> питча:</p>
+    <ol style="margin-top: 8px;">
+      <li><strong>Job postings + публичные апдейты партнёра за 6 мес.</strong> Если он сам строит твою вертикаль, предложение «мы сделаем за вас» обесценивается.</li>
+      <li><strong>Standalone value.</strong> Что у нас остаётся при отказе? Если ничего — это не партнёрский кейс, это зависимость.</li>
+      <li><strong>Independent validation в 1–2 недели.</strong> Чтобы переговорная позиция была «у нас уже N пользователей в вашем сегменте», а не «дайте канал».</li>
+    </ol>
+    <p style="margin-top: 12px;">В Quest-кейсе все три ответа были «не подумали». Применил этот чек-лист в FM Logistic (1.2): первый шаг был именно standalone-проверка экономики, а потом контакт с партнёром.</p>
+  </div>
+
+  <h3><span class="sub-num">1.4</span> Кейс «метрика обманула» — data leakage в HSTU, Яндекс</h3>
+
+  <div class="case-card">
+    <div class="case-card-header">
+      <h3>HSTU: офлайн-метрики выросли. Модель умнее не стала — она увидела будущее</h3>
+      <span class="case-tag insight">Метрика обманула</span>
+    </div>
+    <div class="case-card-context">Стажировка Яндекс, команда рекомендательных систем. Обучение HSTU (Hierarchical Sequential Transduction Units) — архитектура из хайповой статьи Meta для sequential recommendations.</div>
+    <div class="case-card-body">
+      <p><strong>Что происходило.</strong> Воспроизводил HSTU по статье. Офлайн-метрики (NDCG, hit rate) после применения предобработки из бумаги <strong>существенно выросли</strong> — причём не только у HSTU: статья явно указывала, что та же предобработка даёт аналогичный эффект на других архитектурах. Я проверил, запустил на альтернативных моделях — метрики поднялись. Всё выглядело как убедительный результат.</p>
+
+      <p><strong>Что насторожило.</strong> Рост был слишком равномерным и слишком большим. До этой статьи никто в комьюнити не замечал такого эффекта — при том что архитектуры были известны. Я начал копать: прочитал бумагу внимательнее, поискал обсуждения в соцсетях. Нашёл комментарий от команды МТС, где указывалось: <strong>предобработка timeline с позиционным эмбеддингом создаёт утечку данных из будущего</strong> — события других пользователей из «будущего» попадают в контекст текущего.</p>
+
+      <p><strong>Механика лика — два уровня.</strong></p>
+      <ol>
+        <li><strong>Softmax-trunk в трансформере HSTU</strong> позволял позиционному эмбеддингу timeline особенно эффективно «захватывать» этот контекст из будущего — отсюда максимальный прирост именно у HSTU.</li>
+        <li><strong>Предобработка переносила тот же эффект на любую архитектуру</strong> — поэтому и другие модели показали рост после применения той же pipeline. Статья описывала реальный эффект, но не его источник.</li>
+      </ol>
+
+      <p><strong>Вывод.</strong> Модель не научилась лучше рекомендовать. Она научилась лучше использовать данные, которых в продакшне не будет. Офлайн-метрики оторвались от продуктовой реальности.</p>
+    </div>
+    <div class="case-card-lesson">
+      <div class="lesson-label">Что это значит для работы с ML-метриками</div>
+      <p>Офлайн-метрика — это прокси, а не цель. Когда метрика растёт одновременно у слишком многих архитектур от одной preprocessing-техники — это сигнал проверить train/test separation, а не повод праздновать. Подтверждение через внешний источник (комментарий МТС) помогло, но правильный вопрос нужно было задать раньше.</p>
+    </div>
+  </div>
+
+  <div class="callout dark">
+    <div class="label">Связь с Блоком 3</div>
+    <p>Тот же класс ошибок — в другом масштабе. Офлайн-метрика HSTU росла, потому что модель видела будущее. <strong>Containment</strong> в чате может расти, потому что пользователь сдался и не перезванивает — а не потому что бот решил вопрос. Лекарство одно: <strong>метрика, которую нельзя накрутить артефактом пайплайна</strong>. В ML — строгий temporal split. В чате — repeat-contact-7d как guard-rail (см. 3.4, 3.8).</p>
+  </div>
+
+  <h3><span class="sub-num">1.5</span> Почему Т-Банк</h3>
+  <p>54,1 млн клиентов и 34,3 млн MAU на конец 2025 (<a href="https://oborot.ru/news/finansovaya-gruppa-t-banka-opublikovala-itogi-2025-goda-bolshe-54-mln-klientov-pochti-200-mlrd-chistoj-pribyli-i-kazhdyj-shestoj-rubl-roznichnogo-oborota-strany-i266290.html" target="_blank">Финансовая группа Т-Банка, 2025</a>) — на таком объёме даже +1 п.п. containment в чате это сотни тысяч диалогов в месяц. AI-First-стратегия публично заявлена (T-one ASR в open source, голосовой «Олег», «Вселенная AI-ассистентов»). У меня есть собственный опыт построения агентных систем (YOS, Сеченов, РЖД, Аэрочки) и наблюдение архитектуры мульти-агентного бэкенда в Сбере — этого достаточно, чтобы со старта говорить с командой на одном языке про оркестратор + специализированные агенты.</p>
+
+</section>
+<!-- BLOCK 1 END - BLOCK 2 AND 3 IN NEXT FILE -->
+
+<!-- ============ BLOCK 2 ============ -->
+<section id="block-2">
+  <div class="block-marker">
+    <span class="num">Блок 2</span>
+    <h2>Продуктовое мышление</h2>
+  </div>
+
+  <h3><span class="sub-num">2.1</span> Разбор UX/UI чата поддержки Т-Банка</h3>
+  <p><strong>Метод.</strong> Экспертная эвристическая оценка по <a href="https://www.nngroup.com/articles/ten-usability-heuristics/" target="_blank">10 эвристикам Нильсена</a> + 5 моих пользовательских сессий с фиксацией скриншотов. Без доступа к телеметрии Т-Банка точные значения метрик не привожу — даю отраслевые бенчмарки и явные формулы для проверки.</p>
+
+  <div class="ux-stage">
+
+    
+    <div class="ux-phones-row">
+
+      <div class="ux-phone-block">
+        <div class="phone-mock" data-phone-id="phone-1">
+          <div class="phone-mock-notch"></div>
+          <div class="phone-mock-screen" data-screen="1">
+            <img src="https://raw.githubusercontent.com/yafufig/tbnkcs/main/photo_5449483518128887383_y.jpg" alt="Главный экран чата поддержки Т-Банка" class="phone-mock-img">
+          </div>
+          <div class="phone-mock-home"></div>
+          <button class="phone-zoom" data-zoom-img="1" aria-label="Открыть в полный размер">⛶</button>
+        </div>
+        <div class="ux-caption">
+          <span class="ux-caption-tag">Скриншот 1</span>
+          <strong>Главный экран чата</strong>
+          Стартовая точка пользователя — быстрые ответы и подсказка. Контекст для дальнейших сбоев.
+        </div>
+      </div>
+
+      <div class="ux-phone-block">
+        <div class="phone-mock" data-phone-id="phone-2">
+          <div class="phone-mock-notch"></div>
+          <div class="phone-mock-screen" data-screen="2">
+            <img src="https://raw.githubusercontent.com/yafufig/tbnkcs/main/photo_5449483518128887384_y.jpg" alt="Сценарий перевыпуска карты с проблемной кнопкой Отмена и кросс-сейлом" class="phone-mock-img">
+            <div class="scroll-fade-bottom"></div>
+          </div>
+          <div class="phone-mock-home"></div>
+          <button class="phone-zoom" data-zoom-img="2" aria-label="Открыть в полный размер">⛶</button>
+          <div class="phone-scroll-hint">↕ скролл</div>
+        </div>
+        <div class="ux-caption">
+          <span class="ux-caption-tag">Скриншот 2</span>
+          <strong>Сценарий «Перевыпустить карту»</strong>
+          Здесь сразу <em>два</em> сбоя — клик по карточке ниже прокрутит скриншот к нужному месту.
+        </div>
+      </div>
+
+    </div>
+
+    
+    <div class="ux-hotspots-row">
+      <button class="hotspot-card interactive ux-hotspot" data-scroll-target="2" data-scroll-pct="38">
+        <div class="hotspot-card-head">
+          <span class="hotspot-marker red">Сбой 1</span>
+          <strong>Кнопка «Отмена» в середине сценария</strong>
+        </div>
+        <p>Молчаливая эскалация на оператора. Пользователь прямо в чате пишет: <em>«случайно нажал, не было варианта отмены продолжения сценария»</em>.</p>
+        <span class="hotspot-cta">→ показать в скриншоте 2</span>
+      </button>
+
+      <button class="hotspot-card interactive ux-hotspot" data-scroll-target="2" data-scroll-pct="52">
+        <div class="hotspot-card-head">
+          <span class="hotspot-marker red">Сбой 2</span>
+          <strong>Неконсистентная навигация</strong>
+        </div>
+        <p>На этапе выбора не всегда появляется «Назад»: старые inline-кнопки смешиваются с новым всплывающим UX-меню. Это не продуктовая логика, а баг консистентности.</p>
+        <span class="hotspot-cta">→ показать в скриншоте 2</span>
+      </button>
+
+      <button class="hotspot-card interactive ux-hotspot" data-scroll-target="2" data-scroll-pct="92">
+        <div class="hotspot-card-head">
+          <span class="hotspot-marker red">Сбой 3</span>
+          <strong>Кросс-сейл Платинум сразу после closure</strong>
+        </div>
+        <p>После явного закрытия диалога («Вопросов больше нет? — Да») оператор шлёт большой блок промо кредитной карты. Нарушение собственного контракта.</p>
+        <span class="hotspot-cta">→ показать в скриншоте 2</span>
+      </button>
+    </div>
+
+  </div>
+
+  <div class="callout note" style="margin:24px 0 28px">
+    <div class="label">Почему Сбой 1 — главный (сравнение с двумя другими)</div>
+    <p><strong>Сбой 1 vs Сбой 2.</strong> Сбой 2 (неконсистентное «Назад») — баг консистентности между старым и новым UX-слоями. Он решается <em>попутно</em> при редизайне навигации в рамках того же спринта, что и Сбой 1. Отдельного спринта не требует. Прямого денежного эффекта не имеет.</p>
+    <p><strong>Сбой 1 vs Сбой 3.</strong> Сбой 3 (кросс-сейл после closure) — продуктово-этический вопрос на уровне CPO: нужно решение о том, допустим ли вообще апсейл в этом контексте. Мне как PM не хватает полномочий и данных для самостоятельного решения. Containment-эффект нулевой.</p>
+    <p><strong>Итог: Сбой 1 = highest ROI + fast fix + сильное доказательство.</strong> ~4,5 млн ₽/год прямого ущерба, живая цитата пользователя как доказательство, реализация ≤ 1 спринта, VH confidence в capture rate (~80% ложных эскалаций устранится). Два других сбоя либо решаются следствием, либо требуют отдельного процесса вне нашего трека.</p>
+  </div>
+
+    <h4>Вайб-мокап решения <span class="tag">бонус задания</span></h4>
+  <p style="margin-bottom: 16px;">Side-by-side «как сейчас» (одна молчаливая «Отмена» = силент эскалация) и «как стало» (три явных исхода + постоянная кнопка «Оператор» в шапке чата с временем ожидания + возможность отменить случайный вызов оператора до первого сообщения сотрудника).</p>
+
+  <div style="display:flex;gap:56px;justify-content:center;align-items:flex-start;flex-wrap:wrap;margin:36px 0 40px">
+
+    <!-- Телефон 1: КАК СЕЙЧАС -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+      <div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--red)">— Как сейчас</div>
+      <div class="phone-mock">
+        <div class="phone-mock-screen" style="background:#0D0D0D;display:flex;flex-direction:column;overflow:hidden">
+          <!-- Шапка -->
+          <div style="padding:14px 12px 10px;border-bottom:1px solid #2a2a2a;flex-shrink:0">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:26px;height:26px;border-radius:50%;background:#FFDD2D;display:grid;place-items:center;font-weight:700;font-size:13px;color:#000;flex-shrink:0">Т</div>
+              <div>
+                <div style="font-weight:600;font-size:12px;color:#fff">Поддержка</div>
+                <div style="font-size:10px;color:#888">Мы рядом 24/7</div>
+              </div>
+            </div>
+          </div>
+          <!-- Сообщения прижаты к низу -->
+          <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding:10px 12px 12px;gap:8px;overflow:hidden">
+            <div style="background:#2563EB;padding:10px 12px;border-radius:14px 14px 2px 14px;font-size:12px;color:#fff;align-self:flex-end;max-width:85%">Перевыпустить карту</div>
+            <div style="background:#2A2A2A;padding:10px 12px;border-radius:14px 14px 14px 2px;font-size:12px;color:#e0e0e0;line-height:1.45">Чтобы перевыпустить карту с новой фамилией, обновите информацию о себе в приложении.</div>
+            <div style="border:1px solid #555;padding:10px;text-align:center;font-size:12px;color:#bbb;border-radius:12px">Отмена</div>
+            <div style="background:#1C1C1C;padding:10px 12px;border-radius:12px;font-size:11px;color:#777;line-height:1.4">Переключаем ваш диалог на сотрудника...</div>
+          </div>
+        </div>
+        <div class="phone-mock-home"></div>
+      </div>
+      <div style="font-size:12px;color:var(--ink-mute);max-width:220px;text-align:center;line-height:1.45">Одна кнопка «Отмена» — и сразу оператор, без объяснений.</div>
+    </div>
+
+    <!-- Телефон 2: КАК СТАЛО -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+      <div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--green)">→ Как стало</div>
+      <div class="phone-mock" style="position:relative">
+        <div class="phone-mock-screen" style="background:#0D0D0D;display:flex;flex-direction:column;overflow:hidden">
+          <!-- Шапка — одна строка -->
+          <div style="padding:12px 12px 10px;border-bottom:1px solid #2a2a2a;flex-shrink:0">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+              <div style="display:flex;align-items:center;gap:8px;min-width:0">
+                <div style="width:26px;height:26px;border-radius:50%;background:#FFDD2D;display:grid;place-items:center;font-weight:700;font-size:13px;color:#000;flex-shrink:0">Т</div>
+                <div>
+                  <div style="font-weight:600;font-size:12px;color:#fff">Поддержка</div>
+                  <div style="font-size:10px;color:#888">Мы рядом 24/7</div>
+                </div>
+              </div>
+              <div style="display:inline-flex;align-items:center;gap:5px;flex-shrink:0">
+                <span style="width:7px;height:7px;background:#1E8A3C;border-radius:50%;display:inline-block;box-shadow:0 0 0 2px rgba(30,138,60,0.3)"></span>
+                <span style="font-size:10px;color:#6fcf8a;font-weight:500;white-space:nowrap">на связи</span>
+              </div>
+            </div>
+          </div>
+          <!-- Сообщения — скроллятся -->
+          <div class="phone2-scroll" style="flex:1;overflow-y:auto;padding:10px 12px 12px;display:flex;flex-direction:column;gap:7px;scrollbar-width:thin;scrollbar-color:rgba(255,221,45,0.3) transparent">
+            <div style="background:#2563EB;padding:10px 12px;border-radius:14px 14px 2px 14px;font-size:12px;color:#fff;align-self:flex-end;max-width:85%">Перевыпустить карту</div>
+            <div style="background:#2A2A2A;padding:10px 12px;border-radius:14px 14px 14px 2px;font-size:12px;color:#e0e0e0;line-height:1.45">Чтобы перевыпустить карту с новой фамилией, обновите информацию о себе.</div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div style="background:#FFDD2D;color:#000;padding:10px;text-align:center;font-size:12px;font-weight:600;border-radius:12px">Понятно, спасибо</div>
+              <div style="border:1px solid #444;padding:10px;text-align:center;font-size:12px;color:#ccc;border-radius:12px">← Назад в меню</div>
+            </div>
+            <div style="background:#2563EB;padding:10px 12px;border-radius:14px 14px 2px 14px;font-size:12px;color:#fff;align-self:flex-end;max-width:85%">Отмена</div>
+            <div style="background:#1C1C1C;padding:10px 12px;border-radius:12px;font-size:11px;color:#aaa;line-height:1.4">Ищу сотрудника. Обычно ответ в течение 4 минут.</div>
+            <!-- Аннотация вместо сообщения об ошибке -->
+            <div style="margin:2px 0;padding:8px 10px;border-left:2px solid #555;font-size:10px;color:#666;line-height:1.5;font-style:italic">«← Назад» пока не поддерживается — бот не понял команду и вызвал оператора автоматически</div>
+            <div style="border:1px solid #E05050;padding:10px;text-align:center;font-size:12px;color:#ff9090;border-radius:12px">Отменить вызов оператора</div>
+          </div>
+        </div>
+        <div class="phone-mock-home"></div>
+        <div class="phone-scroll-hint">↕ скролл</div>
+      </div>
+      <div style="font-size:12px;color:var(--ink-mute);max-width:220px;text-align:center;line-height:1.45">Три кнопки + отмена вызова до первого ответа оператора.</div>
+    </div>
+
+  </div>
+
+<h4>Бизнес-цена ошибки сейчас</h4>
+  <p>Оценка ложных эскалаций через «Отмену»: <strong>0,4% полностью</strong> (строка №19 «Хочет закончить диалог» — все они без видимого диалога с ботом ушли на оператора) <strong>+ ~25% от 0,8%</strong> (строка №16 «Зовёт оператора в середине сценария» — четверть оцениваю как случайные нажатия «Отмена», остальные — осознанные эскалации). Итого <strong>~0,6% всех чатов</strong>:</p>
+  <div class="stat-row">
+    <div class="stat"><div class="val">7,2&nbsp;тыс.</div><div class="lbl">Ложных эскалаций / мес</div></div>
+    <div class="stat"><div class="val">86&nbsp;тыс.</div><div class="lbl">Ложных эскалаций / год</div></div>
+    <div class="stat"><div class="val">~52&nbsp;₽</div><div class="lbl">ФОТ-стоимость 1 эскалации (см. 3.2)</div></div>
+    <div class="stat"><div class="val">~4,5&nbsp;млн&nbsp;₽</div><div class="lbl">Прямой ущерб / год (ФОТ)</div></div>
+  </div>
+  <p>Это <strong>нижняя оценка прямого денежного эффекта (только ФОТ-компонент)</strong>. Косвенные эффекты — ниже.</p>
+
+  <div class="callout note">
+    <div class="label">Слепая зона в текущей разметке</div>
+    <p>В исходной таблице блока 3 нет отдельной причины «случайно вызвал оператора». Сейчас такие события, скорее всего, растворяются в строках «Хочет закончить диалог», «Клиент зовёт оператора в середине сценария» и «Неклассифицированные причины перевода». Поэтому фикс нужно запускать вместе с новым логом <strong>cancel_operator_request</strong> и reason-кодом <strong>accidental_operator_call</strong>.</p>
+  </div>
+
+  <h4>На какие метрики повлияет</h4>
+  <ul>
+    <li><strong>Containment:</strong> +0,6 п.п. от устранения ложных эскалаций (≈ +2,6 млн ₽/год по чистой экономии 30 ₽/диалог).</li>
+    <li><strong>CSAT:</strong> +0,1 п.п. оценочно — пользователи перестают чувствовать «ловушку» в сценарии.</li>
+    <li><strong>Repeat-contact-7d:</strong> −0,5–1 п.п. — после случайного нажатия «Отмена» часть пользователей возвращается с тем же вопросом.</li>
+    <li><strong>Time-to-resolution:</strong> −15–30 секунд на сценариях, где сейчас идёт пересказ оператору с нуля.</li>
+    <li><strong>Bot-anger markers</strong> (см. 3.9): фраза «случайно нажал» исчезает из логов эскалаций.</li>
+    <li><strong>Cancel-rate:</strong> новая диагностическая метрика — доля пользователей, которые успели отменить вызов оператора до первого ответа сотрудника.</li>
+  </ul>
+
+  <details>
+    <summary>Как читать эти метрики — пояснения</summary>
+    <div class="details-body">
+      <ul>
+        <li><strong>Containment</strong> — доля чатов, где вопрос решён без оператора. Здесь рост считается только за счёт ложных эскалаций: пользователь не хотел оператора, но интерфейс отправил его туда.</li>
+        <li><strong>CSAT</strong> — пользовательская оценка после диалога. Ожидаемый эффект небольшой, потому что фикс точечный, но он убирает ощущение «меня поймали в сценарии».</li>
+        <li><strong>Repeat-contact-7d</strong> — доля клиентов, которые возвращаются с тем же или близким вопросом в течение 7 дней. Если случайный вызов оператора сбил сценарий, клиент чаще приходит повторно.</li>
+        <li><strong>Time-to-resolution</strong> — время от первого сообщения до фактического решения. Ложная эскалация увеличивает его из-за ожидания оператора и повторного объяснения контекста.</li>
+        <li><strong>Bot-anger markers</strong> — словарь негативных маркеров в логах: «случайно нажал», «не туда нажал», «зачем оператор», «не хотел оператора». Это ранний индикатор UX-проблемы до падения CSAT.</li>
+        <li><strong>Cancel-rate</strong> — если метрика высокая в первые дни после релиза, это не провал, а доказательство, что проблема реально существовала. Дальше она должна снижаться после переименования кнопок и улучшения навигации.</li>
+        <li><strong>Accidental operator call rate</strong> — новая reason-разметка для операторских переводов. Без неё проблема будет и дальше прятаться внутри общих bucket'ов «зовёт оператора» и «неклассифицировано».</li>
+      </ul>
+    </div>
+  </details>
+
+  <h4>Что бы ещё сделал дальше — выход в agent-orchestrator</h4>
+  <p>Сужу по тому, как в Сбере был устроен подход к автоматизации операционных процессов: сильный чат поддержки не должен быть набором изолированных сценариев. После чистки базовых UX-багов я бы вёл чат к схеме <strong>agent-orchestrator → специализированные агенты → оператор как fallback</strong>.</p>
+  <ul>
+    <li><strong>Orchestrator</strong> принимает интент, историю диалога, клиентский сегмент, статус сценария и решает: продолжать сценарий, вызвать RAG-ответ, передать в профильного агента или эскалировать оператору.</li>
+    <li><strong>Специализированные агенты</strong> закрывают узкие домены: карты, лимиты, перевыпуск, документы, спорные операции, подписки. Это снижает риск одного «универсального» бота, который отвечает уверенно, но неверно.</li>
+    <li><strong>Оператор</strong> остаётся последним шагом, но получает контекст: что бот уже спросил, какие слоты собрал, где сценарий сломался. Это снижает повторное объяснение и ускоряет решение.</li>
+    <li><strong>Важно:</strong> я бы не ставил это первым релизом. Сначала — дешёвые UX-фиксы вроде «Назад», явной кнопки оператора и отмены вызова; потом — оркестратор как слой масштабирования.</li>
+  </ul>
+
+  <h3><span class="sub-num">2.2</span> Top of the Top — Duolingo</h3>
+  <p><a href="https://www.duolingo.com/" target="_blank">Duolingo</a>: DAU 40,5 млн (+51% YoY), MAU 116,7 млн, <strong>DAU/MAU 35%</strong> (<a href="https://investors.duolingo.com/financials/quarterly-results" target="_blank">Q4 2024 Shareholder Letter</a>) — бенчмарк уровня соцсетей, недостижимый для edu-приложений (Babbel/Memrise/Busuu — 5–10%).</p>
+
+  <h4>Что сделано хорошо: Streak Freeze + Лиги как одна система</h4>
+  <p>Стрик — коммерциализация <strong>loss aversion</strong> (<a href="https://www.uzh.ch/cmsssl/suz/dam/jcr:00000000-64a0-5b1c-0000-00003b7ec704/10.05-kahneman-tversky-79.pdf" target="_blank">Kahneman & Tversky, 1979</a>). Streak Freeze переводит страх потери в управляемое действие и одновременно работает как monetization-flywheel (лимит бесплатных Freeze маленький, безлимит — в Super). Лиги — социальное давление <strong>без графа друзей</strong>: автоматически в группу из 30 анонимов твоего уровня, нижние 5–10 вылетают. Опирается на <a href="https://www.jstor.org/stable/2785771" target="_blank">social comparison theory (Festinger, 1954)</a>.</p>
+
+  <h4>Почему это работает</h4>
+  <p>Две силы складываются <em>мультипликативно</em>: страх потерять стрик <strong>на глазах у лиги</strong> — качественно другая интенсивность, чем по отдельности. Обе механики самовоспроизводимые: чем дольше стрик, тем больнее терять; чем выше лига, тем страшнее вылет. Продукт сам выращивает мотивационный потолок без вмешательства команды роста. Важно для PM: работает <strong>на нулевом графе данных</strong>, старт с первой сессии — большинству retention-механик в финтехе нужна поведенческая история.</p>
+
+  <h4>Что улучшил бы</h4>
+  <p>Та же сила, которая делает retention выдающимся, превратилась в анти-паттерн: <strong>«streak anxiety»</strong> — это уже мем. Reddit r/duolingo и <a href="https://www.theatlantic.com" target="_blank">The Atlantic, 2023</a> — десятки тысяч сообщений «учусь не потому, что хочу, а потому что страшно потерять 487 дней». Я бы ввёл <strong>soft streak</strong> как опцию: формула «5 активных дней из 7 = стрик идёт». Гипотеза для A/B: long-term retention (12 мес) у когорты с soft-стриком +2–4 п.п. — продукт перестаёт ассоциироваться с принуждением. Аналогии: Apple Health rings (тренд, не «каждый день»), Headspace mindful streak с днями отдыха.</p>
+
+  <div class="callout">
+    <div class="label">Урок для финтеха · связка с Т-Банком</div>
+    <p>Жёсткие game-loops дают быстрый рост, но платят долгосрочными отношениями. У Т-Банка есть свои game-loop-механики (месячные кэшбек-категории, статусы программы лояльности, миссии и сезонные акции) — и тот же вопрос про «soft» можно задавать там. То, что Duolingo проходит сейчас по <em>streak anxiety</em>, банковские apps пройдут по <strong>«cashback-anxiety»</strong> (когда пользователь нервничает, что не успел потратить в правильной категории).</p>
+  </div>
+</section>
+
+
+<!-- ═══════ BLOCK 3 — 60% → 55%: ПЛАН АВТОМАТИЗАЦИИ ═══════ -->
+<section id="block-3">
+  <div class="block-marker">
+    <span class="num">Блок 3</span>
+    <h2>60% → 55%: план автоматизации</h2>
+  </div>
+
+  <!-- ═══ 3.0 HERO ВНУТРИ БЛОКА ═══ -->
+  <div style="margin:24px 0 56px">
+    <!-- Цитата-пушбэк -->
+    <div style="background:#0D0D0D;color:#fff;border-radius:8px;padding:36px 40px;margin-bottom:24px;position:relative">
+      <div style="position:absolute;top:14px;right:18px;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:#FFDD2D">Главный пушбэк</div>
+      <p style="font-family:var(--serif);font-style:italic;font-size:28px;line-height:1.3;color:#fff;margin:0 0 14px;max-width:60ch">
+        «Расширять охват плохого бота с CSAT 3,2 — это не автоматизация, это тиражирование недовольства.»
+      </p>
+      <p style="font-size:18px;color:#FFDD2D;margin:0;font-weight:500">
+        Встречная цель: <strong>55% containment + CSAT ≥ 3,8 + per-scenario CSAT ≥ 3,5.</strong>
+      </p>
+    </div>
+
+    <!-- Dashboard 5 карточек -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:6px;overflow:hidden">
+      <div style="background:var(--bg);padding:18px 20px">
+        <div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-mute);margin-bottom:6px">Цель</div>
+        <div style="font-family:var(--serif);font-size:32px;line-height:1;color:var(--green);margin-bottom:4px">55%</div>
+        <div style="font-size:11px;color:var(--ink-mute)">встречная (60% — пробивается)</div>
+      </div>
+      <div style="background:var(--bg);padding:18px 20px">
+        <div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-mute);margin-bottom:6px">Сейчас</div>
+        <div style="font-family:var(--serif);font-size:32px;line-height:1;margin-bottom:4px">30%</div>
+        <div style="font-size:11px;color:var(--ink-mute)">containment в production</div>
+      </div>
+      <div style="background:var(--bg);padding:18px 20px">
+        <div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-mute);margin-bottom:6px">Потенциал</div>
+        <div style="font-family:var(--serif);font-size:32px;line-height:1;margin-bottom:4px">125 млн</div>
+        <div style="font-size:11px;color:var(--ink-mute)">₽/год прямой экономии</div>
+      </div>
+      <div style="background:var(--bg);padding:18px 20px">
+        <div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-mute);margin-bottom:6px">Команда</div>
+        <div style="font-family:var(--serif);font-size:32px;line-height:1;margin-bottom:4px">9</div>
+        <div style="font-size:11px;color:var(--ink-mute)">6 dev · 1 ML · 1 аналит · 1 диз</div>
+      </div>
+      <div style="background:var(--bg);padding:18px 20px">
+        <div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-mute);margin-bottom:6px">Горизонт</div>
+        <div style="font-family:var(--serif);font-size:32px;line-height:1;margin-bottom:4px">24 мес</div>
+        <div style="font-size:11px;color:var(--ink-mute)">8 кварталов</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ 3.1 ГЛАВНЫЙ ПУШБЭК (математическое доказательство) ═══ -->
+  <h3><span class="sub-num">3.1</span> Пушбэк: цель 60% при CSAT 3,2 — математически плохая</h3>
+  <p>PM, который принимает противоречивую цель не споря — это не PM. Задача — поднять конфликт целей до C-level <em>до</em> старта работ, не через 18 месяцев когда retention уже просел.</p>
+  <p>«60% containment + сохранить CSAT» при текущем CSAT бота 3,2 — структурно невозможно. Это не «амбициозно», это «арифметически противоречиво». Покажу почему.</p>
+
+  <h4>Средневзвешенный CSAT — что меняется при наивном масштабировании</h4>
+  <div style="background:var(--bg-cream);border-radius:6px;padding:24px 28px;margin:20px 0 28px">
+    <div style="margin-bottom:24px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+        <div style="font-weight:600;font-size:14px">Сейчас (containment 30%)</div>
+        <div style="font-family:var(--mono);font-size:13px;color:var(--ink-mute)">средневзвешенный CSAT</div>
+      </div>
+      <div style="display:flex;height:32px;border-radius:4px;overflow:hidden;margin-bottom:6px">
+        <div style="width:30%;background:#E63946;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600">30% × 3,2 (бот)</div>
+        <div style="width:70%;background:#2B8A3E;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600">70% × 4,1 (оператор)</div>
+      </div>
+      <div style="text-align:right;font-family:var(--serif);font-size:24px;line-height:1">= <strong>3,83</strong></div>
+    </div>
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+        <div style="font-weight:600;font-size:14px">При 60% БЕЗ улучшения CSAT (наивное масштабирование)</div>
+        <div style="font-family:var(--mono);font-size:13px;color:var(--ink-mute)">средневзвешенный CSAT</div>
+      </div>
+      <div style="display:flex;height:32px;border-radius:4px;overflow:hidden;margin-bottom:6px">
+        <div style="width:60%;background:#E63946;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600">60% × 3,2 (бот)</div>
+        <div style="width:40%;background:#2B8A3E;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600">40% × 4,1 (оператор)</div>
+      </div>
+      <div style="text-align:right;font-family:var(--serif);font-size:24px;line-height:1">= <strong style="color:var(--red)">3,56</strong> <span style="font-size:14px;color:var(--ink-mute)">↓ −7%</span></div>
+    </div>
+    <p style="font-size:13px;color:var(--ink-mute);margin-top:18px;margin-bottom:0">При наивном масштабировании 360 тыс. диалогов/мес переезжают из CSAT-зоны 4,1 в зону 3,2 — это <strong>4,3 млн пользовательских опытов в год с понижением удовлетворённости.</strong></p>
+  </div>
+
+  <h4>CSAT-шкала — где мы и где acceptable</h4>
+  <div style="display:grid;grid-template-columns:200px 1fr;gap:16px;align-items:center;margin:20px 0 28px;max-width:60ch">
+    <div style="font-family:var(--mono);font-size:12px;color:var(--ink-mute);text-align:right">5,0 — Excellent</div>
+    <div style="height:18px;background:linear-gradient(90deg,#2B8A3E 0%,#2B8A3E 100%);border-radius:3px;width:100%"></div>
+    <div style="font-family:var(--mono);font-size:12px;color:var(--ink-mute);text-align:right">4,2 — Top quartile</div>
+    <div style="height:18px;background:#5BA471;border-radius:3px;width:84%"></div>
+    <div style="font-family:var(--mono);font-size:12px;color:var(--green);text-align:right;font-weight:600">3,8 ◀ цель</div>
+    <div style="height:18px;background:#A0CCAA;border-radius:3px;width:76%;position:relative">
+      <div style="position:absolute;right:-2px;top:-4px;width:4px;height:26px;background:var(--green);border-radius:2px"></div>
+    </div>
+    <div style="font-family:var(--mono);font-size:12px;color:var(--ink-mute);text-align:right">3,5 — граница</div>
+    <div style="height:18px;background:#E0CC8C;border-radius:3px;width:70%"></div>
+    <div style="font-family:var(--mono);font-size:12px;color:var(--red);text-align:right;font-weight:600">3,2 ◀ Т-Банк</div>
+    <div style="height:18px;background:#E89898;border-radius:3px;width:64%;position:relative">
+      <div style="position:absolute;right:-2px;top:-4px;width:4px;height:26px;background:var(--red);border-radius:2px"></div>
+    </div>
+    <div style="font-family:var(--mono);font-size:12px;color:var(--ink-mute);text-align:right">3,0 — Failing</div>
+    <div style="height:18px;background:#D44C4C;border-radius:3px;width:60%"></div>
+  </div>
+  <p style="font-size:13px;color:var(--ink-mute)">Бенчмарки для customer support chatbots: Forrester 2023, Gartner 2024. Top quartile 4,2+ · Acceptable 3,8–4,1 · Needs improvement 3,5–3,8 · <strong style="color:var(--red)">Failing &lt; 3,5 — здесь сейчас Т-Банк.</strong></p>
+
+  <div class="callout warn">
+    <div class="label">Klarna — контр-пример из реальной жизни</div>
+    <p><strong>Февраль 2024:</strong> Klarna press-release — AI-ассистент = работа 700 FTE, 2,3 млн диалогов/мес, «та же CSAT что у людей». <strong>Май 2025:</strong> CEO Sebastian Siemiatkowski в интервью Bloomberg признал — качество просело, вернули операторов в часть сценариев. Cost-cutting через автоматизацию обошёлся дороже в long-term retention. <a href="https://www.klarna.com/international/press/klarna-ai-assistant-handles-two-thirds-of-customer-service-chats-in-its-first-month/" target="_blank">источник</a></p>
+  </div>
+
+  <h4>Почему именно эти пороги для контрметрик</h4>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Метрика</th><th>Текущее</th><th>Граница</th><th>Если нарушено</th></tr></thead>
+      <tbody>
+        <tr><td><strong>CSAT бота</strong> (среднее, 30 дн)</td><td class="num" style="color:var(--red)">3,2</td><td class="num">≥ 3,8</td><td>Авто-rollback последнего релиза</td></tr>
+        <tr><td><strong>Per-scenario CSAT</strong></td><td class="num">TBD</td><td class="num">≥ 3,5</td><td>Сценарий отключается, в backlog</td></tr>
+        <tr><td><strong>Repeat-contact-7d</strong></td><td class="num">TBD</td><td class="num">≤ 12%</td><td>Гипотеза-причина на review</td></tr>
+        <tr><td><strong>Escalation-after-bot</strong></td><td class="num">1,1%</td><td class="num">≤ 2%</td><td>Stop релиз, root-cause</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="font-size:13px;color:var(--ink-mute);margin-top:-12px">3,8 = верхняя граница «needs improvement». 3,5 = «не активно плохой опыт». 12% = порог, выше которого containment перестаёт быть осмысленным (пользователи всё равно вернутся к оператору).</p>
+
+  <!-- ═══ 3.2 РАСЧЁТ СТОИМОСТИ ═══ -->
+  <h3><span class="sub-num">3.2</span> Расчёт стоимости и базовые числа</h3>
+  <p>Цена ошибки в обратную сторону (продать потенциал, который не вытянем) — больше чем недопродажа. Поэтому беру нижнюю границу всех допущений и явно показываю каждый множитель.</p>
+
+  <h4>Стоимость одной операторо-минуты — пошаговая развёртка</h4>
+  <div style="background:var(--bg-warm);border-radius:6px;padding:24px 28px;margin:20px 0">
+    <div style="display:grid;grid-template-columns:1fr;gap:14px;font-size:14px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;padding-bottom:10px;border-bottom:1px solid var(--rule)">
+        <div><strong>1. ФОТ оператора</strong> · 70 тыс ₽/мес × 1,4 (налоги/соцпакет)</div>
+        <div class="num" style="font-weight:600">98 тыс ₽/мес</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;padding-bottom:10px;border-bottom:1px solid var(--rule)">
+        <div><strong>2. Полезное время</strong> · 176 ч − перерывы − обучение → 130 ч/мес</div>
+        <div class="num" style="font-weight:600">~13 ₽/мин</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;padding-bottom:10px;border-bottom:1px solid var(--rule)">
+        <div><strong>3. Накладные contact-center</strong> · ×1,8 (Webim, IT, QA, supervisors, тренинги)</div>
+        <div class="num" style="font-weight:600">~23 ₽/мин full-cost</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;padding-bottom:10px;border-bottom:1px solid var(--rule)">
+        <div><strong>4. Стоимость 1 эскалации</strong> · 4 мин × 23 ₽</div>
+        <div class="num" style="font-weight:600">92 ₽ full / 52 ₽ ФОТ</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;padding:8px 0">
+        <div><strong>5. Инфра бота</strong> · LLM API ~5 ₽ + ML-эксплуатация ~10 ₽ + мониторинг ~7 ₽</div>
+        <div class="num" style="font-weight:600">~22 ₽/диалог</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;padding:14px 0;background:var(--yellow);margin:8px -28px -24px;padding-left:28px;padding-right:28px;border-radius:0 0 6px 6px">
+        <div style="font-weight:700">Чистая экономия от автоматизации 1 диалога</div>
+        <div class="num" style="font-weight:700;font-size:18px">52 − 22 = 30 ₽</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="label">Ключевое уравнение</div>
+    <p style="font-family:var(--serif);font-size:22px;line-height:1.4;color:var(--ink);margin:0">
+      <strong>1 п.п. containment = 14,4 млн × 0,01 × 30 ₽ = 4,32 млн ₽/год прямой экономии.</strong>
+    </p>
+    <p style="margin-top:10px;font-size:13px;color:var(--ink-mute)">Эта формула — основа всех денежных оценок в плане. Все +N млн ₽/год по гипотезам считаются как (Δ п.п. × 4,32).</p>
+  </div>
+
+  <h4>Базовые числа из задания</h4>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Параметр</th><th>Значение</th><th>Источник</th></tr></thead>
+      <tbody>
+        <tr><td>Объём диалогов</td><td class="num">1,2 млн/мес = 14,4 млн/год</td><td><span class="tag">из задания</span></td></tr>
+        <tr><td>Containment</td><td class="num">30% (4,32 млн/год бот)</td><td><span class="tag">из задания</span></td></tr>
+        <tr><td>Эскалация</td><td class="num">70% (10,08 млн/год)</td><td><span class="tag">из задания</span></td></tr>
+        <tr><td>AHT оператора</td><td class="num">4 мин/диалог</td><td><span class="tag">из задания</span></td></tr>
+        <tr><td>CSAT бота / оператора</td><td class="num">3,2 / 4,1</td><td><span class="tag">из задания</span></td></tr>
+        <tr><td>VIP: доля базы / выручки</td><td class="num">8% / 35% (ratio 4,4×)</td><td><span class="tag">из задания</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══ 3.3 КЛАСТЕРЫ BUCKET'ОВ ═══ -->
+  <h3><span class="sub-num">3.3</span> 25 строк → 9 атакуемых кластеров</h3>
+  <p>Атаковать 25 строк параллельно невозможно при команде 9 человек. Группирую по типу проблемы — одно техническое решение часто закрывает несколько строк. Размер блока ниже = % трафика, цвет = атакующая гипотеза.</p>
+
+  <div style="display:grid;grid-template-columns:repeat(12,1fr);grid-auto-rows:42px;gap:4px;margin:24px 0 20px">
+    <!-- H1 — 22.7% — занимает 6 колонок × 3 ряда -->
+    <div style="grid-column:span 6;grid-row:span 3;background:var(--blue);color:#fff;border-radius:6px;padding:14px;display:flex;flex-direction:column;justify-content:space-between">
+      <div>
+        <div style="font-family:var(--mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;opacity:0.7">H1 · ENABLER</div>
+        <div style="font-family:var(--serif);font-size:24px;line-height:1.1;margin-top:4px">Реклассификация №25</div>
+      </div>
+      <div style="font-family:var(--mono);font-size:13px;font-weight:600">22,7% · стр. №25</div>
+    </div>
+    <!-- H2 — 13.1% — 6 кол × 2 ряд -->
+    <div style="grid-column:span 6;grid-row:span 2;background:var(--yellow);color:#000;border-radius:6px;padding:14px;display:flex;flex-direction:column;justify-content:space-between">
+      <div>
+        <div style="font-family:var(--mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;opacity:0.6">H2</div>
+        <div style="font-family:var(--serif);font-size:22px;line-height:1.1;margin-top:4px">Coverage gaps</div>
+      </div>
+      <div style="font-family:var(--mono);font-size:13px;font-weight:600">13,1% · №2, 4, 5</div>
+    </div>
+    <!-- VIP gray — 6.7% — 3 кол × 2 ряд (намеренно отделён) -->
+    <div style="grid-column:span 4;grid-row:span 2;background:#888;color:#fff;border-radius:6px;padding:14px;display:flex;flex-direction:column;justify-content:space-between">
+      <div>
+        <div style="font-family:var(--mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;opacity:0.7">VIP — год 2</div>
+        <div style="font-family:var(--serif);font-size:18px;line-height:1.1;margin-top:4px">Сегмент VIP</div>
+      </div>
+      <div style="font-family:var(--mono);font-size:12px;font-weight:600">6,7% · из №1</div>
+    </div>
+    <!-- H4 — 9.1% — 4 кол × 2 ряд -->
+    <div style="grid-column:span 4;grid-row:span 2;background:var(--yellow);color:#000;border-radius:6px;padding:14px;display:flex;flex-direction:column;justify-content:space-between">
+      <div>
+        <div style="font-family:var(--mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;opacity:0.6">H4</div>
+        <div style="font-family:var(--serif);font-size:18px;line-height:1.1;margin-top:4px">Контекст</div>
+      </div>
+      <div style="font-family:var(--mono);font-size:12px;font-weight:600">9,1% · №3, 8, 10</div>
+    </div>
+    <!-- H10 — 4.9% — 4 кол × 1 ряд -->
+    <div style="grid-column:span 4;background:#7B3FAA;color:#fff;border-radius:6px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <span style="font-family:var(--mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;opacity:0.7">H10 · CSAT</span>
+        <span style="margin-left:8px;font-weight:500">Anger-detection</span>
+      </div>
+      <div style="font-family:var(--mono);font-size:12px;font-weight:600">4,9%</div>
+    </div>
+    <!-- H3 — 5.8% — 4 кол × 1 ряд -->
+    <div style="grid-column:span 4;background:var(--yellow);color:#000;border-radius:6px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <span style="font-family:var(--mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;opacity:0.6">H3</span>
+        <span style="margin-left:8px;font-weight:500">NLU upgrade</span>
+      </div>
+      <div style="font-family:var(--mono);font-size:12px;font-weight:600">5,8%</div>
+    </div>
+    <!-- H6 — 3.0% — 3 кол × 1 ряд -->
+    <div style="grid-column:span 3;background:var(--yellow);color:#000;border-radius:6px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <span style="font-family:var(--mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;opacity:0.6">H6</span>
+        <span style="margin-left:6px;font-size:12px">Тех. ошибки</span>
+      </div>
+      <div style="font-family:var(--mono);font-size:11px;font-weight:600">3,0%</div>
+    </div>
+    <!-- H8 — 1.5% (гость) — 2 кол × 1 ряд -->
+    <div style="grid-column:span 2;background:var(--yellow);color:#000;border-radius:6px;padding:10px;display:flex;flex-direction:column;justify-content:space-between">
+      <span style="font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.05em">H8 · гость</span>
+      <span style="font-family:var(--mono);font-size:11px;font-weight:600">1,5%</span>
+    </div>
+    <!-- H7 — 1.2% — 2 кол × 1 ряд -->
+    <div style="grid-column:span 2;background:var(--yellow);color:#000;border-radius:6px;padding:10px;display:flex;flex-direction:column;justify-content:space-between">
+      <span style="font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.05em">H7 · multi</span>
+      <span style="font-family:var(--mono);font-size:11px;font-weight:600">1,2%</span>
+    </div>
+    <!-- H5 — 0.4% — 1 кол × 1 ряд -->
+    <div style="grid-column:span 2;background:var(--yellow);color:#000;border-radius:6px;padding:10px;display:flex;flex-direction:column;justify-content:space-between">
+      <span style="font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.05em">H5 · UX</span>
+      <span style="font-family:var(--mono);font-size:11px;font-weight:600">0,4%</span>
+    </div>
+  </div>
+  <div style="display:flex;gap:18px;flex-wrap:wrap;font-size:12px;color:var(--ink-mute);margin-bottom:8px">
+    <span><span style="display:inline-block;width:10px;height:10px;background:var(--blue);border-radius:2px;vertical-align:middle"></span> ENABLER (без неё другие вслепую)</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:var(--yellow);border-radius:2px;vertical-align:middle"></span> Атакуем сейчас</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:#7B3FAA;border-radius:2px;vertical-align:middle"></span> CSAT-трек</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:#888;border-radius:2px;vertical-align:middle"></span> Отложено (год 2)</span>
+  </div>
+  <p style="font-size:13px;color:var(--ink-mute)">Атакуем в год 1: ~62% всего трафика. VIP (~6,7%) — отдельный пилот в год 2. Должники из строки №1 — намеренно не атакуем, юридически чувствительно.</p>
+
+
+  <!-- ═══ 3.4 ПОРТФЕЛЬ ГИПОТЕЗ ═══ -->
+  <h3><span class="sub-num">3.4</span> Портфель гипотез — сводная картина</h3>
+  <p>Десять гипотез в одном бэклоге. Кликните на строку → раскроется детальная карточка ниже. Confidence: VH/H/M/L по уверенности в capture rate.</p>
+
+  <div class="table-wrap" style="border:1px solid var(--rule);border-radius:6px;overflow:hidden">
+    <div style="display:grid;grid-template-columns:60px 1fr 80px 100px 80px;gap:0;background:var(--bg-cream);font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-mute);font-weight:500;padding:12px 16px;border-bottom:1px solid var(--rule)">
+      <div>ID</div><div>Гипотеза</div><div style="text-align:right">Δ п.п.</div><div style="text-align:right">₽/год</div><div style="text-align:right">Conf</div>
+    </div>
+    <a href="#h-card-h1" style="text-decoration:none;color:inherit"><div style="display:grid;grid-template-columns:60px 1fr 80px 100px 80px;gap:0;padding:14px 16px;border-bottom:1px solid var(--rule);align-items:center;font-size:14px;cursor:pointer;transition:background 0.15s" onmouseover="this.style.background='rgba(255,221,45,0.06)'" onmouseout="this.style.background=''">
+      <div><span style="font-family:var(--mono);font-weight:700;background:var(--blue);color:#fff;padding:4px 8px;border-radius:4px;font-size:11px">H1</span></div>
+      <div><strong>Реклассификация №25 + per-agent dashboard</strong> <span style="color:var(--blue);font-size:11px;font-weight:600;margin-left:6px">ENABLER</span></div>
+      <div style="text-align:right;font-family:var(--mono);color:var(--ink-mute)">enabler</div>
+      <div style="text-align:right;font-family:var(--mono);color:var(--ink-mute)">—</div>
+      <div style="text-align:right;font-family:var(--mono);color:var(--green);font-weight:600">VH</div>
+    </div></a>
+    <a href="#h-card-h5" style="text-decoration:none;color:inherit"><div style="display:grid;grid-template-columns:60px 1fr 80px 100px 80px;gap:0;padding:14px 16px;border-bottom:1px solid var(--rule);align-items:center;font-size:14px;cursor:pointer;transition:background 0.15s" onmouseover="this.style.background='rgba(255,221,45,0.06)'" onmouseout="this.style.background=''">
+      <div><span style="font-family:var(--mono);font-weight:700;background:var(--yellow);color:#000;padding:4px 8px;border-radius:4px;font-size:11px">H5</span></div>
+      <div><strong>UX-фикс кнопки «Отмена»</strong> <span style="color:var(--green);font-size:11px;font-weight:600;margin-left:6px">QUICK WIN</span></div>
+      <div style="text-align:right;font-family:var(--mono);color:var(--green);font-weight:600">+0,5</div>
+      <div style="text-align:right;font-family:var(--mono)">+2 млн</div>
+      <div style="text-align:right;font-family:var(--mono);color:var(--green);font-weight:600">VH</div>
+    </div></a>
+    <a href="#h-card-h2" style="text-decoration:none;color:inherit"><div style="display:grid;grid-template-columns:60px 1fr 80px 100px 80px;gap:0;padding:14px 16px;border-bottom:1px solid var(--rule);align-items:center;font-size:14px;cursor:pointer;transition:background 0.15s" onmouseover="this.style.background='rgba(255,221,45,0.06)'" onmouseout="this.style.background=''">
+      <div><span style="font-family:var(--mono);font-weight:700;background:var(--yellow);color:#000;padding:4px 8px;border-radius:4px;font-size:11px">H2</span></div>
+      <div><strong>Coverage extension — 50 новых сценариев</strong></div>
+      <div style="text-align:right;font-family:var(--mono);color:var(--green);font-weight:600">+7,9</div>
+      <div style="text-align:right;font-family:var(--mono)">+34 млн</div>
+      <div style="text-align:right;font-family:var(--mono);color:var(--green);font-weight:600">H</div>
+    </div></a>
+    <a href="#h-card-h4" style="text-decoration:none;color:inherit"><div style="display:grid;grid-template-columns:60px 1fr 80px 100px 80px;gap:0;padding:14px 16px;border-bottom:1px solid var(--rule);align-items:center;font-size:14px;cursor:pointer;transition:background 0.15s" onmouseover="this.style.background='rgba(255,221,45,0.06)'" onmouseout="this.style.background=''">
+      <div><span style="font-family:var(--mono);font-weight:700;background:var(--yellow);color:#000;padding:4px 8px;border-radius:4px;font-size:11px">H4</span></div>
+      <div><strong>Context retention framework</strong></div>
+      <div style="text-align:right;font-family:var(--mono);color:var(--green);font-weight:600">+5,5</div>
+      <div style="text-align:right;font-family:var(--mono)">+24 млн</div>
+      <div style="text-align:right;font-family:var(--mono);color:var(--green);font-weight:600">H</div>
+    </div></a>
+    <a href="#h-card-h3" style="text-decoration:none;color:inherit"><div style="display:grid;grid-template-columns:60px 1fr 80px 100px 80px;gap:0;padding:14px 16px;border-bottom:1px solid var(--rule);align-items:center;font-size:14px;cursor:pointer;transition:background 0.15s" onmouseover="this.style.background='rgba(255,221,45,0.06)'" onmouseout="this.style.background=''">
+      <div><span style="font-family:var(--mono);font-weight:700;background:var(--yellow);color:#000;padding:4px 8px;border-radius:4px;font-size:11px">H3</span></div>
+      <div><strong>NLU upgrade с LLM-предобработкой</strong></div>
+      <div style="text-align:right;font-family:var(--mono);color:var(--green);font-weight:600">+2,9</div>
+      <div style="text-align:right;font-family:var(--mono)">+12 млн</div>
+      <div style="text-align:right;font-family:var(--mono);color:var(--ink-mute);font-weight:600">M</div>
+    </div></a>
+    <a href="#h-card-h6" style="text-decoration:none;color:inherit"><div style="display:grid;grid-template-columns:60px 1fr 80px 100px 80px;gap:0;padding:14px 16px;border-bottom:1px solid var(--rule);align-items:center;font-size:14px;cursor:pointer;transition:background 0.15s" onmouseover="this.style.background='rgba(255,221,45,0.06)'" onmouseout="this.style.background=''">
+      <div><span style="font-family:var(--mono);font-weight:700;background:var(--yellow);color:#000;padding:4px 8px;border-radius:4px;font-size:11px">H6</span></div>
+      <div><strong>Quality fixes + observability + bug-bash</strong></div>
+      <div style="text-align:right;font-family:var(--mono);color:var(--green);font-weight:600">+2,1</div>
+      <div style="text-align:right;font-family:var(--mono)">+9 млн</div>
+      <div style="text-align:right;font-family:var(--mono);color:var(--green);font-weight:600">H</div>
+    </div></a>
+    <a href="#h-card-h10" style="text-decoration:none;color:inherit"><div style="display:grid;grid-template-columns:60px 1fr 80px 100px 80px;gap:0;padding:14px 16px;border-bottom:1px solid var(--rule);align-items:center;font-size:14px;cursor:pointer;transition:background 0.15s" onmouseover="this.style.background='rgba(255,221,45,0.06)'" onmouseout="this.style.background=''">
+      <div><span style="font-family:var(--mono);font-weight:700;background:#7B3FAA;color:#fff;padding:4px 8px;border-radius:4px;font-size:11px">H10</span></div>
+      <div><strong>Anger-detection и опережающий escape</strong> <span style="color:#7B3FAA;font-size:11px;font-weight:600;margin-left:6px">CSAT TRACK</span></div>
+      <div style="text-align:right;font-family:var(--mono);color:var(--ink-mute)">CSAT++</div>
+      <div style="text-align:right;font-family:var(--mono)">+6 млн косв.</div>
+      <div style="text-align:right;font-family:var(--mono);color:var(--ink-mute);font-weight:600">M</div>
+    </div></a>
+    <a href="#h-card-h8" style="text-decoration:none;color:inherit"><div style="display:grid;grid-template-columns:60px 1fr 80px 100px 80px;gap:0;padding:14px 16px;border-bottom:1px solid var(--rule);align-items:center;font-size:14px;cursor:pointer;transition:background 0.15s" onmouseover="this.style.background='rgba(255,221,45,0.06)'" onmouseout="this.style.background=''">
+      <div><span style="font-family:var(--mono);font-weight:700;background:var(--yellow);color:#000;padding:4px 8px;border-radius:4px;font-size:11px">H8</span></div>
+      <div><strong>Гостевой сегмент</strong></div>
+      <div style="text-align:right;font-family:var(--mono);color:var(--green);font-weight:600">+1,5</div>
+      <div style="text-align:right;font-family:var(--mono)">+6,5 млн</div>
+      <div style="text-align:right;font-family:var(--mono);color:var(--ink-mute);font-weight:600">M</div>
+    </div></a>
+    <a href="#h-card-h7" style="text-decoration:none;color:inherit"><div style="display:grid;grid-template-columns:60px 1fr 80px 100px 80px;gap:0;padding:14px 16px;border-bottom:1px solid var(--rule);align-items:center;font-size:14px;cursor:pointer;transition:background 0.15s" onmouseover="this.style.background='rgba(255,221,45,0.06)'" onmouseout="this.style.background=''">
+      <div><span style="font-family:var(--mono);font-weight:700;background:var(--yellow);color:#000;padding:4px 8px;border-radius:4px;font-size:11px">H7</span></div>
+      <div><strong>Vision / multimodal</strong></div>
+      <div style="text-align:right;font-family:var(--mono);color:var(--green);font-weight:600">+0,6</div>
+      <div style="text-align:right;font-family:var(--mono)">+2,6 млн</div>
+      <div style="text-align:right;font-family:var(--mono);color:var(--ink-mute);font-weight:600">M</div>
+    </div></a>
+    <a href="#h-card-h9" style="text-decoration:none;color:inherit"><div style="display:grid;grid-template-columns:60px 1fr 80px 100px 80px;gap:0;padding:14px 16px;border-bottom:1px solid var(--rule);align-items:center;font-size:14px;cursor:pointer;transition:background 0.15s" onmouseover="this.style.background='rgba(255,221,45,0.06)'" onmouseout="this.style.background=''">
+      <div><span style="font-family:var(--mono);font-weight:700;background:var(--yellow);color:#000;padding:4px 8px;border-radius:4px;font-size:11px">H9</span></div>
+      <div><strong>Атака на reclassified bucket'ы</strong> <span style="color:var(--ink-mute);font-size:11px;font-weight:600;margin-left:6px">DEPENDS ON H1</span></div>
+      <div style="text-align:right;font-family:var(--mono);color:var(--green);font-weight:600">+8,0</div>
+      <div style="text-align:right;font-family:var(--mono)">+34 млн</div>
+      <div style="text-align:right;font-family:var(--mono);color:var(--ink-mute);font-weight:600">M</div>
+    </div></a>
+    <div style="display:grid;grid-template-columns:60px 1fr 80px 100px 80px;gap:0;padding:14px 16px;align-items:center;font-size:14px;background:#0D0D0D;color:#fff;font-weight:600">
+      <div><span style="font-family:var(--mono);font-weight:700;background:var(--yellow);color:#000;padding:4px 8px;border-radius:4px;font-size:11px">Σ</span></div>
+      <div>Containment 30% → 59% при базовых допущениях</div>
+      <div style="text-align:right;font-family:var(--mono);color:var(--yellow)">+29,0</div>
+      <div style="text-align:right;font-family:var(--mono);color:var(--yellow)">+125 млн</div>
+      <div style="text-align:right;color:var(--yellow)">—</div>
+    </div>
+  </div>
+
+  <div class="callout warn">
+    <div class="label">Honest disclaimer по H9</div>
+    <p>Прирост H9 (+8 п.п.) — <strong>ставка</strong> на то, что в реклассифицированной корзине №25 (22,7% всех чатов) после H1 найдутся атакуемые сценарии плотностью ~35%. Это сравнимо с уже видимыми bucket'ами (H2/H4 атакуют 60% от своих кластеров), но без discovery в Q1 утверждать нельзя. <strong>Если H9 окажется существенно ниже:</strong> реалистичный потолок без неё = ~51% containment. Mid-point review в Q4 — момент честного пересогласования.</p>
+  </div>
+
+  <p>Цель 55% — <strong>достижима с запасом 4 п.п.</strong> Цель 60% — возможна через stretch-бэклог (см. ниже), но без запаса в базовом плане.</p>
+
+  <!-- ═══ 3.5 БЭКЛОГ — JIRA-STYLE ═══ -->
+  <h3><span class="sub-num">3.5</span> Бэклог — операционная развёртка</h3>
+  <p>Один бэклог, отсортированный по приоритету и зависимостям. Каждая карточка раскрывается с деталями: что делаем, зачем, acceptance criteria, риски, альтернативы. Stretch-задачи (S1–S3) внизу — берутся только при стабильных guard-rails.</p>
+
+  <div style="background:var(--bg-warm);border:1px solid var(--rule);border-radius:6px;padding:14px 18px;margin:20px 0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;font-size:13px">
+    <div><strong style="font-family:var(--mono);font-size:11px;letter-spacing:.05em">BACKLOG · 13 задач · 9 человек · 24 мес</strong></div>
+    <div style="display:flex;gap:8px;color:var(--ink-mute);font-family:var(--mono);font-size:11px">
+      <span style="padding:4px 10px;background:#fff;border:1px solid var(--rule);border-radius:4px">Status ▾</span>
+      <span style="padding:4px 10px;background:#fff;border:1px solid var(--rule);border-radius:4px">Priority ▾</span>
+      <span style="padding:4px 10px;background:#fff;border:1px solid var(--rule);border-radius:4px">Owner ▾</span>
+    </div>
+  </div>
+
+  <div style="font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-mute);margin:24px 0 10px;display:flex;align-items:center;gap:10px">
+    <span style="background:var(--ink);color:var(--yellow);padding:3px 8px;border-radius:3px;font-size:10px">КОР БЭКЛОГ</span>
+    10 задач · базовая цель 55% · ~125 млн ₽/год
+  </div>
+
+  <details id="h-card-h1">
+    <summary><div style="display:flex;align-items:center;gap:12px;flex:1;flex-wrap:wrap"><span style="font-family:var(--mono);font-weight:700;background:var(--blue);color:#fff;padding:4px 8px;border-radius:4px;font-size:11px;flex-shrink:0">H1</span><span style="font-weight:600;flex:1;min-width:200px">Реклассификация №25 + per-agent dashboard</span><span style="color:var(--blue);font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.05em;flex-shrink:0">ENABLER</span><span style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);flex-shrink:0">1 ML + 1 аналит · 3 мес</span></div></summary>
+    <div class="details-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px">
+        <div>
+          <h4 style="margin-top:0">Что делаем</h4>
+          <ol>
+            <li><strong>Реклассификация строки №25</strong> (22,7%) через LLM-классификатор. Берём ~50 тыс. диалогов, размечаем в одну из 24 категорий или новую. Аналитик валидирует на сэмпле 500 диалогов.</li>
+            <li><strong>Per-agent dashboard</strong>: делим бот на 6+ доменов (карты/переводы/лимиты/подписки/документы/спорные операции). Для каждого считаем containment + CSAT + anger-markers + repeat-contact отдельно.</li>
+          </ol>
+          <h4>Почему именно первой</h4>
+          <p>22,7% — самая большая строка. Без её вскрытия мы не знаем, что внутри — атакуем вслепую. Per-agent containment — единственный способ видеть bottleneck'и (агрегат «30%» может скрывать «карты на 70%, кредиты на 5%»). H9 (+8 п.п.) технически невозможен без H1.</p>
+          <h4>Зачем (метрика)</h4>
+          <p>Прямого containment-роста H1 не даёт. Но без неё потолок плана ~51% вместо 55%. Косвенный эффект — ~10 п.п. от итога.</p>
+        </div>
+        <div>
+          <h4 style="margin-top:0">Acceptance criteria</h4>
+          <ul>
+            <li>≥ 80% строки №25 имеют новый label</li>
+            <li>Classifier accuracy &gt; 85% на validation set</li>
+            <li>Dashboard работает real-time (lag &lt; 1 час)</li>
+            <li>Per-agent containment виден по 6+ доменам с историей ≥ 30 дней</li>
+          </ul>
+          <h4>Зависимости</h4>
+          <p>Блокирует H9 (+8 п.п. = +34 млн ₽/год потенциала).</p>
+          <h4>Альтернативы и почему отвергнуты</h4>
+          <ul style="font-size:13px">
+            <li><strong>Пропустить H1, начать с H2</strong> — теряем H9, прямая потеря ~34 млн ₽/год.</li>
+            <li><strong>Ручная реклассификация</strong> — 270 тыс. диалогов/мес × 2 мин = 56 человеко-месяцев. Невозможно.</li>
+            <li><strong>Сэмпл без полного покрытия</strong> — H9 в production не пойдёт.</li>
+          </ul>
+          <h4>Риски</h4>
+          <p style="font-size:13px;color:var(--ink-mute)">Classifier accuracy &lt; 80% → больше ручной работы. 152-ФЗ — классификатор on-premise.</p>
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <details id="h-card-h5">
+    <summary><div style="display:flex;align-items:center;gap:12px;flex:1;flex-wrap:wrap"><span style="font-family:var(--mono);font-weight:700;background:var(--yellow);color:#000;padding:4px 8px;border-radius:4px;font-size:11px;flex-shrink:0">H5</span><span style="font-weight:600;flex:1;min-width:200px">UX-фикс кнопки «Отмена»</span><span style="color:var(--green);font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.05em;flex-shrink:0">QUICK WIN</span><span style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);flex-shrink:0">2 dev + 0,5 диз · 1 спринт</span></div></summary>
+    <div class="details-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px">
+        <div>
+          <h4 style="margin-top:0">Что делаем</h4>
+          <ol>
+            <li>Декомпозиция «Отмена» на три CTA: «Понятно, спасибо» / «← Назад в меню» / «Нужен оператор»</li>
+            <li>Постоянная кнопка оператора в шапке с показом времени ожидания</li>
+            <li>Возможность отменить вызов оператора до первого ответа сотрудника</li>
+            <li>Логирование <code>cancel_operator_request</code> с reason-кодом <code>accidental_operator_call</code></li>
+          </ol>
+          <h4>Почему параллельно с H1</h4>
+          <p>Низкая стоимость (1 спринт), видимый результат за 2 недели — нужен Q1 для политического движения, пока H1 идёт в фоне. Бесспорный источник потерь: ~0,6% всех чатов = 86 тыс. ложных эскалаций/год = ~4,5 млн ₽/год прямого ущерба (см. Блок 2.1).</p>
+        </div>
+        <div>
+          <h4 style="margin-top:0">Acceptance criteria</h4>
+          <ul>
+            <li>cancel_rate ложных эскалаций −50% за 2 недели</li>
+            <li>«случайно нажал» исчезает из anger-логов</li>
+            <li>Containment +0,5 п.п. в 30-дневном окне</li>
+            <li>Кнопка «Отменить вызов» используется ≥ 1% случаев эскалации</li>
+          </ul>
+          <h4>Эффект</h4>
+          <p>+0,5 п.п. ≈ +2 млн ₽/год напрямую. Косвенно: CSAT +0,1 п.п., repeat-contact-7d −0,5–1 п.п.</p>
+          <h4>Альтернативы</h4>
+          <p style="font-size:13px"><strong>Confirm dialog «Точно вызвать оператора?»</strong> — отвергнут: лишний шаг для всех ради 0,6% ошибочных.</p>
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <details id="h-card-h2">
+    <summary><div style="display:flex;align-items:center;gap:12px;flex:1;flex-wrap:wrap"><span style="font-family:var(--mono);font-weight:700;background:var(--yellow);color:#000;padding:4px 8px;border-radius:4px;font-size:11px;flex-shrink:0">H2</span><span style="font-weight:600;flex:1;min-width:200px">Coverage extension — 50 новых сценариев</span><span style="color:var(--green);font-family:var(--mono);font-size:11px;font-weight:600;flex-shrink:0">+34 млн ₽/год</span><span style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);flex-shrink:0">2 dev · долгий трек</span></div></summary>
+    <div class="details-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px">
+        <div>
+          <h4 style="margin-top:0">Что делаем</h4>
+          <p>Атакуем строки №2, №4, №5 (13,1% трафика). Приоритизация: <em>частота × AHT × вероятность автоматизации</em>. 2-недельный спринт на сценарий: discovery → дизайн → build → shadow → rollout.</p>
+          <h4>Спринт-цикл</h4>
+          <p style="font-size:13.5px">Нед. 1 (д.1–3): аналитик — one-pager + ranking. Нед. 1 (д.3–5): дизайнер — диалоговое дерево. Нед. 2 (д.1–4): 2 разраба — build + shadow 10%. Нед. 2 (д.5): 5% rollout, замер 24ч, решение PM по checklist.</p>
+          <h4>Почему именно это</h4>
+          <p>Самый крупный отдельный кластер с явной механикой решения. Низкая научная неопределённость. Параллельно тренируется команда на спринт-цикле для остальных гипотез.</p>
+        </div>
+        <div>
+          <h4 style="margin-top:0">Acceptance criteria (на сценарий)</h4>
+          <ul>
+            <li>Containment нового сценария ≥ 40%</li>
+            <li>Per-scenario CSAT ≥ 3,5</li>
+            <li>Repeat-contact-24h ≤ baseline + 2 п.п.</li>
+            <li>Anger-markers не растут &gt; 20%</li>
+          </ul>
+          <h4>Rollout gates</h4>
+          <p>10% → 25% → 50% → 100% за 7 дней. Любой gate не прошёл — авто-откат.</p>
+          <h4>Риски</h4>
+          <p style="font-size:13px;color:var(--ink-mute)">Long-tail: сценарии становятся редкими, дорогими. Митигация: жёсткое отсечение по value × частота. Compliance review для финансовых сценариев — раз в неделю стенд-ап для пакетного review.</p>
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <details id="h-card-h4">
+    <summary><div style="display:flex;align-items:center;gap:12px;flex:1;flex-wrap:wrap"><span style="font-family:var(--mono);font-weight:700;background:var(--yellow);color:#000;padding:4px 8px;border-radius:4px;font-size:11px;flex-shrink:0">H4</span><span style="font-weight:600;flex:1;min-width:200px">Context retention framework</span><span style="color:var(--green);font-family:var(--mono);font-size:11px;font-weight:600;flex-shrink:0">+24 млн ₽/год</span><span style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);flex-shrink:0">2 dev + 1 ML · Q2</span></div></summary>
+    <div class="details-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px">
+        <div>
+          <h4 style="margin-top:0">Что делаем</h4>
+          <ol>
+            <li><strong>In-session context</strong>: хранение слотов across messages в рамках сессии. TTL 30 мин активности.</li>
+            <li><strong>Cross-session (24ч окно)</strong>: при новом обращении предлагаем «Продолжить тему «перевыпуск карты»? [Да/Нет]».</li>
+            <li><strong>Follow-up resolution</strong>: 60 секунд после ответа бота слушаем уточняющий вопрос с tematic similarity.</li>
+          </ol>
+          <h4>Почему</h4>
+          <p>9,1% трафика — второй по размеру кластер. Эффект мультипликативный: после H4 многие сценарии H2 становятся устойчивее к follow-up.</p>
+        </div>
+        <div>
+          <h4 style="margin-top:0">Acceptance criteria</h4>
+          <ul>
+            <li>Repeat-contact по топику −30% в 7-дневном окне</li>
+            <li>CSAT на follow-up сценариях ≥ 3,6</li>
+            <li>Time-to-resolution для multi-turn интентов −20%</li>
+          </ul>
+          <h4>Риск 152-ФЗ</h4>
+          <p style="color:var(--red)"><strong>Compliance review обязателен в Q1, ДО старта реализации.</strong> Если cross-session блокирован → деградация до per-session, минус ~2 п.п. потенциала.</p>
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <details id="h-card-h3">
+    <summary><div style="display:flex;align-items:center;gap:12px;flex:1;flex-wrap:wrap"><span style="font-family:var(--mono);font-weight:700;background:var(--yellow);color:#000;padding:4px 8px;border-radius:4px;font-size:11px;flex-shrink:0">H3</span><span style="font-weight:600;flex:1;min-width:200px">NLU upgrade с LLM-предобработкой</span><span style="color:var(--green);font-family:var(--mono);font-size:11px;font-weight:600;flex-shrink:0">+12 млн ₽/год</span><span style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);flex-shrink:0">1 ML + 2 dev · Q2–Q3</span></div></summary>
+    <div class="details-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px">
+        <div>
+          <h4 style="margin-top:0">Что делаем</h4>
+          <p>Атакуем строки №9, 11, 13, 14, 17, 21, 22 (5,8%). LLM-слой предобработки <em>перед</em> существующим intent-классификатором: нормализация формулировок, разрешение опечаток, split нескольких интентов, заполнение пропущенных слотов из контекста.</p>
+          <p>Существующий классификатор остаётся, получает на вход нормализованное сообщение. Снижает риск регрессии.</p>
+        </div>
+        <div>
+          <h4 style="margin-top:0">Acceptance criteria</h4>
+          <ul>
+            <li>Intent classification accuracy +15% на test set из строк №9–22 (≥1000 размеченных сообщений)</li>
+            <li>Latency не деградирует &gt; 300ms на p95</li>
+            <li>CSAT на затронутых сценариях ≥ 3,5</li>
+            <li>LLM API cost ≤ 5 ₽/диалог</li>
+          </ul>
+          <h4>Риски</h4>
+          <p style="font-size:13px;color:var(--ink-mute)">LLM hallucinations — митигация: constrained generation (LLM может только нормализовать или сказать «не понятно»). Cost overrun — митигация: caching частых формулировок (карта/баланс/перевод = 60% запросов).</p>
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <details id="h-card-h6">
+    <summary><div style="display:flex;align-items:center;gap:12px;flex:1;flex-wrap:wrap"><span style="font-family:var(--mono);font-weight:700;background:var(--yellow);color:#000;padding:4px 8px;border-radius:4px;font-size:11px;flex-shrink:0">H6</span><span style="font-weight:600;flex:1;min-width:200px">Quality fixes — observability + bug-bash</span><span style="color:var(--green);font-family:var(--mono);font-size:11px;font-weight:600;flex-shrink:0">+9 млн ₽/год</span><span style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);flex-shrink:0">2 dev (ротация)</span></div></summary>
+    <div class="details-body">
+      <h4 style="margin-top:0">Что делаем</h4>
+      <p>Строки №7, №24, №20 (тех. ошибки, 3,0%). Distributed tracing каждого диалога, alerts на error rate &gt; 0,5%, еженедельный bug-bash. SLA: P0 баг (containment-blocker) — 24ч, P1 — неделя. Плюс персонализация ответов из CRM (имя клиента, тип карты).</p>
+      <h4>Почему важно</h4>
+      <p>Технические баги — самый «обидный» тип ошибки. Бот не понял — нормально. Бот сказал «произошла ошибка» — бесит. Observability — фундамент для всех остальных гипотез: без неё лечим симптомы, не диагностируя.</p>
+      <h4>Acceptance criteria</h4>
+      <ul>
+        <li>Error rate бота &lt; 0,3% в production (сейчас 2,6%)</li>
+        <li>p95 latency &lt; 5 секунд</li>
+        <li>100% диалогов имеют trace в наблюдаемости</li>
+      </ul>
+    </div>
+  </details>
+
+  <details id="h-card-h10">
+    <summary><div style="display:flex;align-items:center;gap:12px;flex:1;flex-wrap:wrap"><span style="font-family:var(--mono);font-weight:700;background:#7B3FAA;color:#fff;padding:4px 8px;border-radius:4px;font-size:11px;flex-shrink:0">H10</span><span style="font-weight:600;flex:1;min-width:200px">Anger-detection и опережающий escape</span><span style="color:#7B3FAA;font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.05em;flex-shrink:0">CSAT TRACK</span><span style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);flex-shrink:0">1 ML · Q3</span></div></summary>
+    <div class="details-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px">
+        <div>
+          <h4 style="margin-top:0">Что делаем</h4>
+          <p>Строки №6, №12, №16 (4,9%). Не пытаемся удержать всех — проактивно эскалируем «горячих». Anger-score (0–1) на каждое сообщение из 5 источников: лексические маркеры (regex), ALL CAPS, восклицания, длина выросла, sentiment-classifier.</p>
+          <p>Если score &gt; 0,7: бот сразу пишет «Я вижу, что вопрос важный. Подключаю оператора». Передача контекста оператору автоматически.</p>
+        </div>
+        <div>
+          <h4 style="margin-top:0">Acceptance criteria</h4>
+          <ul>
+            <li>Anger-markers в логах −30% м/м</li>
+            <li>CSAT на «горячих» сессиях +0,2 п.п.</li>
+            <li>False positive rate &lt; 5%</li>
+            <li>Operators sample-feedback ≥ 80% положительных оценок</li>
+          </ul>
+          <h4>Зачем</h4>
+          <p>Цель не containment, а CSAT. Hostile customer на оператора с правильным контекстом &gt;&gt; hostile customer на оператора без контекста.</p>
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <details id="h-card-h8">
+    <summary><div style="display:flex;align-items:center;gap:12px;flex:1;flex-wrap:wrap"><span style="font-family:var(--mono);font-weight:700;background:var(--yellow);color:#000;padding:4px 8px;border-radius:4px;font-size:11px;flex-shrink:0">H8</span><span style="font-weight:600;flex:1;min-width:200px">Гостевой сегмент</span><span style="color:var(--green);font-family:var(--mono);font-size:11px;font-weight:600;flex-shrink:0">+6,5 млн ₽/год</span><span style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);flex-shrink:0">1 ML + 1 dev · Q3</span></div></summary>
+    <div class="details-body">
+      <p>Часть строки №1, гостевой подсегмент = ~1,5% трафика. Незарегистрированные пользователи. Ограниченный сценарий: FAQ, навигация, онбординг. Никаких персональных данных. Эскалация на оператора если запрос не FAQ.</p>
+      <p style="font-size:13px;color:var(--ink-mute)"><strong>VIP и должники из строки №1 — НЕ в H8.</strong> VIP — отдельный stretch S1 в год 2. Должники — намеренно не атакуем, юридически чувствительно (потенциальные иски за самовольную коммуникацию по долгу через бот).</p>
+    </div>
+  </details>
+
+  <details id="h-card-h7">
+    <summary><div style="display:flex;align-items:center;gap:12px;flex:1;flex-wrap:wrap"><span style="font-family:var(--mono);font-weight:700;background:var(--yellow);color:#000;padding:4px 8px;border-radius:4px;font-size:11px;flex-shrink:0">H7</span><span style="font-weight:600;flex:1;min-width:200px">Vision / multimodal</span><span style="color:var(--green);font-family:var(--mono);font-size:11px;font-weight:600;flex-shrink:0">+2,6 млн ₽/год</span><span style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);flex-shrink:0">1 ML + 1 dev · Q4 · LOW ROI</span></div></summary>
+    <div class="details-body">
+      <p>Строки №15, №18 (1,2% трафика). Vision-модель для скриншотов ошибок, чеков, документов. Особый кейс: фото банковской карты — распознать и предупредить об опасности отправки данных, НЕ обрабатывать.</p>
+      <p style="font-size:13px;color:var(--ink-mute)">Самый низкий ROI в плане (+0,6 п.п.). Делается в Q4 потому что (а) команда уже зрелая, (б) compliance вопросы по отправке изображений в external API проще решить во второй половине года, (в) команда нарабатывает стек для будущих multimodal проектов.</p>
+    </div>
+  </details>
+
+  <details id="h-card-h9">
+    <summary><div style="display:flex;align-items:center;gap:12px;flex:1;flex-wrap:wrap"><span style="font-family:var(--mono);font-weight:700;background:var(--yellow);color:#000;padding:4px 8px;border-radius:4px;font-size:11px;flex-shrink:0">H9</span><span style="font-weight:600;flex:1;min-width:200px">Атака на reclassified bucket'ы</span><span style="color:var(--ink-mute);font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.05em;flex-shrink:0">DEPENDS ON H1</span><span style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);flex-shrink:0">вся команда · Q5–Q8</span></div></summary>
+    <div class="details-body">
+      <h4 style="margin-top:0">Что делаем</h4>
+      <p>После H1 строка №25 (22,7%) распадётся на новые подкатегории. H9 — применить к ним методологию H2: приоритизировать, строить сценарии 2-недельными спринтами. Это второй полугодовой цикл H2-методологии, но на новых данных.</p>
+      <h4>Honest disclaimer (повторно)</h4>
+      <p style="color:var(--red)">Прирост +8 п.п. — <strong>ставка</strong> на плотность атакуемых сценариев ~35%. Если 20% → +4,5 п.п. Если 50% → +11 п.п.</p>
+      <p>Sanity-check уже в Q2: первые 5 reclassified bucket'ов после H1 валидируются на плотность вручную. Если плотность low → план корректируется не в Q4, а в Q2.</p>
+      <h4>Backup при провале</h4>
+      <p>Mid-point review в Q4. Если ясно, что плотность low → переключаемся на S1 (VIP в год 2) как backup-источник прироста. Альтернативно: пересогласовываем цель к 50%.</p>
+    </div>
+  </details>
+
+  <!-- STRETCH -->
+  <div style="background:#0D0D0D;border-radius:6px;padding:18px 22px;margin:36px 0 16px;color:#fff">
+    <div style="font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:#FFDD2D;margin-bottom:6px">STRETCH ⌂ если успеваем</div>
+    <p style="font-size:14px;margin:0;color:#ccc">Эти задачи — добивка до 60–63%. По дефолту НЕ делаем. Берём только при выполнении 4 условий: containment ≥ 48% к Q4, CSAT ≥ 3,7, repeat-contact-7d ≤ 12%, stakeholder buy-in.</p>
+  </div>
+
+  <details>
+    <summary><div style="display:flex;align-items:center;gap:12px;flex:1;flex-wrap:wrap"><span style="font-family:var(--mono);font-weight:700;background:var(--red);color:#fff;padding:4px 8px;border-radius:4px;font-size:11px;flex-shrink:0">S1</span><span style="font-weight:600;flex:1;min-width:200px">VIP-трек: opt-in пилот раньше срока</span><span style="color:var(--red);font-family:var(--mono);font-size:11px;font-weight:600;flex-shrink:0">+5–7 п.п.</span><span style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);flex-shrink:0">1 dev · 6 мес</span></div></summary>
+    <div class="details-body">
+      <p><strong>Главный рычаг к 60%+.</strong> VIP = 9,6% трафика. Без него потолок ~53–55%. С ним — 60%+. Детальный дизайн пилота — в разделе 3.7 ниже.</p>
+      <p><strong>Цена и риск:</strong> 8% базы × 35% выручки = ratio 4,4×. Один потерянный VIP по экономике равен потере 4,4 регулярных. VIP уходит после ОДНОГО плохого опыта, не третьего. Ожидаемо 1–3 инцидента vs 0 при позднем запуске.</p>
+      <p><strong>Условие включения:</strong> CSAT non-VIP ≥ 3,7 + per-scenario CSAT ≥ 4,0 на whitelist-сценариях за 90 дней. Иначе — задача остаётся в backlog нетронутой.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary><div style="display:flex;align-items:center;gap:12px;flex:1;flex-wrap:wrap"><span style="font-family:var(--mono);font-weight:700;background:var(--red);color:#fff;padding:4px 8px;border-radius:4px;font-size:11px;flex-shrink:0">S2</span><span style="font-weight:600;flex:1;min-width:200px">Aggressive rollout — shadow 5 дней, CSAT-гейт 3,3</span><span style="color:var(--red);font-family:var(--mono);font-size:11px;font-weight:600;flex-shrink:0">+2–3 п.п.</span><span style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);flex-shrink:0">все треки</span></div></summary>
+    <div class="details-body">
+      <p><strong>Что меняем:</strong> shadow-mode 2 нед → 5 дней, rollout-гейт CSAT ≥ 3,5 → ≥ 3,3 в первые 3 месяца, smoke-tests вместо полной регрессии, capture rates по верхней границе.</p>
+      <p><strong>Цена:</strong> CSAT 3,3–3,5 вместо ≥ 3,8 (каждый 10-й — в зоне «активно плохой опыт»). Repeat-contact-7d 16–20% (двойной). Меньше данных в shadow → выше риск раскатить сломанный сценарий.</p>
+      <p style="color:var(--red)"><strong>Это не рекомендация.</strong> Я как PM при принятии S2 эскалирую риск письменно: «Потеря retention ~1,5–2 п.п. за 18 мес = 60+ млн ₽/год недополученного LTV. Компенсирует ли +12 млн прямой экономии — решение CFO/CPO».</p>
+    </div>
+  </details>
+
+  <details>
+    <summary><div style="display:flex;align-items:center;gap:12px;flex:1;flex-wrap:wrap"><span style="font-family:var(--mono);font-weight:700;background:var(--red);color:#fff;padding:4px 8px;border-radius:4px;font-size:11px;flex-shrink:0">S3</span><span style="font-weight:600;flex:1;min-width:200px">Параллельный старт H2 пока H1 в работе</span><span style="color:var(--red);font-family:var(--mono);font-size:11px;font-weight:600;flex-shrink:0">+1 п.п.</span><span style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);flex-shrink:0">2 dev · с м.1</span></div></summary>
+    <div class="details-body">
+      <p>Половина команды запускает H2 в shadow с месяца 1, не дожидаясь dashboard'ов H1. Команда работает без полной картины приоритетов — возможны переделки 20–30% сценариев после H1.</p>
+      <p style="color:var(--ink-mute)">Только если стейкхолдер готов принять переделку. Иначе — пустая работа. Реальный выигрыш ~1 квартал в оптимистичном сценарии.</p>
+    </div>
+  </details>
+
+
+  <!-- ═══ 3.6 СПРИНТ-ЦИКЛ ═══ -->
+  <h3><span class="sub-num">3.6</span> Спринт-цикл — как команда работает по одной задаче</h3>
+  <p>Двухнедельный цикл на пример H2 (расширение сценариев). Тот же шаблон применяется ко всем гипотезам с локальной адаптацией.</p>
+
+  <div class="sprint-flow">
+    <div class="sprint-card">
+      <div class="day">Нед. 1 · дни 1–3</div>
+      <div class="phase">Discovery</div>
+      <div class="who"><strong>Аналитик.</strong> Топ-N кандидатов из H1. Ранжирование по <em>частота × AHT × вероятность автоматизации</em>. One-pager: частота, 5–10 реальных диалогов, success-критерий.</div>
+    </div>
+    <div class="sprint-card">
+      <div class="day">Нед. 1 · дни 3–5</div>
+      <div class="phase">Design</div>
+      <div class="who"><strong>Дизайнер.</strong> Диалоговое дерево. Согласование с владельцем продукта (5–10 мин в Slack). Готовая Figma + JSON-скелет.</div>
+    </div>
+    <div class="sprint-card">
+      <div class="day">Нед. 2 · дни 1–4</div>
+      <div class="phase">Build</div>
+      <div class="who"><strong>2 разраба.</strong> Один — основной flow, второй — edge cases и API. Обязательный shadow-mode на 10% трафика без отдачи ответа. QA — регрессия.</div>
+    </div>
+    <div class="sprint-card">
+      <div class="day">Нед. 2 · день 5</div>
+      <div class="phase">Measure</div>
+      <div class="who"><strong>Аналитик + PM.</strong> 5%-rollout на 24 ч. Замер: containment, per-scenario CSAT, repeat-contact-24h, escalation-after, anger-markers. Решение по checklist.</div>
+    </div>
+  </div>
+
+  <div class="callout note">
+    <div class="label">Checklist rollout / rollback — на каждый шаг 10→25→50→100%</div>
+    <p style="font-family:var(--mono);font-size:13px;line-height:1.8">
+      <span style="color:var(--green)">[✓]</span> Containment нового сценария ≥ 40%<br>
+      <span style="color:var(--green)">[✓]</span> CSAT ≥ 3,5 за последние 7 дней<br>
+      <span style="color:var(--green)">[✓]</span> Repeat-contact-24h ≤ baseline + 2 п.п.<br>
+      <span style="color:var(--green)">[✓]</span> Anger-markers рост ≤ 20%
+    </p>
+    <p><strong>Все ✓ → следующий шаг rollout.</strong> Любой ✗ → откат на предыдущий шаг + root-cause analysis. Cool-down: 5 рабочих дней до следующей попытки.</p>
+  </div>
+
+  <h4>Почему именно так распределена команда (пример H2)</h4>
+  <ul>
+    <li><strong>2 разработчика, не 1</strong> — для парности и отсутствия bus-factor. Один владелец сценария = single point of failure.</li>
+    <li><strong>0,5 аналитика, не 1</strong> — потому что часть его работы (валидация классификатора) уже сделана в H1. Дублировать не нужно.</li>
+    <li><strong>PM 20%, не больше</strong> — мой основной контур в Q2 это переговоры с CPO/CFO о пересогласовании цели и квартальное планирование, а не приёмка каждого сценария. Если PM становится bottleneck'ом — это не «я молодец», это ошибка распределения.</li>
+  </ul>
+
+  <!-- ═══ 3.7 МЕТРИКИ И GUARD-RAILS ═══ -->
+  <h3><span class="sub-num">3.7</span> Метрики — иерархия и пороги</h3>
+
+  <div style="margin:24px 0">
+    <!-- Уровень 1 -->
+    <div style="background:var(--bg-cream);border:1px solid var(--rule);border-left:4px solid var(--green);border-radius:6px;padding:18px 22px;margin-bottom:8px">
+      <div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-mute);margin-bottom:8px">Уровень 1 · Бизнес-цель</div>
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+        <div style="font-size:15px;font-weight:600;flex:1;min-width:200px">True containment</div>
+        <div style="display:flex;align-items:center;gap:10px;flex:2;min-width:240px">
+          <div style="height:14px;flex:1;background:var(--rule);border-radius:7px;overflow:hidden">
+            <div style="height:100%;width:30%;background:var(--green);border-radius:7px"></div>
+          </div>
+          <div style="font-family:var(--mono);font-size:13px;font-weight:600">30% / 55%</div>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--ink-mute);margin:8px 0 0">True = чат закрыт без эскалации <strong>И</strong> клиент не вернулся с тем же топиком в течение 7 дней. Простое containment накачивается молчаливым игнорированием — true режет это до реальных решений.</p>
+    </div>
+
+    <!-- Уровень 2 -->
+    <div style="background:var(--bg-cream);border:1px solid var(--rule);border-left:4px solid var(--red);border-radius:6px;padding:18px 22px;margin-bottom:8px">
+      <div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--red);margin-bottom:12px">Уровень 2 · Blockers (любая нарушена → авто-rollback)</div>
+      <div style="display:grid;gap:10px">
+        <div style="display:flex;align-items:center;gap:12px"><span style="width:8px;height:8px;background:var(--red);border-radius:50%;flex-shrink:0"></span><div style="flex:1;font-size:14px"><strong>CSAT бота</strong> (avg, 30 дн)</div><div style="font-family:var(--mono);font-size:13px;font-weight:600">3,2 / ≥ 3,8</div></div>
+        <div style="display:flex;align-items:center;gap:12px"><span style="width:8px;height:8px;background:var(--ink-mute);border-radius:50%;flex-shrink:0"></span><div style="flex:1;font-size:14px"><strong>Per-scenario CSAT</strong></div><div style="font-family:var(--mono);font-size:13px;font-weight:600">TBD / ≥ 3,5</div></div>
+        <div style="display:flex;align-items:center;gap:12px"><span style="width:8px;height:8px;background:var(--ink-mute);border-radius:50%;flex-shrink:0"></span><div style="flex:1;font-size:14px"><strong>Repeat-contact-7d</strong></div><div style="font-family:var(--mono);font-size:13px;font-weight:600">TBD / ≤ 12%</div></div>
+      </div>
+    </div>
+
+    <!-- Уровень 3 -->
+    <div style="background:var(--bg-cream);border:1px solid var(--rule);border-left:4px solid #C9AC00;border-radius:6px;padding:18px 22px;margin-bottom:8px">
+      <div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-mute);margin-bottom:12px">Уровень 3 · Operational</div>
+      <div style="display:grid;gap:10px">
+        <div style="display:flex;align-items:center;gap:12px"><span style="width:8px;height:8px;background:var(--green);border-radius:50%;flex-shrink:0"></span><div style="flex:1;font-size:14px"><strong>Escalation-after-bot</strong></div><div style="font-family:var(--mono);font-size:13px;font-weight:600">1,1% / ≤ 2%</div></div>
+        <div style="display:flex;align-items:center;gap:12px"><span style="width:8px;height:8px;background:var(--ink-mute);border-radius:50%;flex-shrink:0"></span><div style="flex:1;font-size:14px"><strong>Anger-markers рост</strong> м/м</div><div style="font-family:var(--mono);font-size:13px;font-weight:600">TBD / ≤ 20%</div></div>
+        <div style="display:flex;align-items:center;gap:12px"><span style="width:8px;height:8px;background:var(--ink-mute);border-radius:50%;flex-shrink:0"></span><div style="flex:1;font-size:14px"><strong>VIP NPS Δ</strong></div><div style="font-family:var(--mono);font-size:13px;font-weight:600">TBD / ≥ −1</div></div>
+      </div>
+    </div>
+
+    <!-- Уровень 4 -->
+    <div style="background:var(--bg-cream);border:1px solid var(--rule);border-left:4px solid var(--blue);border-radius:6px;padding:18px 22px">
+      <div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-mute);margin-bottom:12px">Уровень 4 · Diagnostic (мониторинг)</div>
+      <div style="font-size:13px;color:var(--ink-soft);line-height:1.7">
+        <strong>Per-agent containment</strong> по 6+ доменам · <strong>Cancel-operator-rate</strong> (новая, для H5) · <strong>Time-to-resolution</strong> · <strong>Bot-anger markers</strong> по категориям
+      </div>
+    </div>
+  </div>
+
+  <details>
+    <summary>Bot-anger markers — словарь (6 категорий)</summary>
+    <div class="details-body">
+      <p>Извлекаются регулярными выражениями в реальном времени, дашбордятся по дням. Опережающий индикатор: реагирует за день, CSAT — за неделю.</p>
+      <ul>
+        <li><strong>А · Прямая фрустрация:</strong> «достал», «бесит», «ну сколько можно»</li>
+        <li><strong>Б · Обращения к оператору:</strong> «оператор живой», «нормальный человек», «не бот»</li>
+        <li><strong>В · Уничижительные:</strong> «тупой», «не понимаешь»</li>
+        <li><strong>Г · Повторы:</strong> «третий раз пишу», «опять то же»</li>
+        <li><strong>Д · Вежливые-фрустрированные:</strong> «извините за беспокойство» в начале, «простите, но» в начале</li>
+        <li><strong>Е · UX-сбой:</strong> «не туда нажал», «случайно» <span class="tag">привет, кейс H5</span></li>
+      </ul>
+      <p style="margin-top:12px;font-size:13px"><strong>Реакция:</strong> 0–0,3 — норма (логируем). 0,3–0,7 — warning (бот пишет «Я могу подключить оператора»). &gt; 0,7 — автоэскалация (см. H10).</p>
+    </div>
+  </details>
+
+  <!-- ═══ 3.8 VIP-ТРЕК ═══ -->
+  <h3><span class="sub-num">3.8</span> VIP-трек — детальный дизайн отложенного пилота</h3>
+  <p>VIP — 9,6% трафика и одновременно самый асимметричный риск. Этот раздел отвечает на справедливый вопрос: «Вы исключили самую крупную ячейку из плана. Это circular reasoning». Ответ: VIP трогаем намеренно поздно (год 2), но трогаем — с дизайном, который снижает риск инцидента до приемлемого.</p>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:24px 0">
+    <div style="background:#FDF3F3;border:1px solid #F4C5C5;border-radius:6px;padding:22px 26px">
+      <div style="font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--red);margin-bottom:12px;font-weight:600">Почему НЕ в год 1</div>
+      <ul style="margin:0">
+        <li><strong>VIP = 8% базы × 35% выручки</strong> = асимметрия 4,4×. Один потерянный VIP-клиент по выручке равен потере 4,4 регулярных.</li>
+        <li><strong>VIP уходит после ОДНОГО плохого опыта</strong>, не после третьего. Эмпирически: высокая chargeback-чувствительность, больше альтернатив, выше требования к сервису.</li>
+        <li>При CSAT бота 3,2 мы ожидаемо делаем ~115 тыс. «плохих опытов»/мес на регулярном сегменте. Раскатывать такое же качество на VIP = умножать ошибку на коэффициент 4,4×.</li>
+      </ul>
+    </div>
+    <div style="background:#F0F8F2;border:1px solid #B8E0C2;border-radius:6px;padding:22px 26px">
+      <div style="font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--green);margin-bottom:12px;font-weight:600">Что меняется к месяцу 12</div>
+      <ul style="margin:0">
+        <li><strong>Per-agent containment</strong> по 6+ доменам с историей CSAT за 6+ месяцев</li>
+        <li><strong>50+ обкатанных сценариев</strong> из H2 с per-scenario CSAT</li>
+        <li><strong>Anger-detection (H10) live</strong> с reaction time &lt; 1 минуты</li>
+        <li><strong>Repeat-contact-7d</strong> стабильно ≤ 12%</li>
+      </ul>
+      <p style="margin:12px 0 0;font-size:13px;color:var(--ink-mute)">Только при ВСЕХ этих условиях — VIP пилот имеет смысл.</p>
+    </div>
+  </div>
+
+  <h4>Этапы пилота</h4>
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="quarter">Этап 1 · Q5 · м. 13–15</div>
+      <div class="title">Opt-in пилот, 1% VIP-базы (~43 тыс. клиентов)</div>
+      <div>
+        <strong>Opt-in, не opt-out:</strong> в чате VIP появляется toggle «Сначала бот, потом оператор» с явным описанием. Согласие фиксируется как actionable event. Без согласия — поведение текущее.
+        <br><strong>Safety rails:</strong> time-to-escalation 60 сек (не 5 мин), CSAT-threshold ≥ 4,0 (не ≥ 3,5), whitelist-only сценариев с CSAT ≥ 4,0 за 90 дней, named-human при любой эскалации.
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="quarter">Этап 2 · Q6 · м. 16–18</div>
+      <div class="title">Расширение до 5% (~215 тыс. клиентов)</div>
+      <div><strong>Условие:</strong> CSAT ≥ 4,0 без инцидентов в этапе 1. Расширение whitelist на новые сценарии с подтверждённым CSAT.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="quarter">Этап 3 · Q7–Q8 · м. 19–24</div>
+      <div class="title">Full rollout с продолжающимся мониторингом</div>
+      <div>Weekly review CSAT VIP. Quarterly NPS deep-dive. Сохранение named-human на эскалациях.</div>
+    </div>
+  </div>
+
+  <h4>Метрики пилота</h4>
+  <div class="stat-row">
+    <div class="stat"><div class="val" style="font-size:20px">VIP NPS Δ</div><div class="lbl">≥ −0,5 vs control</div></div>
+    <div class="stat"><div class="val" style="font-size:20px">Retention</div><div class="lbl">без статзначимой деградации</div></div>
+    <div class="stat"><div class="val" style="font-size:20px">Opt-out rate</div><div class="lbl">&lt; 10% за месяц 1</div></div>
+    <div class="stat"><div class="val" style="font-size:20px;color:var(--red)">0 инцидентов</div><div class="lbl">публ. резонанс — NOT NEGOTIABLE</div></div>
+  </div>
+
+  <h4>Бюджет</h4>
+  <ul>
+    <li>1 backend-разработчик на 6 месяцев (Q5–Q6) — реализация VIP-роутера и safety rails</li>
+    <li>0,5 аналитика — quarterly VIP review</li>
+    <li>1 named human supervisor — новый найм или ротация из текущей команды операторов</li>
+  </ul>
+
+  <div class="callout">
+    <div class="label">Прирост при успешном пилоте</div>
+    <p><strong>+5–8 п.п. containment к концу месяца 24</strong> (22–35 млн ₽/год). Это и есть путь к 60%+ — но только год 2 и только с такими safety rails. Если запускать VIP в год 1 без этих условий — это риск повторения Klarna-сценария в миниатюре.</p>
+  </div>
+
+  <!-- ═══ 3.9 SENSITIVITY ═══ -->
+  <h3><span class="sub-num">3.9</span> Sensitivity — четыре сценария</h3>
+  <p style="font-size:13px;color:var(--ink-mute)">Методология: capture rates по гипотезам сдвигаются. Оптимистичный = +20% к каждой; пессимистичный = −30% к H2/H3/H4; катастрофический = −30% + проваленный H1 (нет H9). Вероятности — субъективная оценка автора.</p>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin:24px 0">
+    <div style="background:var(--bg-cream);border:1px solid var(--rule);border-radius:6px;padding:20px">
+      <div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-mute);margin-bottom:6px">Базовый</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);margin-bottom:12px">p = 50%</div>
+      <div style="font-family:var(--serif);font-size:36px;line-height:1;margin-bottom:6px">59%</div>
+      <div style="font-family:var(--mono);font-size:13px;color:var(--ink-mute);margin-bottom:14px">125 млн ₽/год</div>
+      <div style="font-size:12px;line-height:1.5"><strong style="color:var(--green)">✓ цель 55% +4 п.п.</strong><br>Stretch остаётся в backlog.</div>
+    </div>
+    <div style="background:#F0F8F2;border:1px solid #B8E0C2;border-radius:6px;padding:20px">
+      <div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--green);margin-bottom:6px">Оптимистичный</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);margin-bottom:12px">p = 20%</div>
+      <div style="font-family:var(--serif);font-size:36px;line-height:1;color:var(--green);margin-bottom:6px">64%</div>
+      <div style="font-family:var(--mono);font-size:13px;color:var(--ink-mute);margin-bottom:14px">165 млн ₽/год</div>
+      <div style="font-size:12px;line-height:1.5"><strong style="color:var(--green)">✓ цель 55% +9 п.п.</strong><br>Можно S1 VIP — путь к 60–63%.</div>
+    </div>
+    <div style="background:#FDF8E0;border:1px solid #E8D88C;border-radius:6px;padding:20px">
+      <div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#9A8200;margin-bottom:6px">Пессимистичный</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);margin-bottom:12px">p = 25%</div>
+      <div style="font-family:var(--serif);font-size:36px;line-height:1;color:#9A8200;margin-bottom:6px">50%</div>
+      <div style="font-family:var(--mono);font-size:13px;color:var(--ink-mute);margin-bottom:14px">86 млн ₽/год</div>
+      <div style="font-size:12px;line-height:1.5"><strong style="color:var(--red)">✗ 55% не достигаем</strong><br>Включаем S1 как добивку или откат к 50%.</div>
+    </div>
+    <div style="background:#FDF3F3;border:1px solid #F4C5C5;border-radius:6px;padding:20px">
+      <div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--red);margin-bottom:6px">Катастрофич.</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);margin-bottom:12px">p = 5%</div>
+      <div style="font-family:var(--serif);font-size:36px;line-height:1;color:var(--red);margin-bottom:6px">42%</div>
+      <div style="font-family:var(--mono);font-size:13px;color:var(--ink-mute);margin-bottom:14px">52 млн ₽/год</div>
+      <div style="font-size:12px;line-height:1.5"><strong style="color:var(--red)">✗ даже со stretch</strong><br>Честный откат к 50% и публичное объяснение.</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="label">Expected value</div>
+    <p style="font-family:var(--mono);font-size:14px;line-height:1.7">
+      Containment EV = 0,50 × 59 + 0,20 × 64 + 0,25 × 50 + 0,05 × 42 = <strong>56,9%</strong> · в среднем достигаем 55%+ с запасом<br>
+      Экономия EV = 0,50 × 125 + 0,20 × 165 + 0,25 × 86 + 0,05 × 52 = <strong>119 млн ₽/год</strong>
+    </p>
+  </div>
+
+  <!-- ═══ 3.10 TRADE-OFFS ═══ -->
+  <h3><span class="sub-num">3.10</span> Сознательные trade-offs</h3>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin:24px 0">
+    <div style="border:1px solid var(--rule);border-radius:6px;padding:20px;background:var(--bg)">
+      <div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-mute);margin-bottom:6px">Trade-off 1</div>
+      <div style="font-weight:600;font-size:15px;margin-bottom:14px">VIP не трогаем в год 1</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--red);margin-bottom:6px">ЦЕНА</div>
+      <div style="font-size:13.5px;margin-bottom:12px">−22–35 млн ₽/год возможной экономии</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);margin-bottom:6px">ЗАЧЕМ</div>
+      <div style="font-size:13.5px;margin-bottom:12px">8% × 35% = 4,4× асимметрия. Один VIP-инцидент = потеря клиента с 4,4× медианной выручки.</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);margin-bottom:6px">РЕШЕНИЕ</div>
+      <div style="font-size:13.5px">Год 2, opt-in, safety rails (см. 3.8).</div>
+    </div>
+    <div style="border:1px solid var(--rule);border-radius:6px;padding:20px;background:var(--bg)">
+      <div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-mute);margin-bottom:6px">Trade-off 2</div>
+      <div style="font-weight:600;font-size:15px;margin-bottom:14px">Базовая цель 55%, не 60%</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--red);margin-bottom:6px">ЦЕНА</div>
+      <div style="font-size:13.5px;margin-bottom:12px">5 п.п. × 4,32 = 21,6 млн ₽/год недополученной экономии в базовом сценарии</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);margin-bottom:6px">ЗАЧЕМ</div>
+      <div style="font-size:13.5px;margin-bottom:12px">60% достижимо в p20-сценарии. 55% — p50 с запасом +4 п.п. Лучше обогнать цель, чем провалить.</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);margin-bottom:6px">РЕШЕНИЕ</div>
+      <div style="font-size:13.5px">Stretch-задачи S1–S3 — путь к 60%, если идём быстрее.</div>
+    </div>
+    <div style="border:1px solid var(--rule);border-radius:6px;padding:20px;background:var(--bg)">
+      <div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-mute);margin-bottom:6px">Trade-off 3</div>
+      <div style="font-weight:600;font-size:15px;margin-bottom:14px">Q1 без containment-роста</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--red);margin-bottom:6px">ЦЕНА</div>
+      <div style="font-size:13.5px;margin-bottom:12px">Политический риск: стейкхолдеры ждут движения с месяца 1.</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);margin-bottom:6px">ЗАЧЕМ</div>
+      <div style="font-size:13.5px;margin-bottom:12px">Без H1 нет H9 (8 п.п. = 34 млн ₽/год потенциала). Q2 без инструментации = переделка в Q3.</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);margin-bottom:6px">РЕШЕНИЕ</div>
+      <div style="font-size:13.5px">H5 (quick win) даёт видимый результат в Q1 параллельно с H1.</div>
+    </div>
+    <div style="border:1px solid var(--rule);border-radius:6px;padding:20px;background:var(--bg)">
+      <div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-mute);margin-bottom:6px">Trade-off 4</div>
+      <div style="font-weight:600;font-size:15px;margin-bottom:14px">Не атакуем должников</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--red);margin-bottom:6px">ЦЕНА</div>
+      <div style="font-size:13.5px;margin-bottom:12px">~1% трафика остаётся оператору навсегда</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);margin-bottom:6px">ЗАЧЕМ</div>
+      <div style="font-size:13.5px;margin-bottom:12px">Юридический риск (потенциальные иски за самовольную коммуникацию по долгу через бот).</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);margin-bottom:6px">РЕШЕНИЕ</div>
+      <div style="font-size:13.5px">Возможное перепланирование в горизонте 36+ мес.</div>
+    </div>
+    <div style="border:1px solid var(--rule);border-radius:6px;padding:20px;background:var(--bg)">
+      <div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-mute);margin-bottom:6px">Trade-off 5</div>
+      <div style="font-weight:600;font-size:15px;margin-bottom:14px">H7 (multimodal) делается несмотря на низкий ROI</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--red);margin-bottom:6px">ЦЕНА</div>
+      <div style="font-size:13.5px;margin-bottom:12px">2 человеко-месяца на 0,6 п.п.</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);margin-bottom:6px">ЗАЧЕМ</div>
+      <div style="font-size:13.5px;margin-bottom:12px">Команда нарабатывает стек для будущих multimodal проектов. Инвестиция в capability.</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);margin-bottom:6px">РЕШЕНИЕ</div>
+      <div style="font-size:13.5px">Делаем в Q4 как «нагрузка между большими треками».</div>
+    </div>
+  </div>
+
+  <!-- ═══ 3.11 РИСКИ ═══ -->
+  <h3><span class="sub-num">3.11</span> Риски и митигация</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th style="width:40%">Риск</th><th>Вер.</th><th>Impact</th><th>Митигация</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Поддельный containment</strong> — бот удерживает, потому что пользователь сдался</td><td><span style="color:var(--red)">●●●</span></td><td><span style="color:var(--red)">●●●●</span></td><td>repeat-contact-7d ≤ 12% guard-rail; True containment вместо session-closed</td></tr>
+        <tr><td><strong>VIP-инцидент</strong> при ошибке маршрутизации</td><td><span style="color:var(--green)">●</span></td><td><span style="color:var(--red)">●●●●</span></td><td>Hard-rule в роутере: VIP без opt-in → сразу оператор. Monthly аудит. Эскалация к CPO.</td></tr>
+        <tr><td><strong>Regulatory (152-ФЗ)</strong> блокирует cross-session context</td><td><span style="color:#9A8200">●●</span></td><td><span style="color:#9A8200">●●</span></td><td>Compliance review в Q1 ДО старта H4. Запасной план: per-session only (−2 п.п.)</td></tr>
+        <tr><td><strong>Overload ML-инженера</strong> — один на 4 гипотезы (H1, H3, H7, H10)</td><td><span style="color:var(--red)">●●●</span></td><td><span style="color:#9A8200">●●</span></td><td>Парная работа по H1; документация в Notion; Q3 резерв 0,5 ML-консультанта</td></tr>
+        <tr><td><strong>Vendor-lock</strong> Webim/CCaaS ограничивает фичи</td><td><span style="color:#9A8200">●●</span></td><td><span style="color:#9A8200">●●</span></td><td>До Q3 — feature negotiation с вендором. PoC на open-source как leverage.</td></tr>
+        <tr><td><strong>Underperformance H9</strong> — плотность атакуемых ниже 35%</td><td><span style="color:#9A8200">●●</span></td><td><span style="color:var(--red)">●●●</span></td><td>Sanity-check в Q2 (первые 5 bucket'ов). Mid-point review Q4. Backup: S1 VIP.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══ 3.12 АРХИТЕКТУРА ═══ -->
+  <h3><span class="sub-num">3.12</span> Архитектурный паттерн — orchestrator + per-agent</h3>
+  <p>Современный production-стандарт для chat-bot поддержки на масштабе: <a href="https://arxiv.org/abs/2410.21784" target="_blank">MARCO, arXiv:2410.21784, 2024</a>. На таком же паттерне построен бэкенд автоматизации, который я видел изнутри в Сбере.</p>
+
+  <div style="background:var(--bg-warm);border:1px solid var(--rule);border-radius:6px;padding:36px 28px;margin:24px 0;text-align:center">
+    <svg viewBox="0 0 600 380" style="width:100%;max-width:600px;height:auto" xmlns="http://www.w3.org/2000/svg">
+      <!-- USER -->
+      <rect x="240" y="10" width="120" height="44" rx="22" fill="#1E5FBF"/>
+      <text x="300" y="38" text-anchor="middle" fill="#fff" font-family="Onest,sans-serif" font-size="14" font-weight="600">USER</text>
+      <!-- arrow down -->
+      <line x1="300" y1="54" x2="300" y2="80" stroke="#0D0D0D" stroke-width="2" marker-end="url(#arrow)"/>
+      <!-- ORCHESTRATOR -->
+      <rect x="180" y="84" width="240" height="56" rx="8" fill="#FFDD2D" stroke="#0D0D0D" stroke-width="2"/>
+      <text x="300" y="108" text-anchor="middle" fill="#000" font-family="Onest,sans-serif" font-size="14" font-weight="700">ORCHESTRATOR</text>
+      <text x="300" y="126" text-anchor="middle" fill="#000" font-family="JetBrains Mono,monospace" font-size="11">классификация · маршрутизация</text>
+      <!-- arrows to agents -->
+      <line x1="220" y1="140" x2="100" y2="195" stroke="#0D0D0D" stroke-width="1.5" marker-end="url(#arrow)"/>
+      <line x1="260" y1="140" x2="210" y2="195" stroke="#0D0D0D" stroke-width="1.5" marker-end="url(#arrow)"/>
+      <line x1="300" y1="140" x2="300" y2="195" stroke="#0D0D0D" stroke-width="1.5" marker-end="url(#arrow)"/>
+      <line x1="340" y1="140" x2="390" y2="195" stroke="#0D0D0D" stroke-width="1.5" marker-end="url(#arrow)"/>
+      <line x1="380" y1="140" x2="500" y2="195" stroke="#0D0D0D" stroke-width="1.5" marker-end="url(#arrow)"/>
+      <!-- 5 agents -->
+      <rect x="50" y="200" width="100" height="44" rx="6" fill="#FFFFFF" stroke="#6B6B6B" stroke-width="1.5"/>
+      <text x="100" y="226" text-anchor="middle" fill="#0D0D0D" font-family="Onest,sans-serif" font-size="13" font-weight="600">CARDS</text>
+      <rect x="160" y="200" width="100" height="44" rx="6" fill="#FFFFFF" stroke="#6B6B6B" stroke-width="1.5"/>
+      <text x="210" y="226" text-anchor="middle" fill="#0D0D0D" font-family="Onest,sans-serif" font-size="13" font-weight="600">TRANS</text>
+      <rect x="270" y="200" width="60" height="44" rx="6" fill="#FFFFFF" stroke="#6B6B6B" stroke-width="1.5"/>
+      <text x="300" y="226" text-anchor="middle" fill="#0D0D0D" font-family="Onest,sans-serif" font-size="13" font-weight="600">LIM</text>
+      <rect x="340" y="200" width="100" height="44" rx="6" fill="#FFFFFF" stroke="#6B6B6B" stroke-width="1.5"/>
+      <text x="390" y="226" text-anchor="middle" fill="#0D0D0D" font-family="Onest,sans-serif" font-size="13" font-weight="600">SUBS</text>
+      <rect x="450" y="200" width="100" height="44" rx="6" fill="#FFFFFF" stroke="#6B6B6B" stroke-width="1.5"/>
+      <text x="500" y="226" text-anchor="middle" fill="#0D0D0D" font-family="Onest,sans-serif" font-size="13" font-weight="600">DOCS</text>
+      <!-- arrows to operator (fallback) -->
+      <line x1="100" y1="244" x2="290" y2="295" stroke="#6B6B6B" stroke-width="1" stroke-dasharray="4,3"/>
+      <line x1="210" y1="244" x2="295" y2="295" stroke="#6B6B6B" stroke-width="1" stroke-dasharray="4,3"/>
+      <line x1="300" y1="244" x2="300" y2="295" stroke="#6B6B6B" stroke-width="1" stroke-dasharray="4,3"/>
+      <line x1="390" y1="244" x2="305" y2="295" stroke="#6B6B6B" stroke-width="1" stroke-dasharray="4,3"/>
+      <line x1="500" y1="244" x2="310" y2="295" stroke="#6B6B6B" stroke-width="1" stroke-dasharray="4,3"/>
+      <!-- OPERATOR -->
+      <rect x="220" y="300" width="160" height="44" rx="22" fill="#E63946"/>
+      <text x="300" y="320" text-anchor="middle" fill="#fff" font-family="Onest,sans-serif" font-size="14" font-weight="600">OPERATOR</text>
+      <text x="300" y="335" text-anchor="middle" fill="#fff" font-family="JetBrains Mono,monospace" font-size="10" opacity="0.8">fallback при низкой confidence</text>
+      <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L0,6 L8,3 z" fill="#0D0D0D"/>
+        </marker>
+      </defs>
+    </svg>
+  </div>
+
+  <h4>Зачем именно этот паттерн — три причины</h4>
+  <ul>
+    <li><strong>Видимость bottleneck'ов.</strong> Агрегат «30% containment» может скрывать «карты на 70%, кредиты на 5%». Без per-agent дробления приоритизация слепая.</li>
+    <li><strong>Локализация изменений.</strong> Правка промпта одного агента ≠ регрессия по всему боту. Время до релиза с недель до дней.</li>
+    <li><strong>Точечная приоритизация.</strong> 6 разработчиков физически не могут улучшать все 6+ доменов одновременно. Per-agent метрика даёт ясную карту фокуса.</li>
+  </ul>
+  <p style="font-size:13px;color:var(--ink-mute)">В горизонте 24 месяцев мы НЕ строим полную мультиагентную архитектуру с нуля — мы меряем containment per-agent (через H1) и постепенно выделяем «Cards», «Trans», «Lim» в отдельные prompt-cluster в рамках H2/H3. Полная архитектурная перестройка — задача для года 3.</p>
+
+  <!-- ═══ 3.13 ROADMAP ═══ -->
+  <h3><span class="sub-num">3.13</span> Roadmap — ключевые decision points</h3>
+
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="quarter">М. 0 · Kickoff</div>
+      <div class="title">Согласовать встречную цель 55% + контр-метрики</div>
+      <div>Стейкхолдеры: CPO, CFO, head of support. Вход: pushback-документ. Выход: signed-off OKR с CSAT ≥ 3,8 и repeat-contact-7d ≤ 12% как guard-rails.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="quarter">М. 3 · H1 Complete</div>
+      <div class="title">Запуск H2/H3/H4 параллельно</div>
+      <div>Критерии: H1 dashboard работает, classifier accuracy &gt; 80%, видимы первые приоритеты. Если нет — продлеваем H1 на месяц, H5 продолжает один.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="quarter">М. 6 · First H2 Live</div>
+      <div class="title">Темп нормальный или ускоряем</div>
+      <div>Первые 5 сценариев H2 в production со средним containment ≥ 40%, CSAT ≥ 3,5. Если не дотягиваем — пересмотр методологии.</div>
+    </div>
+    <div class="timeline-item" style="position:relative">
+      <div style="position:absolute;left:-44px;top:0;width:24px;height:24px;background:var(--yellow);border:3px solid var(--ink);border-radius:50%;box-shadow:0 0 0 6px rgba(255,221,45,0.25)"></div>
+      <div class="quarter" style="color:var(--red);font-weight:700">★ М. 12 · MID-POINT REVIEW (ключевой)</div>
+      <div class="title">Идём ли к 55% или нужна корректировка</div>
+      <div>
+        <strong>Критерии:</strong> Containment ≥ 48%, H9 sanity-check (плотность ≥ 25%), все guard-rails в норме.<br>
+        <strong>Если ОК →</strong> продолжаем плановый бэклог, рассматриваем добивку из stretch.<br>
+        <strong>Если low →</strong> (а) рассмотреть S1 VIP как backup-источник прироста, чтобы вытащить 55%, или (б) пересогласовать цель к 50% (честный откат от 55%, не от 60%).
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="quarter">М. 13 · VIP Pilot Start (если решено)</div>
+      <div class="title">Запускаем S1 если CSAT non-VIP ≥ 3,7</div>
+      <div>Условия: per-scenario CSAT ≥ 4,0 на whitelist-сценариях за 90 дней. Иначе остаётся в backlog.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="quarter">М. 18 · Rollout Target</div>
+      <div class="title">Containment ≥ 53%, переход в стабилизацию</div>
+      <div>Все 50 H2-сценариев в production. Q7–Q8 — стабилизация, mining last 2 п.п.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="quarter">М. 24 · Final Review</div>
+      <div class="title">Итог 24 месяцев</div>
+      <div>Containment 55–58% · CSAT бота 3,8+ · Per-scenario CSAT ≥ 3,5 для 95% сценариев · Repeat-contact-7d ≤ 12% · 0 публичных VIP-инцидентов.</div>
+    </div>
+  </div>
+
+</section>
+<!-- ═══════ END BLOCK 3 ═══════ -->
+
+
+</main>
+
+<footer style="background:#0D0D0D;color:#888;padding:32px 0;margin-top:80px;text-align:center">
+  <div style="max-width:1160px;margin:0 auto;padding:0 40px;font-size:13px;display:flex;flex-wrap:wrap;gap:10px 28px;justify-content:space-between">
+    <div>Дмитрий Ярочкин · Отборочное Т-Банк Мини-CEO · май 2026</div>
+    <div>blackbonik@gmail.com · @YaFufig</div>
+  </div>
+</footer>
+
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" role="dialog" aria-label="Полноразмерный скриншот">
+  <button class="lightbox-close" id="lightbox-close" aria-label="Закрыть">×</button>
+  <img id="lightbox-img" alt="">
+</div>
+
+<!-- Back to top -->
+<button class="back-to-top" id="back-to-top" aria-label="Наверх">↑</button>
+
+<script>
+(function() {
+  // ===== 1. Scroll progress bar =====
+  var progressBar = document.getElementById('scroll-progress');
+  function updateProgress() {
+    var scroll = window.scrollY;
+    var max = document.documentElement.scrollHeight - window.innerHeight;
+    var pct = max > 0 ? (scroll / max) * 100 : 0;
+    progressBar.style.width = pct + '%';
+  }
+  window.addEventListener('scroll', updateProgress, { passive: true });
+  updateProgress();
+
+  // ===== 2. Scrollspy on nav =====
+  var navLinks = document.querySelectorAll('.topbar-nav a');
+  var sectionMap = {};
+  navLinks.forEach(function(a) {
+    var id = a.getAttribute('href').replace('#', '');
+    var el = document.getElementById(id);
+    if (el) sectionMap[id] = { el: el, link: a };
+  });
+  function updateActiveNav() {
+    var scroll = window.scrollY + 120; // offset for fixed header
+    var current = null;
+    Object.keys(sectionMap).forEach(function(id) {
+      var top = sectionMap[id].el.offsetTop;
+      if (scroll >= top) current = id;
+    });
+    navLinks.forEach(function(a) { a.classList.remove('active'); });
+    if (current && sectionMap[current]) sectionMap[current].link.classList.add('active');
+  }
+  window.addEventListener('scroll', updateActiveNav, { passive: true });
+  updateActiveNav();
+
+  // ===== 3. Reveal on scroll for h3 and major blocks =====
+  var revealItems = document.querySelectorAll('h3, .block-marker, .ux-stage, .mockup-grid, .stat-row, .timeline, .sprint-flow, .case-card');
+  revealItems.forEach(function(el) { el.classList.add('reveal'); });
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+    revealItems.forEach(function(el) { io.observe(el); });
+  } else {
+    revealItems.forEach(function(el) { el.classList.add('visible'); });
+  }
+
+  // ===== 4. Animated number counters in stat blocks =====
+  // Mark stat .val elements that contain pure numbers (with optional comma/period)
+  var statVals = document.querySelectorAll('.stat .val');
+  statVals.forEach(function(el) {
+    var text = el.textContent.trim();
+    // Try to extract leading number for animation
+    var match = text.match(/^([\d\u00A0\u202F.,]+)(.*)$/);
+    if (match) {
+      var rawNum = match[1].replace(/[\u00A0\u202F\s]/g, '').replace(',', '.');
+      var num = parseFloat(rawNum);
+      if (!isNaN(num) && num > 0) {
+        el.dataset.target = String(num);
+        el.dataset.suffix = match[2];
+        el.dataset.original = text;
+        el.textContent = '0' + match[2];
+      }
+    }
+  });
+  function formatNumber(n, decimals) {
+    if (decimals > 0) {
+      var s = n.toFixed(decimals);
+      var parts = s.split('.');
+      parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '\u00A0');
+      return parts.join(',');
+    }
+    return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '\u00A0');
+  }
+  function animateCounter(el) {
+    if (el.dataset.animated) return;
+    el.dataset.animated = '1';
+    var target = parseFloat(el.dataset.target);
+    var suffix = el.dataset.suffix || '';
+    var decimals = (el.dataset.target.indexOf('.') > -1) ? el.dataset.target.split('.')[1].length : 0;
+    var duration = 1100;
+    var start = performance.now();
+    function tick(now) {
+      var t = Math.min(1, (now - start) / duration);
+      var eased = 1 - Math.pow(1 - t, 3); // easeOutCubic
+      var val = target * eased;
+      el.textContent = formatNumber(val, decimals) + suffix;
+      if (t < 1) requestAnimationFrame(tick);
+      else el.textContent = el.dataset.original; // restore exact original formatting
+    }
+    requestAnimationFrame(tick);
+  }
+  if ('IntersectionObserver' in window) {
+    var counterIO = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting && e.target.dataset.target) {
+          animateCounter(e.target);
+          counterIO.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.5 });
+    statVals.forEach(function(el) { if (el.dataset.target) counterIO.observe(el); });
+  } else {
+    statVals.forEach(function(el) { if (el.dataset.original) el.textContent = el.dataset.original; });
+  }
+
+  // ===== 5. Lightbox for phone screenshots =====
+  var lightbox = document.getElementById('lightbox');
+  var lightboxImg = document.getElementById('lightbox-img');
+  var lightboxClose = document.getElementById('lightbox-close');
+  document.querySelectorAll('.phone-zoom').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var screenId = btn.dataset.zoomImg;
+      var img = document.querySelector('[data-screen="' + screenId + '"] .phone-mock-img');
+      if (img) {
+        lightboxImg.src = img.src;
+        lightboxImg.alt = img.alt || '';
+        lightbox.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+    });
+  });
+  // Also click on phone screen (not button) to open lightbox
+  document.querySelectorAll('.phone-mock-img').forEach(function(img) {
+    img.style.cursor = 'zoom-in';
+    img.addEventListener('click', function() {
+      lightboxImg.src = img.src;
+      lightboxImg.alt = img.alt || '';
+      lightbox.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    });
+  });
+  function closeLightbox() {
+    lightbox.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  lightboxClose.addEventListener('click', closeLightbox);
+  lightbox.addEventListener('click', function(e) { if (e.target === lightbox) closeLightbox(); });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && lightbox.classList.contains('open')) closeLightbox();
+  });
+
+  // ===== 6. Hotspot annotations: click → scroll phone screen to position =====
+  document.querySelectorAll('.ux-hotspot').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      var targetId = btn.dataset.scrollTarget;
+      var pct = parseFloat(btn.dataset.scrollPct);
+      var screen = document.querySelector('[data-screen="' + targetId + '"]');
+      if (screen) {
+        var img = screen.querySelector('.phone-mock-img');
+        if (img && img.complete) {
+          var maxScroll = img.offsetHeight - screen.offsetHeight;
+          var target = Math.max(0, maxScroll * (pct / 100));
+          screen.scrollTo({ top: target, behavior: 'smooth' });
+        } else if (img) {
+          img.addEventListener('load', function() {
+            var maxScroll = img.offsetHeight - screen.offsetHeight;
+            var target = Math.max(0, maxScroll * (pct / 100));
+            screen.scrollTo({ top: target, behavior: 'smooth' });
+          }, { once: true });
+        }
+        // Also scroll the phone into view if not visible
+        var phoneMock = screen.closest('.phone-mock');
+        if (phoneMock) {
+          var rect = phoneMock.getBoundingClientRect();
+          if (rect.top < 80 || rect.bottom > window.innerHeight) {
+            phoneMock.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }
+        // Visual feedback
+        btn.classList.add('flash');
+        setTimeout(function() { btn.classList.remove('flash'); }, 800);
+      }
+    });
+  });
+
+  // ===== 7. Back to top =====
+  var backTop = document.getElementById('back-to-top');
+  function updateBackTop() {
+    if (window.scrollY > 600) backTop.classList.add('visible');
+    else backTop.classList.remove('visible');
+  }
+  window.addEventListener('scroll', updateBackTop, { passive: true });
+  backTop.addEventListener('click', function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // ===== auto-scroll phone mockup screens to bottom =====
+  document.querySelectorAll('.phone-mock-screen').forEach(function(screen) {
+    screen.scrollTop = screen.scrollHeight;
+  });
+
+
+  document.querySelectorAll('.phone-mock-screen').forEach(function(screen) {
+    var hint = screen.parentElement.querySelector('.phone-scroll-hint');
+    if (!hint) return;
+    var hidden = false;
+    screen.addEventListener('scroll', function() {
+      if (!hidden && screen.scrollTop > 30) {
+        hint.style.transition = 'opacity 0.4s';
+        hint.style.opacity = '0';
+        hidden = true;
+        setTimeout(function() { hint.style.display = 'none'; }, 500);
+      }
+    }, { passive: true });
+  });
+
+})();
+</script>
+
+</body>
+</html>
