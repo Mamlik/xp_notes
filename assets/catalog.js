@@ -90,7 +90,18 @@ window.LECTURE_CATALOG = {
       "title": "Алгоритмы",
       "shortTitle": "Алгосы",
       "description": "Будущий раздел для структур данных, графов, динамики и анализа сложности.",
-      "items": []
+      "items": [
+        {
+          "title": "Проверка PR-flow",
+          "description": "Тестовый черновик для проверки создания Pull Request из админ-панели.",
+          "tags": [
+            "test",
+            "pr-flow"
+          ],
+          "href": "lectures/algorithms/pr-flow-check.html",
+          "status": "draft"
+        }
+      ]
     },
     {
       "id": "distributed",
