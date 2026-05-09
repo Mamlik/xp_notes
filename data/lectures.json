@@ -93,6 +93,17 @@
           ],
           "href": "lectures/acos/compilation_linking_elf_unified.html",
           "status": "published"
+        },
+        {
+          "title": "Прерывания и исключения процессора",
+          "description": "Подробный конспект о механизмах исключений, аппаратных прерываний и сигналов: как процессор и ОС реагируют на ошибки выполнения, события от устройств, переходы в ядро, обработчики, APIC/MSI и доставку сигналов в userspace.",
+          "tags": [
+            "interrupts",
+            "exceptions",
+            "signals"
+          ],
+          "href": "lectures/acos/interrupts_exceptions_signals_unified.html",
+          "status": "published"
         }
       ]
     },
