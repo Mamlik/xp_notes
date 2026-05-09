@@ -82,6 +82,17 @@
           ],
           "href": "lectures/acos/ebpf_unified.html",
           "status": "published"
+        },
+        {
+          "title": "Компиляция, линковка. Формат ELF",
+          "description": "Превращение C++-кода в исполняемый файл: от препроцессора, компиляции и ассемблирования до статической и динамической линковки, разбирая устройство ELF, механизмы GOT/PLT, RELRO, PIE/ASLR и все этапы запуска программы через ядро и ld.so.",
+          "tags": [
+            "elf",
+            "компиляция",
+            "линковка"
+          ],
+          "href": "lectures/acos/compilation_linking_elf_unified.html",
+          "status": "published"
         }
       ]
     },
