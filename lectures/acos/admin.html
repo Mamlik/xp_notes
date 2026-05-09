@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Админка · Конспекты МИФИ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body class="auth-body">
+  <div class="shell-grid" aria-hidden="true"></div>
+  <main class="admin-screen">
+    <section class="auth-card admin-card admin-gate" id="adminGate" aria-labelledby="gate-title">
+      <a class="back-link" href="index.html">← На главную</a>
+      <div class="eyebrow">// admin gate</div>
+      <h1 id="gate-title">Вход</h1>
+      <p>
+        Для добавления конспектов нужен пароль администратора.
+      </p>
+
+      <form class="auth-form" id="gateForm">
+        <label>
+          <span>Пароль администратора</span>
+          <input id="gatePassword" name="adminPassword" type="password" placeholder="Введите пароль" autocomplete="current-password" required>
+        </label>
+        <button type="submit">Продолжить</button>
+      </form>
+      <div class="admin-status" id="gateStatus" aria-live="polite"></div>
+    </section>
+
+    <section class="auth-card admin-card" id="adminPanel" aria-labelledby="auth-title" hidden>
+      <a class="back-link" href="index.html">← На главную</a>
+      <div class="eyebrow">// github pull request flow</div>
+      <h1 id="auth-title">Добавить конспект</h1>
+      <p>
+        Создавайте, редактируйте и удаляйте карточки через Pull Request. На сайт
+        попадают только изменения, прошедшие review и merge.
+      </p>
+
+      <div class="admin-tabs" role="tablist" aria-label="Действия с конспектами">
+        <button class="admin-tab is-active" type="button" data-admin-tab="add">Добавить</button>
+        <button class="admin-tab" type="button" data-admin-tab="edit">Редактировать</button>
+        <button class="admin-tab" type="button" data-admin-tab="delete">Удалить</button>
+        <button class="admin-tab" type="button" data-admin-tab="order">Порядок</button>
+      </div>
+
+      <form class="auth-form admin-form admin-mode is-active" id="addForm" data-admin-panel="add">
+        <div class="form-grid">
+          <label>
+            <span>Дисциплина</span>
+            <select name="courseId" data-tags-scope="add" required>
+              <option value="acos">АКОС</option>
+              <option value="algorithms">Алгоритмы</option>
+              <option value="distributed">Распределенные системы</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Статус</span>
+            <select name="status" required>
+              <option value="published">Опубликовать после merge</option>
+              <option value="draft">Черновик</option>
+            </select>
+          </label>
+        </div>
+
+        <label>
+          <span>Название</span>
+          <input name="title" data-preview-title type="text" placeholder="Например: Виртуальная память" required>
+        </label>
+
+        <label>
+          <span>Описание</span>
+          <textarea name="description" data-preview-description rows="4" placeholder="Короткое описание для карточки на главной" required></textarea>
+        </label>
+
+        <label>
+          <span>Теги</span>
+          <input name="tags" type="hidden" data-tags-value="add">
+          <div class="tag-editor" data-tag-editor="add">
+            <div class="tag-editor__chips" data-tag-chips="add" aria-label="Добавленные теги"></div>
+            <input data-tag-input="add" type="text" placeholder="Введите тег и нажмите Enter" autocomplete="off">
+          </div>
+        </label>
+
+        <label>
+          <span>HTML-конспект</span>
+          <input id="htmlFile" name="htmlFile" type="file" accept=".html,text/html" required>
+        </label>
+
+        <button type="submit">Создать Pull Request</button>
+      </form>
+
+      <form class="auth-form admin-form admin-mode" id="editForm" data-admin-panel="edit" hidden>
+        <label>
+          <span>Карточка</span>
+          <select name="lectureKey" id="editLectureSelect" required>
+            <option value="">Выберите конспект</option>
+          </select>
+        </label>
+
+        <div class="form-grid">
+          <label>
+            <span>Дисциплина</span>
+            <input name="courseTitle" type="text" disabled>
+            <input name="courseId" type="hidden">
+            <input name="href" type="hidden">
+          </label>
+
+          <label>
+            <span>Статус</span>
+            <select name="status" required>
+              <option value="published">Опубликовать после merge</option>
+              <option value="draft">Черновик</option>
+            </select>
+          </label>
+        </div>
+
+        <label>
+          <span>Название</span>
+          <input name="title" data-preview-title type="text" required>
+        </label>
+
+        <label>
+          <span>Описание</span>
+          <textarea name="description" data-preview-description rows="4" required></textarea>
+        </label>
+
+        <label>
+          <span>Теги</span>
+          <input name="tags" type="hidden" data-tags-value="edit">
+          <div class="tag-editor" data-tag-editor="edit">
+            <div class="tag-editor__chips" data-tag-chips="edit" aria-label="Добавленные теги"></div>
+            <input data-tag-input="edit" type="text" placeholder="Введите тег и нажмите Enter" autocomplete="off">
+          </div>
+        </label>
+
+        <label>
+          <span>Заменить HTML, если нужно</span>
+          <input id="editHtmlFile" name="htmlFile" type="file" accept=".html,text/html">
+        </label>
+
+        <button type="submit">Создать PR на редактирование</button>
+      </form>
+
+      <form class="auth-form admin-form admin-mode" id="deleteForm" data-admin-panel="delete" hidden>
+        <label>
+          <span>Карточка</span>
+          <select name="lectureKey" id="deleteLectureSelect" required>
+            <option value="">Выберите конспект</option>
+          </select>
+        </label>
+
+        <div class="delete-summary" id="deleteSummary">
+          Выберите карточку, которую нужно удалить.
+        </div>
+
+        <button class="danger-button" type="submit">Создать PR на удаление</button>
+      </form>
+
+      <section class="auth-form admin-form admin-mode" id="orderPanel" data-admin-panel="order" hidden>
+        <div class="order-board" id="orderBoard"></div>
+        <button id="saveOrderButton" type="button">Создать PR с новым порядком</button>
+      </section>
+
+      <div class="admin-status" id="adminStatus" aria-live="polite"></div>
+    </section>
+
+    <aside class="admin-preview" id="adminPreviewPane" aria-label="Предпросмотр карточки" hidden>
+      <div class="active-prs">
+        <div class="active-prs__head">
+          <p class="section-kicker">Активные PR</p>
+          <button class="small-action" id="refreshPulls" type="button">Обновить</button>
+        </div>
+        <div class="active-prs__list" id="pullRequestList">Загрузка...</div>
+      </div>
+
+      <p class="section-kicker">Предпросмотр</p>
+      <article class="lecture-card" id="lecturePreview"></article>
+
+      <div class="auth-roadmap">
+        <strong>Что произойдет после отправки</strong>
+        <ul>
+          <li>создастся новая ветка в GitHub;</li>
+          <li>HTML-файл попадет в папку дисциплины;</li>
+          <li>обновится `data/lectures.json`;</li>
+          <li>откроется Pull Request для ревью.</li>
+        </ul>
+      </div>
+    </aside>
+  </main>
+  <script src="assets/admin.js"></script>
+</body>
+</html>
