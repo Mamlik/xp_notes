@@ -185,10 +185,14 @@ GITHUB_OWNER=Mamlik
 GITHUB_REPO=xp_notes
 GITHUB_TOKEN=github_pat_or_fine_grained_token
 GITHUB_BASE_BRANCH=main
+PUBLIC_SITE_URL=https://mamlik.github.io/xp_notes
 ```
 
 `GITHUB_TOKEN` лучше делать fine-grained и выдавать доступ только к одному
 репозиторию.
+
+`PUBLIC_SITE_URL` используется в описании Pull Request, чтобы сразу показывать
+будущий публичный адрес конспекта после merge.
 
 Нужные права токена:
 

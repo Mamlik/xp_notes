@@ -14,6 +14,8 @@ const courseDirs = {
   distributed: "distributed"
 };
 
+const publicSiteUrl = (process.env.PUBLIC_SITE_URL || "https://mamlik.github.io/xp_notes").replace(/\/$/, "");
+
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
   ".css": "text/css; charset=utf-8",
@@ -393,6 +395,8 @@ async function createLecturePullRequest(lecture) {
         `Файл: ${lecturePath}`,
         `Статус: ${lecture.status}`,
         "",
+        ...createLectureReviewLinks({ owner, repo, branch, path: lecturePath }),
+        "",
         "Проверьте HTML-конспект и карточку в каталоге перед merge."
       ].join("\n")
     }
@@ -436,6 +440,13 @@ async function createUpdateLecturePullRequest(lecture) {
       `Файл: ${lecture.href}`,
       `Статус: ${lecture.status}`,
       "",
+      ...createLectureReviewLinks({
+        owner: context.owner,
+        repo: context.repo,
+        branch: context.branch,
+        path: lecture.href
+      }),
+      "",
       "Проверьте изменения карточки и HTML-конспекта перед merge."
     ].join("\n")
   });
@@ -470,6 +481,8 @@ async function createDeleteLecturePullRequest(lecture) {
       "",
       `Дисциплина: ${lecture.courseId}`,
       `Файл: ${lecture.href}`,
+      "",
+      `Файл в PR: ${createGithubFileUrl(context.owner, context.repo, context.branch, lecture.href)}`,
       "",
       "Проверьте удаление карточки и HTML-файла перед merge."
     ].join("\n")
@@ -575,6 +588,23 @@ function createPullRequest(context, pull) {
       body: pull.body
     }
   });
+}
+
+function createLectureReviewLinks({ owner, repo, branch, path }) {
+  const fileUrl = createGithubFileUrl(owner, repo, branch, path);
+  return [
+    `Файл в PR: ${fileUrl}`,
+    `Предпросмотр HTML до merge: ${createHtmlPreviewUrl(fileUrl)}`,
+    `Адрес после merge: ${publicSiteUrl}/${path}`
+  ];
+}
+
+function createGithubFileUrl(owner, repo, branch, path) {
+  return `https://github.com/${owner}/${repo}/blob/${branch}/${path}`;
+}
+
+function createHtmlPreviewUrl(fileUrl) {
+  return `https://htmlpreview.github.io/?${fileUrl}`;
 }
 
 function createCatalogScript(catalog) {
