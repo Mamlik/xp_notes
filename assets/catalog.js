@@ -93,6 +93,15 @@ window.LECTURE_CATALOG = {
           ],
           "href": "lectures/acos/compilation_linking_elf_unified.html",
           "status": "published"
+        },
+        {
+          "title": "test_new feature",
+          "description": "description very high",
+          "tags": [
+            "ttag"
+          ],
+          "href": "lectures/acos/admin.html",
+          "status": "published"
         }
       ]
     },
