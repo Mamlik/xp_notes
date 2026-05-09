@@ -7,6 +7,28 @@ window.LECTURE_CATALOG = {
       "description": "Конспекты по архитектуре компьютера, операционным системам, Linux и низкоуровневой механике.",
       "items": [
         {
+          "title": "Прерывания и исключения процессора",
+          "description": "Подробный конспект о механизмах исключений, аппаратных прерываний и сигналов: как процессор и ОС реагируют на ошибки выполнения, события от устройств, переходы в ядро, обработчики, APIC/MSI и доставку сигналов в userspace.",
+          "tags": [
+            "interrupts",
+            "exceptions",
+            "signals"
+          ],
+          "href": "lectures/acos/interrupts_exceptions_signals_unified.html",
+          "status": "published"
+        },
+        {
+          "title": "Компиляция, линковка. Формат ELF",
+          "description": "Превращение C++-кода в исполняемый файл: от препроцессора, компиляции и ассемблирования до статической и динамической линковки, разбирая устройство ELF, механизмы GOT/PLT, RELRO, PIE/ASLR и все этапы запуска программы через ядро и ld.so.",
+          "tags": [
+            "elf",
+            "компиляция",
+            "линковка"
+          ],
+          "href": "lectures/acos/compilation_linking_elf_unified.html",
+          "status": "published"
+        },
+        {
           "title": "Работа с аппаратурой",
           "description": "Базовая карта взаимодействия ОС с устройствами: регистры, MMIO, прерывания и драйверная логика.",
           "tags": [
@@ -81,28 +103,6 @@ window.LECTURE_CATALOG = {
             "tracing"
           ],
           "href": "lectures/acos/ebpf_unified.html",
-          "status": "published"
-        },
-        {
-          "title": "Компиляция, линковка. Формат ELF",
-          "description": "Превращение C++-кода в исполняемый файл: от препроцессора, компиляции и ассемблирования до статической и динамической линковки, разбирая устройство ELF, механизмы GOT/PLT, RELRO, PIE/ASLR и все этапы запуска программы через ядро и ld.so.",
-          "tags": [
-            "elf",
-            "компиляция",
-            "линковка"
-          ],
-          "href": "lectures/acos/compilation_linking_elf_unified.html",
-          "status": "published"
-        },
-        {
-          "title": "Прерывания и исключения процессора",
-          "description": "Подробный конспект о механизмах исключений, аппаратных прерываний и сигналов: как процессор и ОС реагируют на ошибки выполнения, события от устройств, переходы в ядро, обработчики, APIC/MSI и доставку сигналов в userspace.",
-          "tags": [
-            "interrupts",
-            "exceptions",
-            "signals"
-          ],
-          "href": "lectures/acos/interrupts_exceptions_signals_unified.html",
           "status": "published"
         }
       ]
