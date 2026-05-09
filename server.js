@@ -14,7 +14,7 @@ const courseDirs = {
   distributed: "distributed"
 };
 
-const publicSiteUrl = (process.env.PUBLIC_SITE_URL || "https://mamlik.github.io/xp_notes").replace(/\/$/, "");
+const serverPublicUrl = (process.env.SERVER_PUBLIC_URL || "http://213.171.29.190").replace(/\/$/, "");
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -59,6 +59,11 @@ const server = createServer(async (request, response) => {
 
     if (request.method === "GET" && url.pathname === "/api/admin/pulls") {
       await listPullRequests(request, response);
+      return;
+    }
+
+    if ((request.method === "GET" || request.method === "HEAD") && url.pathname === "/preview/lecture") {
+      await previewLecture(url, response, request.method === "HEAD");
       return;
     }
 
@@ -210,6 +215,36 @@ async function listPullRequests(request, response) {
       createdAt: pull.created_at
     }))
   });
+}
+
+async function previewLecture(url, response, headOnly) {
+  const branch = String(url.searchParams.get("branch") || "").trim();
+  const path = String(url.searchParams.get("path") || "").trim();
+
+  if (!isAllowedPreviewBranch(branch)) throw httpError(400, "Invalid preview branch");
+  if (!isAllowedLecturePath(path)) throw httpError(400, "Invalid preview path");
+
+  const owner = requiredEnv("GITHUB_OWNER");
+  const repo = requiredEnv("GITHUB_REPO");
+  const token = requiredEnv("GITHUB_TOKEN");
+  const file = await github(`/repos/${owner}/${repo}/contents/${path}?ref=${encodeURIComponent(branch)}`, { token });
+  const html = decodeBase64(file.content);
+
+  response.writeHead(200, {
+    "Content-Type": "text/html; charset=utf-8",
+    "Cache-Control": "no-cache",
+    "X-Content-Type-Options": "nosniff",
+    "Content-Security-Policy": [
+      "sandbox allow-scripts allow-forms allow-popups allow-downloads",
+      "default-src 'self' https: http: data: blob: 'unsafe-inline' 'unsafe-eval'",
+      "img-src * data: blob:",
+      "style-src * 'unsafe-inline'",
+      "font-src * data:"
+    ].join("; ")
+  });
+
+  if (!headOnly) response.end(html);
+  else response.end();
 }
 
 function requireAdmin(request, response) {
@@ -593,9 +628,8 @@ function createPullRequest(context, pull) {
 function createLectureReviewLinks({ owner, repo, branch, path }) {
   const fileUrl = createGithubFileUrl(owner, repo, branch, path);
   return [
-    `Файл в PR: ${fileUrl}`,
-    `Предпросмотр HTML до merge: ${createHtmlPreviewUrl(fileUrl)}`,
-    `Адрес после merge: ${publicSiteUrl}/${path}`
+    `Открыть как страницу для ревью: ${createLecturePreviewUrl(branch, path)}`,
+    `Файл в PR (код): ${fileUrl}`
   ];
 }
 
@@ -603,8 +637,19 @@ function createGithubFileUrl(owner, repo, branch, path) {
   return `https://github.com/${owner}/${repo}/blob/${branch}/${path}`;
 }
 
-function createHtmlPreviewUrl(fileUrl) {
-  return `https://htmlpreview.github.io/?${fileUrl}`;
+function createLecturePreviewUrl(branch, path) {
+  const params = new URLSearchParams({ branch, path });
+  return `${serverPublicUrl}/preview/lecture?${params.toString()}`;
+}
+
+function isAllowedPreviewBranch(branch) {
+  return /^(add-lecture|edit-lecture)\/[a-zA-Z0-9._/-]+$/.test(branch);
+}
+
+function isAllowedLecturePath(path) {
+  return Object.values(courseDirs).some((courseDir) => (
+    path.startsWith(`lectures/${courseDir}/`) && path.endsWith(".html") && !path.split("/").some((segment) => segment.startsWith("."))
+  ));
 }
 
 function createCatalogScript(catalog) {
