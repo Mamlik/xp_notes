@@ -122,6 +122,17 @@
           ],
           "href": "lectures/algorithms/pr-flow-check.html",
           "status": "draft"
+        },
+        {
+          "title": "Теория Игр",
+          "description": "Базовые принципы теории игр: графовое представление, стратегии, Теоремы Шпрага Гранди; Игра в Ним",
+          "tags": [
+            "gametheory",
+            "nim",
+            "grundy"
+          ],
+          "href": "lectures/algorithms/game_theory_sprague_grundy_notes.html",
+          "status": "published"
         }
       ]
     },

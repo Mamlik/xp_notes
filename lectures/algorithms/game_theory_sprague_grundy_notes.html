@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Теория игр: графы, сумма игр, Ним, теоремы Шпрага—Гранди</title>
+  <style>
+    :root {
+      --bg: #f7f8fb;
+      --paper: #ffffff;
+      --ink: #18202a;
+      --muted: #5c6b7a;
+      --accent: #355cff;
+      --accent-soft: #e8edff;
+      --green: #138a54;
+      --green-soft: #e8f7ef;
+      --red: #c73e3e;
+      --red-soft: #fff0f0;
+      --yellow: #9b6a00;
+      --yellow-soft: #fff7df;
+      --code: #f1f3f6;
+      --border: #d9deea;
+      --shadow: 0 12px 30px rgba(25, 35, 55, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      line-height: 1.65;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap: 28px;
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 28px;
+    }
+
+    aside {
+      position: sticky;
+      top: 18px;
+      align-self: start;
+      background: var(--paper);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      padding: 20px;
+      max-height: calc(100vh - 36px);
+      overflow: auto;
+    }
+
+    aside h2 {
+      margin: 0 0 12px;
+      font-size: 18px;
+    }
+
+    aside a {
+      display: block;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 7px 0;
+      border-bottom: 1px dashed rgba(0,0,0,0.06);
+      font-size: 14px;
+    }
+
+    aside a:hover { color: var(--accent); }
+
+    main {
+      min-width: 0;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #17213b 0%, #314cce 100%);
+      color: white;
+      border-radius: 28px;
+      padding: 42px;
+      box-shadow: var(--shadow);
+      margin-bottom: 28px;
+    }
+
+    .hero h1 {
+      margin: 0 0 16px;
+      font-size: clamp(30px, 5vw, 52px);
+      line-height: 1.08;
+    }
+
+    .hero p {
+      max-width: 920px;
+      margin: 0;
+      color: rgba(255,255,255,0.88);
+      font-size: 18px;
+    }
+
+    section {
+      background: var(--paper);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+
+    h2 {
+      font-size: 30px;
+      line-height: 1.2;
+      margin: 0 0 18px;
+    }
+
+    h3 {
+      font-size: 22px;
+      margin: 28px 0 12px;
+      line-height: 1.25;
+    }
+
+    h4 {
+      font-size: 18px;
+      margin: 22px 0 10px;
+    }
+
+    p { margin: 10px 0; }
+
+    .note, .proof, .warning, .definition, .theorem, .example, .algorithm, .intuition {
+      border-radius: 18px;
+      padding: 18px 20px;
+      margin: 18px 0;
+      border: 1px solid transparent;
+    }
+
+    .definition {
+      background: var(--accent-soft);
+      border-color: #cbd6ff;
+    }
+
+    .theorem {
+      background: var(--green-soft);
+      border-color: #bee8d2;
+    }
+
+    .proof {
+      background: #f6f7fb;
+      border-color: var(--border);
+    }
+
+    .warning {
+      background: var(--red-soft);
+      border-color: #ffd1d1;
+    }
+
+    .example {
+      background: var(--yellow-soft);
+      border-color: #ffe2a4;
+    }
+
+    .algorithm {
+      background: #eef8ff;
+      border-color: #c7e7ff;
+    }
+
+    .intuition {
+      background: #f4edff;
+      border-color: #dfccff;
+    }
+
+    .tag {
+      display: inline-block;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+
+    .proof .tag { color: #516070; }
+    .theorem .tag { color: var(--green); }
+    .warning .tag { color: var(--red); }
+    .example .tag { color: var(--yellow); }
+
+    code, .math {
+      background: var(--code);
+      border: 1px solid rgba(0,0,0,0.05);
+      border-radius: 8px;
+      padding: 2px 6px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.95em;
+    }
+
+    pre {
+      background: #101828;
+      color: #eef3ff;
+      border-radius: 18px;
+      padding: 20px;
+      overflow: auto;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    pre code {
+      background: transparent;
+      border: none;
+      padding: 0;
+      color: inherit;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 18px 0;
+      overflow: hidden;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+    }
+
+    th, td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f0f3fa;
+      font-weight: 800;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+      background: #fbfcff;
+    }
+
+    .graph {
+      display: flex;
+      justify-content: center;
+      margin: 22px 0;
+    }
+
+    .node {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      border: 2px solid #9dafef;
+      font-weight: 800;
+      margin: 4px 12px;
+    }
+
+    .terminal {
+      background: #f0f0f0;
+      border-color: #a7adb7;
+    }
+
+    .win {
+      background: #e7f7ef;
+      border-color: #57bd86;
+    }
+
+    .lose {
+      background: #fff0f0;
+      border-color: #e08080;
+    }
+
+    .arrow { color: var(--muted); font-weight: 800; font-size: 24px; }
+
+    .formula-block {
+      background: #0f172a;
+      color: #f8fafc;
+      border-radius: 18px;
+      padding: 18px 20px;
+      overflow: auto;
+      margin: 18px 0;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    .small { color: var(--muted); font-size: 14px; }
+
+    .checklist li { margin-bottom: 8px; }
+
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; padding: 16px; }
+      aside { position: static; max-height: none; }
+      .grid { grid-template-columns: 1fr; }
+      .hero, section { padding: 24px; }
+    }
+
+    @media print {
+      body { background: white; }
+      .layout { display: block; padding: 0; max-width: none; }
+      aside { display: none; }
+      .hero, section { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside>
+      <h2>Навигация</h2>
+      <a href="#model">1. Модель игры как графа</a>
+      <a href="#winlose">2. Выигрышные и проигрышные состояния</a>
+      <a href="#sum">3. Сумма игр</a>
+      <a href="#properties">4. Свойства суммы</a>
+      <a href="#symmetric">5. Лемма о симметричной стратегии</a>
+      <a href="#equivalence">6. Эквивалентность игр</a>
+      <a href="#zero">7. Все проигрышные игры эквивалентны *0</a>
+      <a href="#nim">8. Игра Ним</a>
+      <a href="#nim-classes">9. Различимость *i и *j</a>
+      <a href="#mex">10. MEX</a>
+      <a href="#sg1">11. I теорема Шпрага—Гранди</a>
+      <a href="#sg2">12. II теорема Шпрага—Гранди</a>
+      <a href="#strategy">13. Оптимальная стратегия в сумме ним-куч</a>
+      <a href="#code">14. Алгоритмы и код</a>
+      <a href="#pitfalls">15. Частые ошибки</a>
+      <a href="#summary">16. Шпаргалка</a>
+    </aside>
+
+    <main>
+      <div class="hero">
+        <h1>Теория игр: графы, сумма игр, Ним и теоремы Шпрага—Гранди</h1>
+        <p>
+          Конспект для контрольной по алгоритмам: равноправные конечные игры с полной информацией,
+          оптимальная стратегия, терминальные состояния, сумма игр, эквивалентность по Гранди,
+          функция Grundy, MEX и XOR-стратегия для Нима.
+        </p>
+      </div>
+
+      <section id="model">
+        <h2>1. Представление игры в виде графа</h2>
+
+        <p>
+          В этой лекции рассматриваются не любые игры, а специальный класс игр, который особенно важен
+          в алгоритмах. Это <b>конечные равноправные игры с полной информацией без случайности</b>.
+        </p>
+
+        <div class="definition">
+          <div class="tag">Определение</div>
+          <p>
+            Игру можно представить как ориентированный граф состояний. Вершина графа — это состояние игры.
+            Ребро <span class="math">A → B</span> означает, что из состояния <span class="math">A</span>
+            одним ходом можно перейти в состояние <span class="math">B</span>.
+          </p>
+        </div>
+
+        <div class="graph" aria-label="Пример графа игры">
+          <span class="node win">A</span>
+          <span class="arrow">→</span>
+          <span class="node lose">B</span>
+          <span class="arrow">→</span>
+          <span class="node terminal">T</span>
+        </div>
+
+        <p>
+          Если игра находится в вершине <span class="math">A</span>, то игрок, чей сейчас ход, выбирает одно
+          исходящее ребро и переводит игру в одну из достижимых вершин.
+        </p>
+
+        <h3>1.1. Какие игры рассматриваем</h3>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Свойство</th>
+              <th>Что означает</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>Равноправные</b></td>
+              <td>У обоих игроков одинаковые доступные ходы из одного и того же состояния. Нет ходов, доступных только первому или только второму игроку.</td>
+            </tr>
+            <tr>
+              <td><b>Конечные</b></td>
+              <td>Игра обязательно заканчивается за конечное число ходов.</td>
+            </tr>
+            <tr>
+              <td><b>Ациклический граф</b></td>
+              <td>Нельзя ходами вернуться в уже посещённое состояние. Поэтому нет бесконечных партий.</td>
+            </tr>
+            <tr>
+              <td><b>Ходы по очереди</b></td>
+              <td>Игроки делают ровно по одному ходу, затем право хода переходит сопернику.</td>
+            </tr>
+            <tr>
+              <td><b>Полная информация</b></td>
+              <td>Оба игрока видят всё состояние игры. Нет скрытых карт, случайных бросков и неизвестной информации.</td>
+            </tr>
+            <tr>
+              <td><b>Оптимальность зависит только от состояния</b></td>
+              <td>Дальнейшая стратегия определяется текущей вершиной графа, а не историей того, как мы в неё попали.</td>
+            </tr>
+            <tr>
+              <td><b>Выигрыш зависит только от состояния</b></td>
+              <td>Если состояние терминальное, оно само определяет, что текущий игрок проиграл.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="warning">
+          <div class="tag">Важно</div>
+          <p>
+            Это именно <b>impartial combinatorial games</b>: игры без случайности, без ничьих, с одинаковыми
+            возможностями для игроков. Шахматы сюда напрямую не попадают: там разные фигуры у белых и чёрных,
+            а также есть ничьи и сложные правила окончания.
+          </p>
+        </div>
+      </section>
+
+      <section id="winlose">
+        <h2>2. Терминальные состояния, выигрыш и проигрыш</h2>
+
+        <div class="definition">
+          <div class="tag">Терминальное состояние</div>
+          <p>
+            Терминальное состояние — состояние, из которого нет доступных ходов. По нормальному правилу игры
+            игрок, который не может сделать ход, проигрывает.
+          </p>
+        </div>
+
+        <p>
+          Поэтому терминальная вершина всегда является <b>проигрышной</b> для игрока, который должен ходить.
+        </p>
+
+        <h3>2.1. Выигрышные и проигрышные состояния</h3>
+
+        <div class="definition">
+          <div class="tag">P- и N-позиции</div>
+          <p>
+            Часто используют обозначения:
+          </p>
+          <ul>
+            <li><span class="math">P-position</span> — previous player winning, то есть позиция проигрышна для текущего игрока;</li>
+            <li><span class="math">N-position</span> — next player winning, то есть позиция выигрышна для текущего игрока.</li>
+          </ul>
+        </div>
+
+        <p>
+          В лекции значение игры обозначается:
+        </p>
+
+        <div class="formula-block">
+v(A) ∈ { -1, 0, 1 }
+        </div>
+
+        <p>
+          В рамках обычных конечных игр без ничьих реально важны два значения:
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Значение</th>
+              <th>Смысл</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="math">v(A) = -1</span></td>
+              <td>Проигрышная позиция для текущего игрока.</td>
+            </tr>
+            <tr>
+              <td><span class="math">v(A) = 1</span></td>
+              <td>Выигрышная позиция для текущего игрока.</td>
+            </tr>
+            <tr>
+              <td><span class="math">v(A) = 0</span></td>
+              <td>Обычно соответствует ничейным или более общим ситуациям. В рассматриваемом ациклическом классе без ничьих это значение фактически не нужно.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>2.2. Рекурсивное правило</h3>
+
+        <div class="theorem">
+          <div class="tag">Критерий выигрышности</div>
+          <p>
+            Состояние проигрышно тогда и только тогда, когда все ходы из него ведут в выигрышные состояния.
+            Состояние выигрышно тогда и только тогда, когда существует хотя бы один ход в проигрышное состояние.
+          </p>
+        </div>
+
+        <div class="proof">
+          <div class="tag">Доказательство</div>
+          <p>
+            Если из состояния <span class="math">A</span> есть ход в проигрышное состояние <span class="math">B</span>,
+            то текущий игрок делает этот ход. После этого соперник оказывается в проигрышной позиции, значит
+            при оптимальной игре проиграет. Поэтому <span class="math">A</span> выигрышна.
+          </p>
+          <p>
+            Если же все ходы из <span class="math">A</span> ведут в выигрышные состояния, то текущий игрок обязан
+            перевести игру в состояние, из которого соперник имеет выигрышную стратегию. Значит, текущий игрок
+            проигрывает. Поэтому <span class="math">A</span> проигрышна.
+          </p>
+        </div>
+
+        <div class="algorithm">
+          <div class="tag">Алгоритмическая идея</div>
+          <p>
+            Для конечного ациклического графа значения состояний можно считать динамически в обратном
+            топологическом порядке: сначала терминальные вершины, затем вершины, из которых все переходы уже посчитаны.
+          </p>
+        </div>
+      </section>
+
+      <section id="sum">
+        <h2>3. Сумма игр</h2>
+
+        <p>
+          Одна из главных идей лекции — рассматривать не только одну игру, но и несколько независимых игр,
+          в одну из которых игрок делает ход на каждом своём ходу.
+        </p>
+
+        <div class="definition">
+          <div class="tag">Сумма игр</div>
+          <p>
+            Сумма игр <span class="math">A + B</span> — это игра, состояние которой состоит из пары состояний
+            <span class="math">(A, B)</span>. За один ход игрок выбирает ровно одну компоненту и делает ход только в ней.
+          </p>
+          <p>
+            То есть из <span class="math">A + B</span> можно перейти либо в <span class="math">A' + B</span>,
+            если <span class="math">A → A'</span>, либо в <span class="math">A + B'</span>, если
+            <span class="math">B → B'</span>.
+          </p>
+        </div>
+
+        <div class="example">
+          <div class="tag">Пример</div>
+          <p>
+            Пусть есть две кучки Нима: 3 камня и 5 камней. Игра <span class="math">*3 + *5</span>
+            означает, что за ход можно уменьшить либо первую кучку, либо вторую, но нельзя за один ход
+            менять обе кучки сразу.
+          </p>
+        </div>
+
+        <p>
+          Терминальное состояние суммы достигается только тогда, когда терминальны все компоненты.
+          Например, <span class="math">*0 + *0</span> — проигрышная игра без ходов.
+        </p>
+      </section>
+
+      <section id="properties">
+        <h2>4. Базовые свойства суммы игр</h2>
+
+        <p>
+          Сумма игр ведёт себя очень похоже на обычное сложение, но нужно понимать это не как равенство
+          графов буквально, а как естественную изоморфность игр.
+        </p>
+
+        <h3>4.1. Коммутативность</h3>
+
+        <div class="theorem">
+          <div class="tag">Свойство</div>
+          <p>
+            <span class="math">A + B</span> эквивалентна <span class="math">B + A</span>.
+          </p>
+        </div>
+
+        <div class="proof">
+          <div class="tag">Доказательство</div>
+          <p>
+            Состояние <span class="math">A + B</span> — это пара <span class="math">(a, b)</span>.
+            Состояние <span class="math">B + A</span> — это пара <span class="math">(b, a)</span>.
+            Между ними есть очевидное взаимно однозначное соответствие: поменять компоненты местами.
+          </p>
+          <p>
+            Если в первой игре можно сделать ход в компоненте <span class="math">A</span>, то во второй игре
+            это соответствует ходу во второй компоненте. Если можно сделать ход в <span class="math">B</span>,
+            то это соответствует ходу в первой компоненте. Значит, структура доступных ходов совпадает.
+          </p>
+        </div>
+
+        <h3>4.2. Ассоциативность</h3>
+
+        <div class="theorem">
+          <div class="tag">Свойство</div>
+          <p>
+            <span class="math">(A + B) + C</span> эквивалентна <span class="math">A + (B + C)</span>.
+          </p>
+        </div>
+
+        <div class="proof">
+          <div class="tag">Доказательство</div>
+          <p>
+            Обе игры фактически описывают тройку независимых компонент <span class="math">(A, B, C)</span>.
+            За ход игрок выбирает одну из трёх компонент и делает ход в ней. Скобки лишь меняют формальную
+            запись состояния, но не меняют множество возможных ходов.
+          </p>
+        </div>
+
+        <h3>4.3. Нейтральная игра <span class="math">*0</span></h3>
+
+        <div class="definition">
+          <div class="tag">Нейтральный элемент</div>
+          <p>
+            Игра <span class="math">*0</span> — элементарная проигрышная игра без ходов. Это терминальное состояние.
+          </p>
+        </div>
+
+        <div class="theorem">
+          <div class="tag">Свойство</div>
+          <p>
+            <span class="math">A + *0</span> эквивалентна <span class="math">A</span>.
+          </p>
+        </div>
+
+        <div class="proof">
+          <div class="tag">Доказательство</div>
+          <p>
+            В игре <span class="math">*0</span> нет ходов, поэтому в сумме <span class="math">A + *0</span>
+            любой ход можно сделать только в компоненте <span class="math">A</span>. Значит, игра ведёт себя
+            ровно как <span class="math">A</span>.
+          </p>
+        </div>
+      </section>
+
+      <section id="symmetric">
+        <h2>5. Лемма о симметричной стратегии: <span class="math">A + A</span> проигрышна</h2>
+
+        <div class="theorem">
+          <div class="tag">Лемма</div>
+          <p>
+            Если <span class="math">A</span> — конечная ациклическая равноправная игра, то
+            <span class="math">A + A</span> является проигрышной игрой.
+          </p>
+        </div>
+
+        <div class="intuition">
+          <div class="tag">Интуиция</div>
+          <p>
+            Две одинаковые копии игры взаимно уничтожаются. Что бы первый игрок ни сделал в одной копии,
+            второй может повторить зеркальный ход в другой копии и снова восстановить симметрию.
+          </p>
+        </div>
+
+        <div class="proof">
+          <div class="tag">Доказательство через зеркальную стратегию</div>
+          <p>
+            Начальное состояние суммы имеет вид <span class="math">A + A</span>. Оно симметрично: обе компоненты одинаковы.
+          </p>
+          <p>
+            Первый игрок обязан сделать ход в одной из компонент. Например, он переводит первую копию:
+          </p>
+          <div class="formula-block">
+A + A  →  A' + A
+          </div>
+          <p>
+            Так как в исходной игре был допустим ход <span class="math">A → A'</span>, второй игрок может сделать
+            точно такой же ход во второй копии:
+          </p>
+          <div class="formula-block">
+A' + A  →  A' + A'
+          </div>
+          <p>
+            После ответа второго игрока состояние снова стало симметричным: две компоненты одинаковы.
+          </p>
+          <p>
+            Далее второй игрок повторяет эту стратегию: на каждый ход первого в одной копии отвечает тем же ходом
+            в другой копии. Поскольку игра ациклична и конечна, бесконечно играть нельзя. В какой-то момент первый
+            игрок не сможет сделать ход в симметричном состоянии <span class="math">T + T</span>, где обе компоненты
+            терминальны. Значит, первый игрок проигрывает, а <span class="math">A + A</span> проигрышна.
+          </p>
+        </div>
+
+        <div class="warning">
+          <div class="tag">Почему нужна ацикличность?</div>
+          <p>
+            Если бы игра могла ходить по циклам, зеркальная стратегия могла бы не гарантировать завершения.
+            В нашем классе игр граф ацикличен, поэтому каждый ход уменьшает некоторую «высоту» состояния, и партия
+            обязательно закончится.
+          </p>
+        </div>
+      </section>
+
+      <section id="equivalence">
+        <h2>6. Эквивалентность игр по Гранди</h2>
+
+        <p>
+          Просто знать, выигрышна игра или проигрышна, недостаточно. Например, две выигрышные игры могут по-разному
+          вести себя при сложении с третьей игрой. Поэтому вводят более сильное отношение — эквивалентность игр.
+        </p>
+
+        <div class="definition">
+          <div class="tag">Эквивалентность</div>
+          <p>
+            Игры <span class="math">A</span> и <span class="math">B</span> называются эквивалентными по Гранди,
+            если для любой игры <span class="math">C</span> значения сумм совпадают:
+          </p>
+          <div class="formula-block">
+A ∼ B  ⇔  ∀C: v(A + C) = v(B + C)
+          </div>
+        </div>
+
+        <p>
+          Иными словами, <span class="math">A</span> и <span class="math">B</span> неразличимы в любом контексте:
+          какую бы дополнительную независимую игру <span class="math">C</span> мы ни добавили, результат будет тем же.
+        </p>
+
+        <h3>6.1. Почему нельзя определять эквивалентность только как одинаковую выигрышность?</h3>
+
+        <div class="example">
+          <div class="tag">Пример</div>
+          <p>
+            Игры <span class="math">*1</span> и <span class="math">*2</span> обе выигрышны: из каждой можно взять все камни
+            и перейти в <span class="math">*0</span>. Но они не эквивалентны.
+          </p>
+          <p>
+            Например, добавим <span class="math">*1</span>:
+          </p>
+          <ul>
+            <li><span class="math">*1 + *1</span> проигрышна по симметричной стратегии;</li>
+            <li><span class="math">*2 + *1</span> выигрышна, потому что можно уменьшить кучку 2 до 1 и получить <span class="math">*1 + *1</span>.</li>
+          </ul>
+          <p>
+            Значит, <span class="math">*1</span> и <span class="math">*2</span> дают разное поведение в суммах.
+          </p>
+        </div>
+
+        <h3>6.2. Лемма о совместимости эквивалентности со сложением</h3>
+
+        <div class="theorem">
+          <div class="tag">Лемма</div>
+          <p>
+            Если <span class="math">A₁ ∼ A₂</span> и <span class="math">B₁ ∼ B₂</span>, то
+            <span class="math">A₁ + B₁ ∼ A₂ + B₂</span>.
+          </p>
+        </div>
+
+        <div class="proof">
+          <div class="tag">Доказательство</div>
+          <p>
+            Нужно доказать, что для любой игры <span class="math">C</span>:
+          </p>
+          <div class="formula-block">
+v((A₁ + B₁) + C) = v((A₂ + B₂) + C)
+          </div>
+          <p>
+            Используем ассоциативность и коммутативность суммы игр.
+          </p>
+          <p>
+            Так как <span class="math">A₁ ∼ A₂</span>, то для любой игры <span class="math">D</span> выполняется:
+          </p>
+          <div class="formula-block">
+v(A₁ + D) = v(A₂ + D)
+          </div>
+          <p>
+            Возьмём <span class="math">D = B₁ + C</span>. Тогда:
+          </p>
+          <div class="formula-block">
+v(A₁ + B₁ + C) = v(A₂ + B₁ + C)
+          </div>
+          <p>
+            Теперь используем <span class="math">B₁ ∼ B₂</span>. Для любой игры <span class="math">E</span>:
+          </p>
+          <div class="formula-block">
+v(B₁ + E) = v(B₂ + E)
+          </div>
+          <p>
+            Возьмём <span class="math">E = A₂ + C</span>. Тогда:
+          </p>
+          <div class="formula-block">
+v(B₁ + A₂ + C) = v(B₂ + A₂ + C)
+          </div>
+          <p>
+            По коммутативности это то же самое, что:
+          </p>
+          <div class="formula-block">
+v(A₂ + B₁ + C) = v(A₂ + B₂ + C)
+          </div>
+          <p>
+            Значит:</p>
+          <div class="formula-block">
+v(A₁ + B₁ + C) = v(A₂ + B₂ + C)
+          </div>
+          <p>
+            Для любого <span class="math">C</span>. Следовательно, <span class="math">A₁+B₁ ∼ A₂+B₂</span>.
+          </p>
+        </div>
+
+        <h3>6.3. Классы эквивалентности</h3>
+
+        <p>
+          Отношение <span class="math">∼</span> разбивает все игры на классы эквивалентности. В одном классе лежат
+          игры, которые ведут себя одинаково при добавлении любой другой игры.
+        </p>
+
+        <div class="intuition">
+          <div class="tag">Главная идея</div>
+          <p>
+            Теорема Шпрага—Гранди говорит, что каждый такой класс можно представить одной ним-кучкой
+            <span class="math">*g</span>. Число <span class="math">g</span> и называется функцией Гранди состояния.
+          </p>
+        </div>
+      </section>
+
+      <section id="zero">
+        <h2>7. Все проигрышные игры эквивалентны <span class="math">*0</span></h2>
+
+        <div class="theorem">
+          <div class="tag">Лемма</div>
+          <p>
+            Если <span class="math">A</span> — проигрышная игра, то для любой игры <span class="math">C</span>:
+          </p>
+          <div class="formula-block">
+v(A + C) = v(C)
+          </div>
+          <p>
+            Следовательно, <span class="math">A ∼ *0</span>.
+          </p>
+        </div>
+
+        <div class="proof">
+          <div class="tag">Доказательство через стратегию</div>
+          <p>
+            Интуитивно проигрышная игра <span class="math">A</span> не даёт активного преимущества. Если добавить её
+            к любой игре <span class="math">C</span>, результат должен быть таким же, как у <span class="math">C</span>.
+          </p>
+
+          <h4>Случай 1: <span class="math">C</span> выигрышна</h4>
+          <p>
+            Если <span class="math">C</span> выигрышна, то в ней есть ход <span class="math">C → C'</span>, где
+            <span class="math">C'</span> проигрышна. Тогда в сумме <span class="math">A + C</span> текущий игрок делает ход
+            во второй компоненте:
+          </p>
+          <div class="formula-block">
+A + C → A + C'
+          </div>
+          <p>
+            Нужно понять, почему <span class="math">A + C'</span> проигрышна. И <span class="math">A</span>, и
+            <span class="math">C'</span> проигрышны. В теории Гранди обе они эквивалентны <span class="math">*0</span>,
+            поэтому их сумма тоже эквивалентна <span class="math">*0</span>. Если доказывать без уже готовой леммы,
+            можно использовать индукцию по размеру игр.
+          </p>
+          <p>
+            Значит, из <span class="math">A+C</span> есть ход в проигрышное состояние, поэтому <span class="math">A+C</span>
+            выигрышна, как и <span class="math">C</span>.
+          </p>
+
+          <h4>Случай 2: <span class="math">C</span> проигрышна</h4>
+          <p>
+            Если обе игры <span class="math">A</span> и <span class="math">C</span> проигрышны, то любой ход в одной из них
+            переводит эту компоненту в выигрышное состояние. После этого соперник может пользоваться выигрышной
+            стратегией в изменённой компоненте. Формально это доказывается индукцией по суммарной высоте состояний.
+          </p>
+          <p>
+            Следовательно, <span class="math">A+C</span> проигрышна, как и <span class="math">C</span>.
+          </p>
+        </div>
+
+        <div class="warning">
+          <div class="tag">Аккуратность</div>
+          <p>
+            В строгом курсе эту лемму удобно доказывать после введения функции Гранди: если игра проигрышна,
+            её Grundy-число равно 0, а сумма с ней не меняет XOR. В лекционном стиле её часто дают раньше
+            как мотивацию нейтрального класса <span class="math">*0</span>.
+          </p>
+        </div>
+      </section>
+
+      <section id="nim">
+        <h2>8. Игра Ним</h2>
+
+        <div class="definition">
+          <div class="tag">Одна кучка Нима</div>
+          <p>
+            Есть кучка из <span class="math">i</span> камней. За ход можно взять любое натуральное количество камней,
+            то есть от 1 до <span class="math">i</span>. Если камней 0, ходов нет, и позиция проигрышна.
+          </p>
+        </div>
+
+        <p>
+          Игра Ним из одной кучки размера <span class="math">i</span> обозначается:
+        </p>
+
+        <div class="formula-block">
+*i
+        </div>
+
+        <p>
+          Например:</p>
+        <ul>
+          <li><span class="math">*0</span> — пустая кучка, ходов нет;</li>
+          <li><span class="math">*1</span> — можно перейти только в <span class="math">*0</span>;</li>
+          <li><span class="math">*2</span> — можно перейти в <span class="math">*1</span> или <span class="math">*0</span>;</li>
+          <li><span class="math">*i</span> — можно перейти в любую <span class="math">*j</span>, где <span class="math">0 ≤ j &lt; i</span>.</li>
+        </ul>
+
+        <h3>8.1. Выигрышность одной кучки</h3>
+
+        <div class="theorem">
+          <div class="tag">Факт</div>
+          <p>
+            <span class="math">*0</span> проигрышна. Любая <span class="math">*i</span> при <span class="math">i &gt; 0</span> выигрышна.
+          </p>
+        </div>
+
+        <div class="proof">
+          <div class="tag">Доказательство</div>
+          <p>
+            Если <span class="math">i = 0</span>, ходов нет, значит позиция проигрышна.
+            Если <span class="math">i &gt; 0</span>, текущий игрок может взять все <span class="math">i</span> камней
+            и перейти в <span class="math">*0</span>, то есть в проигрышную позицию для соперника. Значит, позиция выигрышна.
+          </p>
+        </div>
+      </section>
+
+      <section id="nim-classes">
+        <h2>9. Лемма: если <span class="math">i ≠ j</span>, то <span class="math">*i ≁ *j</span></h2>
+
+        <div class="theorem">
+          <div class="tag">Лемма</div>
+          <p>
+            Ним-кучки разных размеров неэквивалентны:
+          </p>
+          <div class="formula-block">
+i ≠ j  ⇒  *i ≁ *j
+          </div>
+        </div>
+
+        <div class="proof">
+          <div class="tag">Доказательство</div>
+          <p>
+            Пусть без ограничения общности <span class="math">i &gt; j</span>.
+          </p>
+          <p>
+            Рассмотрим добавочную игру <span class="math">C = *j</span>.
+            Тогда сравним:
+          </p>
+          <div class="formula-block">
+*i + *j     и     *j + *j
+          </div>
+          <p>
+            Игра <span class="math">*j + *j</span> проигрышна по лемме о симметричной стратегии: две одинаковые
+            компоненты взаимно уничтожаются.
+          </p>
+          <p>
+            А игра <span class="math">*i + *j</span> выигрышна. Почему? Первый игрок может в большей кучке
+            <span class="math">*i</span> оставить ровно <span class="math">j</span> камней. То есть сделать ход:
+          </p>
+          <div class="formula-block">
+*i + *j → *j + *j
+          </div>
+          <p>
+            Он переводит игру в проигрышную позицию для соперника. Значит, <span class="math">*i + *j</span>
+            выигрышна.
+          </p>
+          <p>
+            Мы нашли такую игру <span class="math">C = *j</span>, что:</p>
+          <div class="formula-block">
+v(*i + C) ≠ v(*j + C)
+          </div>
+          <p>
+            Следовательно, <span class="math">*i</span> и <span class="math">*j</span> неэквивалентны.
+          </p>
+        </div>
+
+        <div class="intuition">
+          <div class="tag">Смысл</div>
+          <p>
+            Каждая ним-кучка <span class="math">*i</span> задаёт отдельный класс эквивалентности. Именно поэтому
+            функция Гранди может принимать разные неотрицательные целые значения, а не только «win/lose».
+          </p>
+        </div>
+      </section>
+
+      <section id="mex">
+        <h2>10. Функция MEX</h2>
+
+        <div class="definition">
+          <div class="tag">MEX</div>
+          <p>
+            <span class="math">mex(S)</span> — минимальное неотрицательное целое число, которого нет в множестве
+            <span class="math">S</span>.
+          </p>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Множество S</th>
+              <th>mex(S)</th>
+              <th>Почему</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="math">∅</span></td>
+              <td><span class="math">0</span></td>
+              <td>0 отсутствует.</td>
+            </tr>
+            <tr>
+              <td><span class="math">{0}</span></td>
+              <td><span class="math">1</span></td>
+              <td>0 есть, 1 отсутствует.</td>
+            </tr>
+            <tr>
+              <td><span class="math">{0, 1, 2}</span></td>
+              <td><span class="math">3</span></td>
+              <td>0, 1, 2 есть, 3 отсутствует.</td>
+            </tr>
+            <tr>
+              <td><span class="math">{1, 2, 4}</span></td>
+              <td><span class="math">0</span></td>
+              <td>0 отсутствует.</td>
+            </tr>
+            <tr>
+              <td><span class="math">{0, 2, 3}</span></td>
+              <td><span class="math">1</span></td>
+              <td>0 есть, 1 отсутствует.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p>
+          MEX появляется потому, что игра <span class="math">*g</span> имеет ходы ровно во все меньшие ним-кучки:
+        </p>
+
+        <div class="formula-block">
+*g → *0, *1, ..., *(g - 1)
+        </div>
+
+        <p>
+          Поэтому, чтобы игра была эквивалентна <span class="math">*g</span>, среди её достижимых состояний должны
+          встречаться классы <span class="math">0,1,...,g-1</span>, но не должен встречаться класс <span class="math">g</span>.
+          Это ровно и выражает MEX.
+        </p>
+      </section>
+
+      <section id="sg1">
+        <h2>11. I теорема Шпрага—Гранди</h2>
+
+        <div class="theorem">
+          <div class="tag">I теорема Шпрага—Гранди</div>
+          <p>
+            Любая конечная ациклическая равноправная игра с полной информацией эквивалентна некоторой ним-кучке
+            <span class="math">*g</span>. Число <span class="math">g</span> называется функцией Гранди этой игры.
+          </p>
+        </div>
+
+        <div class="definition">
+          <div class="tag">Функция Гранди</div>
+          <p>
+            Для состояния <span class="math">A</span> его Grundy-число <span class="math">g(A)</span> определяется так:
+          </p>
+          <div class="formula-block">
+g(A) = mex({ g(B) | A → B })
+          </div>
+          <p>
+            То есть берём все состояния, достижимые одним ходом из <span class="math">A</span>, смотрим их Grundy-числа,
+            и берём MEX этого множества.
+          </p>
+        </div>
+
+        <h3>11.1. База: терминальное состояние</h3>
+
+        <p>
+          Если из <span class="math">A</span> нет ходов, множество достижимых Grundy-чисел пусто:</p>
+
+        <div class="formula-block">
+{ g(B) | A → B } = ∅
+        </div>
+
+        <p>Тогда:</p>
+
+        <div class="formula-block">
+g(A) = mex(∅) = 0
+        </div>
+
+        <p>
+          Это совпадает с тем, что терминальная игра эквивалентна <span class="math">*0</span>.
+        </p>
+
+        <h3>11.2. Доказательство через индукцию по максимальному пути до терминала</h3>
+
+        <div class="definition">
+          <div class="tag">Высота состояния</div>
+          <p>
+            Высотой состояния назовём максимальную длину пути из него до терминального состояния. Так как граф
+            ацикличен и конечен, высота корректно определена.
+          </p>
+        </div>
+
+        <div class="proof">
+          <div class="tag">Доказательство I теоремы</div>
+          <p>
+            Докажем индукцией по высоте состояния <span class="math">A</span>, что оно эквивалентно
+            <span class="math">*g(A)</span>, где:
+          </p>
+          <div class="formula-block">
+g(A) = mex({ g(B) | A → B })
+          </div>
+
+          <h4>База</h4>
+          <p>
+            Если высота равна 0, состояние терминальное. Из него нет ходов, поэтому:
+          </p>
+          <div class="formula-block">
+g(A) = mex(∅) = 0
+          </div>
+          <p>
+            Терминальная игра эквивалентна <span class="math">*0</span>. База доказана.
+          </p>
+
+          <h4>Индукционный переход</h4>
+          <p>
+            Пусть для всех состояний меньшей высоты утверждение уже доказано. Рассмотрим состояние
+            <span class="math">A</span>. Все его потомки <span class="math">B</span> имеют меньшую высоту, значит по
+            предположению индукции каждый <span class="math">B</span> эквивалентен <span class="math">*g(B)</span>.
+          </p>
+          <p>
+            Обозначим:</p>
+          <div class="formula-block">
+m = mex({ g(B) | A → B })
+          </div>
+          <p>
+            Нужно доказать, что <span class="math">A ∼ *m</span>.
+          </p>
+
+          <h4>Ключевая проверка через добавление <span class="math">*m</span></h4>
+          <p>
+            Используем полезный критерий:</p>
+          <div class="formula-block">
+A ∼ *m  ⇔  A + *m ∼ *0
+          </div>
+          <p>
+            То есть достаточно показать, что <span class="math">A + *m</span> проигрышна.
+          </p>
+
+          <h4>Почему <span class="math">A + *m</span> проигрышна?</h4>
+          <p>
+            Рассмотрим любой ход из <span class="math">A + *m</span>. Он бывает двух типов.
+          </p>
+
+          <p><b>Тип 1: ход в компоненте <span class="math">A</span>.</b></p>
+          <p>
+            Тогда игра переходит в <span class="math">B + *m</span>, где <span class="math">A → B</span>.
+            По определению MEX число <span class="math">m</span> не входит в множество достижимых Grundy-чисел.
+            Значит, <span class="math">g(B) ≠ m</span> для любого такого <span class="math">B</span>.
+          </p>
+          <p>
+            По предположению индукции <span class="math">B ∼ *g(B)</span>. Поэтому:</p>
+          <div class="formula-block">
+B + *m ∼ *g(B) + *m
+          </div>
+          <p>
+            Так как <span class="math">g(B) ≠ m</span>, сумма двух разных ним-кучек выигрышна: большую можно уменьшить
+            до меньшей и получить две одинаковые кучки. Значит, ход типа 1 ведёт в выигрышное состояние.
+          </p>
+
+          <p><b>Тип 2: ход в компоненте <span class="math">*m</span>.</b></p>
+          <p>
+            Из <span class="math">*m</span> можно перейти в <span class="math">*t</span>, где <span class="math">0 ≤ t &lt; m</span>.
+            Так как <span class="math">m = mex(S)</span>, все числа <span class="math">0,1,...,m-1</span> присутствуют
+            в множестве <span class="math">S = {g(B) | A → B}</span>. Значит, найдётся ход <span class="math">A → B</span>
+            такой, что <span class="math">g(B)=t</span>.
+          </p>
+          <p>
+            После хода типа 2 состояние стало <span class="math">A + *t</span>. Для игрока, который теперь ходит,
+            есть ответ: сделать в компоненте <span class="math">A</span> ход в такое <span class="math">B</span>, что
+            <span class="math">g(B)=t</span>. Тогда получится:
+          </p>
+          <div class="formula-block">
+B + *t ∼ *t + *t ∼ *0
+          </div>
+          <p>
+            То есть ход типа 2 тоже ведёт в выигрышное для следующего игрока состояние.
+          </p>
+
+          <p>
+            Итак, любой ход из <span class="math">A + *m</span> ведёт в выигрышное состояние. Значит,
+            <span class="math">A + *m</span> проигрышна. Поэтому <span class="math">A ∼ *m</span>.
+          </p>
+        </div>
+
+        <div class="warning">
+          <div class="tag">Замечание</div>
+          <p>
+            В этом доказательстве неявно используется, что суммы ним-кучек с разными размерами выигрышны,
+            а с одинаковыми — проигрышны. Для двух кучек это доказывается простой симметрией и ходом
+            «уменьшить большую до меньшей».
+          </p>
+        </div>
+      </section>
+
+      <section id="sg2">
+        <h2>12. II теорема Шпрага—Гранди</h2>
+
+        <div class="theorem">
+          <div class="tag">II теорема Шпрага—Гранди</div>
+          <p>
+            Для ним-кучек выполняется:
+          </p>
+          <div class="formula-block">
+*i + *j ∼ *(i xor j)
+          </div>
+          <p>
+            В лекции эта теорема дана без доказательства, но её смысл крайне важен для алгоритмов.
+          </p>
+        </div>
+
+        <p>
+          Более общий вывод:</p>
+
+        <div class="formula-block">
+*g₁ + *g₂ + ... + *gₙ ∼ *(g₁ xor g₂ xor ... xor gₙ)
+        </div>
+
+        <p>
+          То есть сумма независимых игр эквивалентна одной ним-кучке, размер которой равен XOR их Grundy-чисел.
+        </p>
+
+        <div class="intuition">
+          <div class="tag">Почему именно XOR?</div>
+          <p>
+            XOR — это операция сложения в пространстве ним-значений. Она обладает теми свойствами, которые нужны
+            сумме игр: коммутативность, ассоциативность, нейтральный элемент 0 и самоуничтожение
+            <span class="math">x xor x = 0</span>. Последнее соответствует лемме <span class="math">A + A ∼ *0</span>.
+          </p>
+        </div>
+
+        <h3>12.1. Следствие для произвольной суммы игр</h3>
+
+        <p>
+          Если есть независимые игры <span class="math">A₁, A₂, ..., Aₙ</span>, то сначала считаем их Grundy-числа:
+        </p>
+
+        <div class="formula-block">
+g₁ = g(A₁), g₂ = g(A₂), ..., gₙ = g(Aₙ)
+        </div>
+
+        <p>Тогда:</p>
+
+        <div class="formula-block">
+A₁ + A₂ + ... + Aₙ ∼ *(g₁ xor g₂ xor ... xor gₙ)
+        </div>
+
+        <p>
+          Поэтому позиция проигрышна тогда и только тогда, когда XOR всех Grundy-чисел равен 0.
+        </p>
+
+        <div class="theorem">
+          <div class="tag">Критерий проигрыша</div>
+          <div class="formula-block">
+A₁ + ... + Aₙ проигрышна  ⇔  g(A₁) xor ... xor g(Aₙ) = 0
+          </div>
+        </div>
+      </section>
+
+      <section id="strategy">
+        <h2>13. Оптимальная стратегия в сумме ним-игр</h2>
+
+        <p>
+          Пусть есть несколько компонент с Grundy-числами:</p>
+
+        <div class="formula-block">
+g₁, g₂, ..., gₙ
+        </div>
+
+        <p>Обозначим их XOR:</p>
+
+        <div class="formula-block">
+X = g₁ xor g₂ xor ... xor gₙ
+        </div>
+
+        <h3>13.1. Если <span class="math">X = 0</span></h3>
+
+        <div class="theorem">
+          <div class="tag">Факт</div>
+          <p>
+            Если общий XOR равен 0, то любой допустимый ход переводит игру в состояние с ненулевым XOR.
+          </p>
+        </div>
+
+        <div class="proof">
+          <div class="tag">Доказательство</div>
+          <p>
+            Один ход меняет только одну компоненту. Пусть <span class="math">g_i</span> заменилось на
+            <span class="math">g_i'</span>, причём <span class="math">g_i' ≠ g_i</span>. Новый XOR равен:
+          </p>
+          <div class="formula-block">
+X' = X xor g_i xor g_i'
+          </div>
+          <p>
+            Так как <span class="math">X = 0</span>, получаем:</p>
+          <div class="formula-block">
+X' = g_i xor g_i'
+          </div>
+          <p>
+            А поскольку <span class="math">g_i ≠ g_i'</span>, их XOR ненулевой. Значит, <span class="math">X' ≠ 0</span>.
+          </p>
+        </div>
+
+        <h3>13.2. Если <span class="math">X ≠ 0</span></h3>
+
+        <div class="theorem">
+          <div class="tag">Факт</div>
+          <p>
+            Если общий XOR ненулевой, то существует ход, после которого общий XOR станет 0.
+          </p>
+        </div>
+
+        <div class="proof">
+          <div class="tag">Доказательство для ним-куч</div>
+          <p>
+            Пусть <span class="math">X ≠ 0</span>. Возьмём старший бит, в котором у <span class="math">X</span> стоит 1.
+            Среди кучек найдётся кучка <span class="math">g_i</span>, у которой в этом бите тоже стоит 1, иначе в XOR
+            этот бит не мог бы стать 1.
+          </p>
+          <p>
+            Положим:</p>
+          <div class="formula-block">
+g_i' = g_i xor X
+          </div>
+          <p>
+            Из-за выбора старшего бита получаем <span class="math">g_i' &lt; g_i</span>. Значит, в ним-кучке
+            <span class="math">*g_i</span> можно сделать ход в <span class="math">*g_i'</span>, уменьшив кучку.
+          </p>
+          <p>
+            Новый общий XOR:</p>
+          <div class="formula-block">
+X' = X xor g_i xor g_i'
+   = X xor g_i xor (g_i xor X)
+   = 0
+          </div>
+          <p>
+            Значит, такой ход существует.
+          </p>
+        </div>
+
+        <div class="algorithm">
+          <div class="tag">Практическая стратегия</div>
+          <ol>
+            <li>Посчитать общий XOR всех Grundy-чисел.</li>
+            <li>Если XOR равен 0, позиция проигрышна при оптимальной игре.</li>
+            <li>Если XOR ненулевой, найти компоненту <span class="math">g_i</span>, для которой <span class="math">(g_i xor X) &lt; g_i</span>.</li>
+            <li>Сделать ход в этой компоненте так, чтобы её новое Grundy-число стало <span class="math">g_i xor X</span>.</li>
+          </ol>
+        </div>
+
+        <div class="example">
+          <div class="tag">Пример</div>
+          <p>Пусть кучки имеют размеры:</p>
+          <div class="formula-block">
+3, 4, 5
+          </div>
+          <p>Считаем XOR:</p>
+          <div class="formula-block">
+3 xor 4 xor 5 = 2
+          </div>
+          <p>
+            XOR ненулевой, значит позиция выигрышна. Нужно найти кучку, которую можно уменьшить до
+            <span class="math">g_i xor 2</span>.
+          </p>
+          <ul>
+            <li><span class="math">3 xor 2 = 1 &lt; 3</span> — подходит;</li>
+            <li><span class="math">4 xor 2 = 6 &gt; 4</span> — не подходит;</li>
+            <li><span class="math">5 xor 2 = 7 &gt; 5</span> — не подходит.</li>
+          </ul>
+          <p>
+            Уменьшаем кучку 3 до 1. Получаем:
+          </p>
+          <div class="formula-block">
+1 xor 4 xor 5 = 0
+          </div>
+        </div>
+      </section>
+
+      <section id="code">
+        <h2>14. Алгоритмы и код</h2>
+
+        <h3>14.1. Выигрышность в произвольном DAG</h3>
+
+        <p>
+          Если нужно определить только win/lose, достаточно DP по графу.
+        </p>
+
+        <pre><code>vector&lt;vector&lt;int&gt;&gt; g;
+vector&lt;int&gt; state; // -1 = unknown, 0 = lose, 1 = win
+
+int winlose(int v) {
+    if (state[v] != -1) {
+        return state[v];
+    }
+
+    // Если ходов нет, позиция проигрышная.
+    if (g[v].empty()) {
+        return state[v] = 0;
+    }
+
+    // Если есть ход в проигрышную позицию, текущая выигрышная.
+    for (int to : g[v]) {
+        if (winlose(to) == 0) {
+            return state[v] = 1;
+        }
+    }
+
+    // Иначе все ходы ведут в выигрышные позиции.
+    return state[v] = 0;
+}</code></pre>
+
+        <h3>14.2. Grundy-функция в произвольном DAG</h3>
+
+        <pre><code>vector&lt;vector&lt;int&gt;&gt; g;
+vector&lt;int&gt; grundy;
+
+int calc_grundy(int v) {
+    if (grundy[v] != -1) {
+        return grundy[v];
+    }
+
+    vector&lt;int&gt; used;
+
+    for (int to : g[v]) {
+        used.push_back(calc_grundy(to));
+    }
+
+    sort(used.begin(), used.end());
+    used.erase(unique(used.begin(), used.end()), used.end());
+
+    int mex = 0;
+    for (int x : used) {
+        if (x == mex) {
+            mex++;
+        } else if (x &gt; mex) {
+            break;
+        }
+    }
+
+    return grundy[v] = mex;
+}</code></pre>
+
+        <h3>14.3. Более быстрый MEX через массив меток</h3>
+
+        <p>
+          Если состояний много, не хочется каждый раз сортировать. Можно использовать массив <span class="math">seen</span>
+          с временными метками.
+        </p>
+
+        <pre><code>vector&lt;vector&lt;int&gt;&gt; g;
+vector&lt;int&gt; grundy;
+vector&lt;int&gt; seen;
+int timer = 1;
+
+int calc_grundy(int v) {
+    if (grundy[v] != -1) {
+        return grundy[v];
+    }
+
+    int cur_timer = timer++;
+
+    for (int to : g[v]) {
+        int x = calc_grundy(to);
+        if (x &gt;= (int)seen.size()) {
+            seen.resize(x + 1, 0);
+        }
+        seen[x] = cur_timer;
+    }
+
+    int mex = 0;
+    while (mex &lt; (int)seen.size() &amp;&amp; seen[mex] == cur_timer) {
+        mex++;
+    }
+
+    return grundy[v] = mex;
+}</code></pre>
+
+        <h3>14.4. Победа в сумме игр</h3>
+
+        <pre><code>int xorsum = 0;
+
+for (int component : components) {
+    xorsum ^= calc_grundy(component);
+}
+
+if (xorsum == 0) {
+    cout &lt;&lt; "LOSE\n";
+} else {
+    cout &lt;&lt; "WIN\n";
+}</code></pre>
+
+        <h3>14.5. Ним с несколькими кучками</h3>
+
+        <pre><code>int xorsum = 0;
+
+for (int pile : piles) {
+    xorsum ^= pile;
+}
+
+if (xorsum == 0) {
+    cout &lt;&lt; "Second player wins\n";
+} else {
+    cout &lt;&lt; "First player wins\n";
+}</code></pre>
+      </section>
+
+      <section id="pitfalls">
+        <h2>15. Частые ошибки и тонкости</h2>
+
+        <div class="warning">
+          <div class="tag">Ошибка 1</div>
+          <p>
+            Думать, что любая выигрышная игра эквивалентна <span class="math">*1</span>. Это неверно.
+            Например, <span class="math">*1</span>, <span class="math">*2</span>, <span class="math">*3</span> все выигрышны,
+            но попарно неэквивалентны.
+          </p>
+        </div>
+
+        <div class="warning">
+          <div class="tag">Ошибка 2</div>
+          <p>
+            Путать значение win/lose и Grundy-число. Win/lose — это только проверка, равно ли Grundy-число нулю.
+          </p>
+          <div class="formula-block">
+A проигрышна ⇔ g(A) = 0
+A выигрышна ⇔ g(A) ≠ 0
+          </div>
+        </div>
+
+        <div class="warning">
+          <div class="tag">Ошибка 3</div>
+          <p>
+            Считать, что Grundy суммы равен обычной сумме Grundy-чисел. На самом деле используется XOR:
+          </p>
+          <div class="formula-block">
+g(A + B) = g(A) xor g(B)
+          </div>
+        </div>
+
+        <div class="warning">
+          <div class="tag">Ошибка 4</div>
+          <p>
+            Применять теорему Шпрага—Гранди к играм с циклами без дополнительной обработки. Теорема в этой форме
+            работает для конечных ациклических игр.
+          </p>
+        </div>
+
+        <div class="warning">
+          <div class="tag">Ошибка 5</div>
+          <p>
+            Забывать, что ход в сумме игр делается только в одной компоненте. Нельзя за один ход изменить сразу
+            несколько кучек или несколько независимых игр.
+          </p>
+        </div>
+      </section>
+
+      <section id="summary">
+        <h2>16. Короткая шпаргалка</h2>
+
+        <div class="grid">
+          <div class="card">
+            <h3>Win/Lose</h3>
+            <ul class="checklist">
+              <li>Нет ходов → проигрыш.</li>
+              <li>Есть ход в проигрыш → выигрыш.</li>
+              <li>Все ходы в выигрыш → проигрыш.</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3>Сумма игр</h3>
+            <ul class="checklist">
+              <li>Состояние: <span class="math">A+B</span>.</li>
+              <li>За ход меняется ровно одна компонента.</li>
+              <li><span class="math">*0</span> — нейтральная проигрышная игра.</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3>Симметрия</h3>
+            <ul class="checklist">
+              <li><span class="math">A+A</span> проигрышна.</li>
+              <li>Ответ: копировать ход соперника в другой компоненте.</li>
+              <li>Нужно, чтобы игра была конечной и ациклической.</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3>Grundy</h3>
+            <ul class="checklist">
+              <li><span class="math">g(A)=mex({g(B) | A→B})</span>.</li>
+              <li><span class="math">g(A)=0</span> ⇔ позиция проигрышна.</li>
+              <li><span class="math">g(A)≠0</span> ⇔ позиция выигрышна.</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3>Ним</h3>
+            <ul class="checklist">
+              <li><span class="math">*i</span> — кучка из <span class="math">i</span> камней.</li>
+              <li>Из <span class="math">*i</span> можно перейти в любую <span class="math">*j</span>, где <span class="math">j&lt;i</span>.</li>
+              <li><span class="math">*i + *j ∼ *(i xor j)</span>.</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3>Сумма компонент</h3>
+            <ul class="checklist">
+              <li>Считаем Grundy каждой компоненты.</li>
+              <li>Берём XOR всех значений.</li>
+              <li>XOR = 0 → проигрыш.</li>
+              <li>XOR ≠ 0 → выигрыш.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="formula-block">
+Главная формула:
+
+A₁ + A₂ + ... + Aₙ ∼ *(g(A₁) xor g(A₂) xor ... xor g(Aₙ))
+        </div>
+
+        <div class="theorem">
+          <div class="tag">Что надо уметь доказать на контрольной</div>
+          <ol>
+            <li>Критерий выигрышных и проигрышных состояний.</li>
+            <li>Почему <span class="math">A+A</span> проигрышна.</li>
+            <li>Почему <span class="math">*i</span> и <span class="math">*j</span> неэквивалентны при <span class="math">i≠j</span>.</li>
+            <li>Почему Grundy-число считается через MEX.</li>
+            <li>Почему сумма игр сводится к XOR Grundy-чисел.</li>
+            <li>Почему XOR = 0 означает проигрыш, а XOR ≠ 0 означает выигрыш.</li>
+          </ol>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
