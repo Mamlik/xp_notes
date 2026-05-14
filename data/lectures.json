@@ -133,6 +133,18 @@
           ],
           "href": "lectures/algorithms/game_theory_sprague_grundy_notes.html",
           "status": "published"
+        },
+        {
+          "title": "Лемма Бёрнсайда, Теорема Пойа",
+          "description": "Лекция о действиях групп на множествах и методах подсчёта объектов с учётом симметрий. Рассматриваются орбиты, стабилизаторы, неподвижные точки, лемма Бёрнсайда, теорема Пойа, а также применения к задачам о раскрасках, ожерельях и симметриях фигур.\nКомбинаторика",
+          "tags": [
+            "grouptheory",
+            "burnside",
+            "polya",
+            "combinatorics"
+          ],
+          "href": "lectures/algorithms/burnside_polya_lecture10_notes.html",
+          "status": "published"
         }
       ]
     },
