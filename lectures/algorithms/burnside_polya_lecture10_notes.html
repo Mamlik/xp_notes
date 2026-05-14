@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Лекция №10 — Лемма Бёрнсайда и теорема Пойа</title>
+<style>
+  :root{
+    --bg:#f7f7fb;
+    --paper:#ffffff;
+    --ink:#222;
+    --muted:#5f6673;
+    --accent:#7a1212;
+    --accent2:#1f4f82;
+    --soft:#f0f3f8;
+    --soft2:#fff4e8;
+    --border:#d9dde8;
+    --code:#1f2937;
+    --green:#0f766e;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,"Noto Sans",sans-serif;
+    line-height:1.62;
+  }
+  .page{
+    max-width:1160px;
+    margin:0 auto;
+    padding:32px 20px 80px;
+  }
+  .paper{
+    background:var(--paper);
+    border:1px solid var(--border);
+    box-shadow:0 8px 28px rgba(20,30,50,.08);
+    border-radius:22px;
+    overflow:hidden;
+  }
+  header{
+    padding:38px 44px 30px;
+    background:linear-gradient(135deg,#fff 0%,#f7e9e9 45%,#eef5ff 100%);
+    border-bottom:1px solid var(--border);
+  }
+  h1{margin:0 0 10px;font-size:38px;line-height:1.12;color:var(--accent);}
+  .subtitle{font-size:18px;color:var(--muted);max-width:900px;}
+  .content{padding:34px 44px 48px;}
+  h2{margin:42px 0 16px;font-size:28px;line-height:1.2;color:var(--accent);border-bottom:2px solid #f0d4d4;padding-bottom:8px;}
+  h3{margin:30px 0 12px;font-size:22px;color:#333;}
+  h4{margin:22px 0 10px;font-size:18px;color:var(--accent2);}
+  p{margin:12px 0;}
+  ul,ol{margin:12px 0 12px 28px;padding:0;}
+  li{margin:6px 0;}
+  .toc{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:10px;
+    margin:24px 0 8px;
+  }
+  .toc a{
+    display:block;
+    text-decoration:none;
+    color:#1f2937;
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:10px 13px;
+  }
+  .toc a:hover{border-color:#b98b8b;background:#fffafa;}
+  .box,.proof,.example,.warn,.formula,.algo{
+    border-radius:16px;
+    padding:16px 18px;
+    margin:16px 0;
+    border:1px solid var(--border);
+  }
+  .box{background:var(--soft);}
+  .proof{background:#fbfcff;border-left:5px solid var(--accent2);}
+  .example{background:#f2fbf8;border-left:5px solid var(--green);}
+  .warn{background:#fff8ed;border-left:5px solid #d97706;}
+  .formula{background:#f8f8f8;border-left:5px solid var(--accent);font-size:18px;}
+  .algo{background:#f5f7ff;border-left:5px solid #6366f1;}
+  .tag{display:inline-block;background:#7a1212;color:#fff;border-radius:999px;padding:2px 9px;font-size:13px;margin-right:6px;}
+  code,pre{font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;}
+  code{background:#eef1f6;border:1px solid #dde3ed;border-radius:6px;padding:1px 5px;color:#111827;}
+  pre{
+    background:#111827;color:#e5e7eb;border-radius:14px;padding:16px 18px;overflow:auto;line-height:1.5;
+    border:1px solid #0b1220;
+  }
+  table{width:100%;border-collapse:collapse;margin:18px 0;border:1px solid var(--border);font-size:15px;}
+  th,td{border:1px solid var(--border);padding:10px 12px;vertical-align:top;}
+  th{background:#f1f3f8;text-align:left;}
+  .center{text-align:center;}
+  .small{font-size:14px;color:var(--muted);}
+  .math{font-family:"Times New Roman",serif;font-size:1.08em;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media(max-width:800px){.content,header{padding-left:22px;padding-right:22px}.grid2{grid-template-columns:1fr}h1{font-size:30px}}
+  .diagram{
+    display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:14px 0;
+  }
+  .node{padding:9px 13px;border:1px solid var(--border);border-radius:12px;background:#fff;min-width:74px;text-align:center;}
+  .arrow{font-size:22px;color:var(--muted);}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="paper">
+    <header>
+      <h1>Лекция №10. Лемма Бёрнсайда, теорема Пойа</h1>
+      <div class="subtitle">
+        Подробный конспект: группы и действия групп, орбиты и стабилизаторы, неподвижные точки,
+        доказательство леммы Бёрнсайда через таблицу «элементы × действия», теорема Пойа и применения
+        к ожерельям и раскраскам прямоугольника.
+      </div>
+      <div style="margin-top:16px">
+        <span class="tag">Burnside</span><span class="tag">Polya</span><span class="tag">Symmetry</span>
+      </div>
+    </header>
+
+    <div class="content">
+      <h2>Содержание</h2>
+      <nav class="toc">
+        <a href="#motivation">1. Зачем нужна лемма Бёрнсайда</a>
+        <a href="#monoid-group">2. Моноид, группа, перестановки</a>
+        <a href="#actions">3. Действие группы на множестве</a>
+        <a href="#cycles">4. Перестановки и циклы</a>
+        <a href="#closed">5. Композиция действий и замкнутость</a>
+        <a href="#equivalence">6. Эквивалентность, орбиты, стабилизаторы</a>
+        <a href="#examples">7. Примеры действий</a>
+        <a href="#stabilizer-fixed">8. Стабилизаторы и неподвижные точки</a>
+        <a href="#burnside">9. Лемма Бёрнсайда: формулы и доказательство</a>
+        <a href="#how-to-use">10. Как применять в задачах</a>
+        <a href="#polya">11. Теорема Пойа</a>
+        <a href="#necklaces">12. Ожерелья и циклические сдвиги</a>
+        <a href="#rectangle">13. Раскраски прямоугольника с отражениями</a>
+        <a href="#summary">14. Шпаргалка</a>
+      </nav>
+
+      <section id="motivation">
+        <h2>1. Зачем нужна лемма Бёрнсайда</h2>
+        <p>
+          Во многих задачах нужно посчитать количество объектов <b>с точностью до симметрии</b>.
+          Например, две раскраски ожерелья могут отличаться только поворотом. Если физически повернуть ожерелье,
+          оно остаётся тем же самым ожерельем. Значит, обычный подсчёт всех массивов длины <span class="math">n</span>
+          переучитывает один и тот же объект много раз.
+        </p>
+
+        <div class="example">
+          <b>Пример.</b> Есть бинарная строка длины 4: <code>1000</code>. При циклических сдвигах получаем:
+          <pre>1000 → 0100 → 0010 → 0001</pre>
+          Если мы считаем строки как массивы, это 4 разных объекта. Если считаем ожерелья с точностью до поворота,
+          это один объект.
+        </div>
+
+        <p>
+          Основная идея лекции: симметрии образуют группу <span class="math">G</span>, которая действует на множестве объектов
+          <span class="math">X</span>. Объекты, переходящие друг в друга действиями группы, считаются одинаковыми.
+          Нужно посчитать число классов эквивалентности, то есть число <b>орбит</b>.
+        </p>
+
+        <div class="formula">
+          <b>Лемма Бёрнсайда:</b><br>
+          <span class="math">число орбит = (1 / |G|) · Σ<sub>g∈G</sub> |Fix(g)|</span>,<br>
+          где <span class="math">Fix(g)</span> — множество объектов, которые не меняются под действием <span class="math">g</span>.
+        </div>
+      </section>
+
+      <section id="monoid-group">
+        <h2>2. Моноид, группа, перестановки</h2>
+
+        <h3>2.1. Моноид</h3>
+        <p>
+          <b>Моноид</b> — это множество <span class="math">M</span> с бинарной операцией <span class="math">⋅</span>, для которой выполнены два свойства:
+        </p>
+        <ol>
+          <li><b>Ассоциативность:</b> <span class="math">(a⋅b)⋅c = a⋅(b⋅c)</span>.</li>
+          <li><b>Нейтральный элемент:</b> существует <span class="math">e</span>, такой что <span class="math">e⋅a = a⋅e = a</span>.</li>
+        </ol>
+        <p>
+          В моноиде не обязаны существовать обратные элементы.
+        </p>
+
+        <div class="example">
+          <b>Примеры моноидов:</b>
+          <ul>
+            <li>натуральные числа с операцией сложения и нейтральным элементом 0;</li>
+            <li>строки с операцией конкатенации и пустой строкой;</li>
+            <li>функции из множества в себя с операцией композиции и тождественной функцией.</li>
+          </ul>
+        </div>
+
+        <h3>2.2. Группа</h3>
+        <p>
+          <b>Группа</b> — это моноид, где у каждого элемента есть обратный.
+          Формально множество <span class="math">G</span> с операцией <span class="math">⋅</span> является группой, если:
+        </p>
+        <ol>
+          <li><b>Замкнутость:</b> если <span class="math">a,b∈G</span>, то <span class="math">a⋅b∈G</span>.</li>
+          <li><b>Ассоциативность:</b> <span class="math">(a⋅b)⋅c = a⋅(b⋅c)</span>.</li>
+          <li><b>Нейтральный элемент:</b> существует <span class="math">e∈G</span>, такой что <span class="math">e⋅a=a⋅e=a</span>.</li>
+          <li><b>Обратный элемент:</b> для каждого <span class="math">a∈G</span> существует <span class="math">a^{-1}∈G</span>, такой что <span class="math">a⋅a^{-1}=a^{-1}⋅a=e</span>.</li>
+        </ol>
+
+        <div class="warn">
+          В комбинаторике симметрий чаще всего группы появляются как <b>группы перестановок</b>. Элемент группы — это действие,
+          которое переупорядочивает позиции объекта. Например, поворот ожерелья, отражение прямоугольника, перестановка элементов массива.
+        </div>
+
+        <h3>2.3. Перестановка как биекция</h3>
+        <p>
+          Перестановка множества <span class="math">{1,2,...,n}</span> — это биекция этого множества в себя.
+          Иначе говоря, каждому старому индексу она сопоставляет новый индекс, причём никакие два элемента не склеиваются.
+        </p>
+        <p>
+          Перестановки удобно записывать так:
+        </p>
+        <pre>π = [2, 3, 1, 4]</pre>
+        <p>
+          Это значит:
+        </p>
+        <pre>π(1)=2, π(2)=3, π(3)=1, π(4)=4.</pre>
+        <p>
+          Все перестановки на <span class="math">n</span> элементах образуют группу <span class="math">S_n</span>, называемую
+          <b>симметрической группой</b>. Операция — композиция перестановок.
+        </p>
+      </section>
+
+      <section id="actions">
+        <h2>3. Действие группы на множестве</h2>
+        <p>
+          Пусть есть группа <span class="math">G</span> и множество объектов <span class="math">X</span>.
+          <b>Действие группы</b> на множестве — это правило, которое каждому элементу группы <span class="math">g∈G</span>
+          и каждому объекту <span class="math">x∈X</span> сопоставляет новый объект <span class="math">g·x∈X</span>.
+        </p>
+
+        <p>Действие должно удовлетворять двум условиям:</p>
+        <ol>
+          <li><b>Нейтральный элемент ничего не меняет:</b> <span class="math">e·x = x</span>.</li>
+          <li><b>Композиция действий согласована с операцией группы:</b> <span class="math">(gh)·x = g·(h·x)</span>.</li>
+        </ol>
+
+        <div class="example">
+          <b>Пример.</b> Пусть <span class="math">X</span> — множество массивов длины <span class="math">n</span>,
+          а <span class="math">G</span> — группа циклических сдвигов. Тогда действие сдвига на массив — это перенос элементов по кругу.
+          Например:
+          <pre>[a,b,c,d] --сдвиг на 1--> [d,a,b,c]</pre>
+        </div>
+
+        <p>
+          Важно: группа действует не обязательно на себе. Она может действовать на геометрических фигурах, раскрасках,
+          строках, массивах, графах, точках плоскости и так далее.
+        </p>
+      </section>
+
+      <section id="cycles">
+        <h2>4. Перестановки и циклы</h2>
+        <p>
+          Любую перестановку можно разложить на независимые циклы. Цикл показывает, как элементы переходят друг в друга
+          при многократном применении перестановки.
+        </p>
+
+        <div class="example">
+          Рассмотрим перестановку:
+          <pre>π(1)=3, π(3)=5, π(5)=1, π(2)=4, π(4)=2</pre>
+          Тогда циклическая запись:
+          <pre>π = (1 3 5)(2 4)</pre>
+          Первый цикл длины 3, второй цикл длины 2.
+        </div>
+
+        <p>
+          Циклы важны для теоремы Пойа. Если перестановка действует на позиции раскраски, то чтобы раскраска была неподвижна,
+          все позиции внутри одного цикла должны иметь одинаковый цвет.
+        </p>
+
+        <div class="formula">
+          Если перестановка имеет <span class="math">c(π)</span> циклов, а доступно <span class="math">k</span> цветов,
+          то число раскрасок, неподвижных относительно этой перестановки, равно:<br>
+          <span class="math">k^{c(π)}</span>.
+        </div>
+
+        <div class="proof">
+          <b>Доказательство.</b> Пусть позиции внутри одного цикла переходят друг в друга. Если раскраска не меняется после перестановки,
+          то цвет первой позиции цикла должен совпадать с цветом второй, второй с третьей и так далее. Значит, весь цикл обязан иметь один цвет.
+          Для каждого цикла можно независимо выбрать один из <span class="math">k</span> цветов. Если циклов <span class="math">c(π)</span>,
+          получаем <span class="math">k·k·...·k = k^{c(π)}</span>.
+        </div>
+      </section>
+
+      <section id="closed">
+        <h2>5. Композиция действий и замкнутость</h2>
+
+        <h3>5.1. Композиция действий</h3>
+        <p>
+          Если у нас есть два действия <span class="math">g</span> и <span class="math">h</span>, их композиция означает:
+          сначала применить <span class="math">h</span>, потом <span class="math">g</span>. В групповой записи это обычно пишут как
+          <span class="math">g∘h</span> или просто <span class="math">gh</span>.
+        </p>
+
+        <div class="example">
+          Пусть массив <code>[1,2,3,4]</code>. Сначала сдвиг на 1 вправо:
+          <pre>[1,2,3,4] → [4,1,2,3]</pre>
+          Потом ещё сдвиг на 1 вправо:
+          <pre>[4,1,2,3] → [3,4,1,2]</pre>
+          Композиция двух сдвигов на 1 — это сдвиг на 2.
+        </div>
+
+        <h3>5.2. Замкнутая группа действий</h3>
+        <p>
+          Множество действий замкнуто, если композиция любых двух действий из множества снова лежит в этом множестве.
+          Для группы это обязательное свойство.
+        </p>
+
+        <div class="box">
+          Например, все циклические сдвиги массива длины <span class="math">n</span> образуют группу:
+          <ul>
+            <li>сдвиг на 0 — нейтральный элемент;</li>
+            <li>сдвиг на <span class="math">a</span> после сдвига на <span class="math">b</span> — это сдвиг на <span class="math">a+b mod n</span>;</li>
+            <li>обратный к сдвигу на <span class="math">a</span> — сдвиг на <span class="math">n-a</span>.</li>
+          </ul>
+        </div>
+
+        <h3>5.3. Пример незамкнутого набора: элементарные транспозиции</h3>
+        <p>
+          Элементарная транспозиция — это swap соседних элементов, например <span class="math">s_i=(i,i+1)</span>.
+          Набор только элементарных транспозиций сам по себе не является группой, потому что он не замкнут относительно композиции.
+        </p>
+
+        <div class="example">
+          В <span class="math">S_3</span> возьмём соседние swap:
+          <pre>s1 = (1 2), s2 = (2 3)</pre>
+          Их композиция:
+          <pre>s1 ∘ s2</pre>
+          даёт цикл длины 3, например <span class="math">(1 2 3)</span> или <span class="math">(1 3 2)</span> в зависимости от порядка композиции.
+          Это уже не элементарная транспозиция. Значит, множество <span class="math">{s1,s2}</span> не замкнуто.
+        </div>
+
+        <p>
+          Однако если взять все композиции элементарных транспозиций, то получится вся группа перестановок <span class="math">S_n</span>.
+          Поэтому говорят, что элементарные транспозиции <b>порождают</b> симметрическую группу, но сами не образуют группу без замыкания.
+        </p>
+      </section>
+
+      <section id="equivalence">
+        <h2>6. Эквивалентность, орбиты, стабилизаторы</h2>
+
+        <h3>6.1. Отношение эквивалентности с точностью до действия группы</h3>
+        <p>
+          Пусть группа <span class="math">G</span> действует на множестве <span class="math">X</span>.
+          Будем считать два объекта <span class="math">x,y∈X</span> эквивалентными, если существует действие <span class="math">g∈G</span>,
+          переводящее один объект в другой:
+        </p>
+        <div class="formula"><span class="math">x ∼ y ⇔ ∃g∈G: g·x = y.</span></div>
+
+        <div class="proof">
+          <b>Докажем, что это отношение эквивалентности.</b>
+          <ol>
+            <li><b>Рефлексивность:</b> <span class="math">x∼x</span>, потому что нейтральный элемент <span class="math">e</span> даёт <span class="math">e·x=x</span>.</li>
+            <li><b>Симметричность:</b> если <span class="math">x∼y</span>, то <span class="math">g·x=y</span>. Так как <span class="math">g</span> обратим, применяем <span class="math">g^{-1}</span>: <span class="math">g^{-1}·y=x</span>. Значит, <span class="math">y∼x</span>.</li>
+            <li><b>Транзитивность:</b> если <span class="math">x∼y</span> и <span class="math">y∼z</span>, то <span class="math">g·x=y</span>, <span class="math">h·y=z</span>. Тогда <span class="math">(h g)·x=h·(g·x)=h·y=z</span>. Значит, <span class="math">x∼z</span>.</li>
+          </ol>
+        </div>
+
+        <h3>6.2. Орбита</h3>
+        <p>
+          <b>Орбита</b> элемента <span class="math">x</span> — это множество всех объектов, которые можно получить из <span class="math">x</span>
+          действиями группы:
+        </p>
+        <div class="formula"><span class="math">Orb(x) = { g·x | g∈G }.</span></div>
+        <p>
+          Орбита — это класс эквивалентности объекта <span class="math">x</span>. Поэтому число разных объектов с точностью до симметрий — это число орбит.
+        </p>
+
+        <h3>6.3. Стабилизатор</h3>
+        <p>
+          <b>Стабилизатор</b> элемента <span class="math">x</span> — это множество действий группы, которые оставляют <span class="math">x</span> на месте:
+        </p>
+        <div class="formula"><span class="math">Stab(x) = { g∈G | g·x = x }.</span></div>
+
+        <p>
+          Стабилизатор — это подгруппа группы <span class="math">G</span>.
+        </p>
+        <div class="proof">
+          <b>Доказательство.</b>
+          <ul>
+            <li>Нейтральный элемент стабилизирует любой <span class="math">x</span>, потому что <span class="math">e·x=x</span>.</li>
+            <li>Если <span class="math">g·x=x</span> и <span class="math">h·x=x</span>, то <span class="math">(gh)·x=g·(h·x)=g·x=x</span>. Значит, композиция тоже в стабилизаторе.</li>
+            <li>Если <span class="math">g·x=x</span>, то применяя <span class="math">g^{-1}</span>, получаем <span class="math">g^{-1}·x=x</span>. Значит, обратный элемент тоже в стабилизаторе.</li>
+          </ul>
+          Следовательно, <span class="math">Stab(x)</span> — подгруппа.
+        </div>
+
+        <h3>6.4. Неподвижная точка</h3>
+        <p>
+          Для фиксированного действия <span class="math">g∈G</span> объект <span class="math">x</span> называется <b>неподвижной точкой</b>, если:
+        </p>
+        <div class="formula"><span class="math">g·x = x.</span></div>
+        <p>
+          Множество всех неподвижных точек действия <span class="math">g</span> обозначают:
+        </p>
+        <div class="formula"><span class="math">Fix(g) = { x∈X | g·x = x }.</span></div>
+      </section>
+
+      <section id="examples">
+        <h2>7. Примеры действий групп</h2>
+
+        <h3>7.1. Точки на плоскости и изменение масштаба</h3>
+        <p>
+          Пусть <span class="math">X = R^2</span>, а группа состоит из преобразований масштабирования:
+        </p>
+        <div class="formula"><span class="math">s_λ(x,y) = (λx, λy)</span>, где <span class="math">λ≠0</span>.</div>
+        <p>
+          Композиция масштабирований:</p>
+        <div class="formula"><span class="math">s_λ ∘ s_μ = s_{λμ}.</span></div>
+        <p>
+          Нейтральный элемент — <span class="math">λ=1</span>. Обратный — <span class="math">λ^{-1}</span>.
+        </p>
+        <p>
+          Орбиты: если разрешены все положительные масштабы, то точка движется по лучу из начала координат.
+          Нулевая точка <span class="math">(0,0)</span> остаётся неподвижной при любом масштабировании.
+        </p>
+
+        <h3>7.2. Точки на плоскости и поворот</h3>
+        <p>
+          Пусть группа — повороты вокруг начала координат на углы, кратные <span class="math">90°</span>:
+        </p>
+        <div class="formula"><span class="math">G = {0°,90°,180°,270°}.</span></div>
+        <p>
+          Это группа из четырёх элементов. Орбита обычной точки состоит из четырёх точек. Но точка <span class="math">(0,0)</span>
+          фиксируется всеми поворотами, поэтому её стабилизатор — вся группа.
+        </p>
+
+        <h3>7.3. Массивы и перестановки</h3>
+        <p>
+          Пусть <span class="math">X</span> — множество массивов длины <span class="math">n</span>. Перестановка позиций действует на массив,
+          переставляя его элементы.
+        </p>
+        <pre>array = [a1,a2,a3]
+π = (1 2 3)
+π·array = [a3,a1,a2]   // один из вариантов соглашения о направлении</pre>
+        <p>
+          Важно: в задачах нужно один раз выбрать соглашение о направлении действия. Для количества орбит это обычно не влияет,
+          потому что группа всё равно содержит обратные действия.
+        </p>
+
+        <h3>7.4. Массивы и циклические сдвиги</h3>
+        <p>
+          Циклические сдвиги длины <span class="math">n</span> образуют группу <span class="math">C_n</span>.
+          Элемент <span class="math">r^t</span> — сдвиг на <span class="math">t</span> позиций.
+        </p>
+        <p>
+          Для строки длины 6 сдвиг на 2 позиции разбивает позиции на циклы:</p>
+        <pre>0 → 2 → 4 → 0
+1 → 3 → 5 → 1</pre>
+        <p>
+          То есть у перестановки два цикла длины 3. Если цветов <span class="math">k</span>, то неподвижных раскрасок будет
+          <span class="math">k^2</span>: один цвет выбирается для первого цикла, один для второго.
+        </p>
+      </section>
+
+      <section id="stabilizer-fixed">
+        <h2>8. Сумма мощностей стабилизаторов и сумма неподвижных точек</h2>
+        <p>
+          Это ключевая техническая лемма, из которой почти сразу следует лемма Бёрнсайда.
+        </p>
+
+        <div class="formula">
+          <span class="math">Σ<sub>x∈X</sub> |Stab(x)| = Σ<sub>g∈G</sub> |Fix(g)|.</span>
+        </div>
+
+        <h3>8.1. Идея через таблицу</h3>
+        <p>
+          Рассмотрим таблицу, где строки — элементы <span class="math">x∈X</span>, столбцы — действия <span class="math">g∈G</span>.
+          В ячейке ставим 1, если <span class="math">g·x=x</span>, и 0 иначе.
+        </p>
+
+        <table>
+          <tr><th></th><th>g₁</th><th>g₂</th><th>g₃</th><th>...</th></tr>
+          <tr><th>x₁</th><td>1/0</td><td>1/0</td><td>1/0</td><td>...</td></tr>
+          <tr><th>x₂</th><td>1/0</td><td>1/0</td><td>1/0</td><td>...</td></tr>
+          <tr><th>x₃</th><td>1/0</td><td>1/0</td><td>1/0</td><td>...</td></tr>
+        </table>
+
+        <p>
+          Если суммировать единицы по строке <span class="math">x</span>, мы считаем, сколько действий фиксируют <span class="math">x</span>,
+          то есть <span class="math">|Stab(x)|</span>.
+        </p>
+        <p>
+          Если суммировать единицы по столбцу <span class="math">g</span>, мы считаем, сколько объектов фиксирует действие <span class="math">g</span>,
+          то есть <span class="math">|Fix(g)|</span>.
+        </p>
+
+        <div class="proof">
+          <b>Доказательство.</b> Обе суммы считают одно и то же множество пар:
+          <div class="formula"><span class="math">P = { (x,g) ∈ X×G | g·x=x }.</span></div>
+          Если группировать пары по <span class="math">x</span>, получаем <span class="math">Σ_x |Stab(x)|</span>.
+          Если группировать пары по <span class="math">g</span>, получаем <span class="math">Σ_g |Fix(g)|</span>.
+          Так как множество пар одно и то же, суммы равны.
+        </div>
+      </section>
+
+      <section id="burnside">
+        <h2>9. Лемма Бёрнсайда</h2>
+
+        <h3>9.1. Формулировка через неподвижные точки</h3>
+        <div class="formula">
+          Пусть конечная группа <span class="math">G</span> действует на конечном множестве <span class="math">X</span>.
+          Тогда число орбит равно:<br>
+          <span class="math">|X/G| = (1/|G|) Σ<sub>g∈G</sub> |Fix(g)|.</span>
+        </div>
+
+        <p>
+          Здесь <span class="math">X/G</span> — множество орбит, то есть множество объектов с точностью до действия группы.
+        </p>
+
+        <h3>9.2. Формулировка через стабилизаторы</h3>
+        <p>
+          Иногда формулируют так: число орбит равно средней мощности стабилизатора элементов множества, но аккуратнее:
+        </p>
+        <div class="formula">
+          <span class="math">|X/G| = (1/|G|) Σ<sub>x∈X</sub> |Stab(x)|.</span>
+        </div>
+        <p>
+          А по лемме из предыдущего раздела это равно формуле через неподвижные точки:
+        </p>
+        <div class="formula">
+          <span class="math">(1/|G|) Σ<sub>x∈X</sub> |Stab(x)| = (1/|G|) Σ<sub>g∈G</sub> |Fix(g)|.</span>
+        </div>
+
+        <h3>9.3. Почему деление именно на |G|</h3>
+        <p>
+          Для каждого элемента <span class="math">x</span> есть фундаментальное соотношение:
+        </p>
+        <div class="formula"><span class="math">|Orb(x)| · |Stab(x)| = |G|.</span></div>
+
+        <div class="proof">
+          <b>Доказательство формулы орбита-стабилизатор.</b>
+          Рассмотрим отображение <span class="math">φ:G→Orb(x)</span>, заданное как <span class="math">φ(g)=g·x</span>.
+          Каждый элемент орбиты получается хотя бы одним действием. Сколько действий дают один и тот же элемент орбиты?
+          Пусть <span class="math">g·x = h·x</span>. Тогда <span class="math">h^{-1}g·x=x</span>, то есть <span class="math">h^{-1}g∈Stab(x)</span>.
+          Отсюда <span class="math">g ∈ h Stab(x)</span>. Значит, прообраз каждого элемента орбиты имеет размер <span class="math">|Stab(x)|</span>.
+          Все <span class="math">|G|</span> действий разбиваются на блоки одинакового размера <span class="math">|Stab(x)|</span>, по одному блоку на элемент орбиты.
+          Следовательно, <span class="math">|G| = |Orb(x)|·|Stab(x)|</span>.
+        </div>
+
+        <h3>9.4. Доказательство Бёрнсайда через орбиты</h3>
+        <p>
+          Нужно доказать:
+        </p>
+        <div class="formula"><span class="math">|X/G| = (1/|G|) Σ<sub>x∈X</sub> |Stab(x)|.</span></div>
+
+        <div class="proof">
+          Разобьём множество <span class="math">X</span> на орбиты. Рассмотрим одну орбиту <span class="math">O</span>.
+          Для любого <span class="math">x∈O</span> по формуле орбита-стабилизатор:
+          <div class="formula"><span class="math">|Stab(x)| = |G| / |O|.</span></div>
+          Внутри орбиты <span class="math">|O|</span> элементов, поэтому вклад всей орбиты в сумму стабилизаторов:
+          <div class="formula"><span class="math">Σ<sub>x∈O</sub>|Stab(x)| = |O| · (|G|/|O|) = |G|.</span></div>
+          То есть каждая орбита даёт ровно <span class="math">|G|</span> в сумму.
+          Если орбит <span class="math">m</span>, то вся сумма равна <span class="math">m|G|</span>.
+          Делим на <span class="math">|G|</span> и получаем <span class="math">m</span>, то есть число орбит.
+        </div>
+
+        <h3>9.5. Доказательство через таблицу «действия × элементы»</h3>
+        <p>
+          Это наиболее полезное доказательство для задач. Мы считаем пары <span class="math">(g,x)</span>, где действие <span class="math">g</span>
+          фиксирует объект <span class="math">x</span>.
+        </p>
+        <div class="formula"><span class="math">P = { (g,x) | g∈G, x∈X, g·x=x }.</span></div>
+        <p>
+          Количество таких пар по действиям:</p>
+        <div class="formula"><span class="math">|P| = Σ<sub>g∈G</sub>|Fix(g)|.</span></div>
+        <p>
+          По лемме Бёрнсайда число орбит — это среднее число объектов, фиксируемых элементом группы:</p>
+        <div class="formula"><span class="math">|X/G| = |P| / |G|.</span></div>
+        <p>
+          Интуитивно каждую орбиту таблица считает ровно <span class="math">|G|</span> раз, поэтому после деления на <span class="math">|G|</span>
+          каждая орбита даёт вклад 1.
+        </p>
+      </section>
+
+      <section id="how-to-use">
+        <h2>10. Как применять лемму Бёрнсайда в задачах</h2>
+
+        <div class="algo">
+          <b>Алгоритм применения:</b>
+          <ol>
+            <li>Определить множество объектов <span class="math">X</span>, которые считаем без учёта симметрий.</li>
+            <li>Определить группу симметрий <span class="math">G</span>.</li>
+            <li>Для каждого действия <span class="math">g∈G</span> посчитать <span class="math">|Fix(g)|</span>.</li>
+            <li>Просуммировать <span class="math">|Fix(g)|</span> по всем <span class="math">g</span>.</li>
+            <li>Разделить на <span class="math">|G|</span>.</li>
+          </ol>
+        </div>
+
+        <p>
+          В задачах удобно выбирать, по чему итерироваться: по элементам группы или по объектам.
+          Формулы эквивалентны:
+        </p>
+        <div class="formula">
+          <span class="math">Σ<sub>g∈G</sub>|Fix(g)| = Σ<sub>x∈X</sub>|Stab(x)|.</span>
+        </div>
+        <p>
+          Обычно объектов намного больше, чем симметрий, поэтому чаще итерируются по действиям группы. Например, раскрасок
+          <span class="math">k^n</span>, а поворотов всего <span class="math">n</span>.
+        </p>
+
+        <div class="warn">
+          Не нужно делить общее число объектов на размер группы напрямую. Это работает только если все орбиты имеют одинаковый размер.
+          Но симметричные объекты имеют большие стабилизаторы и меньшие орбиты. Лемма Бёрнсайда автоматически учитывает это.
+        </div>
+      </section>
+
+      <section id="polya">
+        <h2>11. Теорема Пойа как следствие леммы Бёрнсайда</h2>
+
+        <h3>11.1. Раскраски и перестановки позиций</h3>
+        <p>
+          Пусть есть <span class="math">n</span> позиций и <span class="math">k</span> цветов. Множество объектов <span class="math">X</span> — все раскраски позиций.
+          Значит, без учёта симметрий объектов <span class="math">k^n</span>.
+        </p>
+        <p>
+          Пусть группа <span class="math">G</span> действует на позициях, то есть каждый элемент <span class="math">g∈G</span> — перестановка позиций.
+          Она автоматически действует на раскраски: после перестановки цвет с одной позиции переезжает на другую.
+        </p>
+
+        <h3>11.2. Количество неподвижных раскрасок</h3>
+        <p>
+          Если перестановка <span class="math">g</span> имеет <span class="math">c(g)</span> циклов, то раскраска фиксируется ею тогда и только тогда,
+          когда все позиции внутри каждого цикла имеют один и тот же цвет.
+        </p>
+        <div class="formula"><span class="math">|Fix(g)| = k^{c(g)}.</span></div>
+
+        <h3>11.3. Формула Пойа для обычных k цветов</h3>
+        <div class="formula">
+          <b>Теорема Пойа, базовая форма:</b><br>
+          <span class="math">число раскрасок с точностью до G = (1/|G|) Σ<sub>g∈G</sub> k^{c(g)}.</span>
+        </div>
+
+        <div class="proof">
+          <b>Доказательство.</b> Это прямая подстановка в лемму Бёрнсайда:
+          <div class="formula"><span class="math">|X/G| = (1/|G|) Σ<sub>g∈G</sub>|Fix(g)|.</span></div>
+          Для раскрасок <span class="math">|Fix(g)| = k^{c(g)}</span>, потому что каждый цикл должен быть одноцветным,
+          и для каждого цикла есть <span class="math">k</span> вариантов цвета. Получаем формулу.
+        </div>
+
+        <h3>11.4. Более общая формула с циклами</h3>
+        <p>
+          Если нужно не просто количество раскрасок в <span class="math">k</span> цветов, а учитывать, сколько раз использован каждый цвет,
+          используют <b>цикловой индекс</b>. Для перестановки с <span class="math">m_1</span> циклами длины 1,
+          <span class="math">m_2</span> циклами длины 2 и так далее записывают моном:
+        </p>
+        <div class="formula"><span class="math">a_1^{m_1} a_2^{m_2} ... a_n^{m_n}.</span></div>
+        <p>
+          Цикловой индекс группы:
+        </p>
+        <div class="formula">
+          <span class="math">Z_G(a_1,...,a_n) = (1/|G|) Σ<sub>g∈G</sub> a_1^{m_1(g)} a_2^{m_2(g)} ... a_n^{m_n(g)}.</span>
+        </div>
+        <p>
+          Для простого подсчёта в <span class="math">k</span> цветов можно подставить <span class="math">a_1=a_2=...=k</span>.
+          Тогда моном превращается в <span class="math">k^{m_1+m_2+...}=k^{c(g)}</span>.
+        </p>
+      </section>
+
+      <section id="necklaces">
+        <h2>12. Задача об ожерельях</h2>
+
+        <h3>12.1. Постановка</h3>
+        <p>
+          Есть ожерелье из <span class="math">n</span> бусин. Каждая бусина красится в один из <span class="math">k</span> цветов.
+          Две раскраски считаются одинаковыми, если одна получается из другой поворотом.
+        </p>
+
+        <p>
+          Множество объектов <span class="math">X</span> — все массивы длины <span class="math">n</span> над <span class="math">k</span> цветами.
+          Группа <span class="math">G=C_n</span> — циклические сдвиги на <span class="math">0,1,...,n-1</span> позиций.
+        </p>
+
+        <h3>12.2. Почему циклические сдвиги — группа</h3>
+        <p>
+          Сдвиг на <span class="math">a</span> и потом на <span class="math">b</span> равен сдвигу на <span class="math">a+b mod n</span>.
+          Нейтральный элемент — сдвиг на 0. Обратный к сдвигу на <span class="math">a</span> — сдвиг на <span class="math">n-a</span>.
+          Значит, это замкнутая группа.
+        </p>
+
+        <h3>12.3. Число циклов у сдвига</h3>
+        <p>
+          Рассмотрим сдвиг на <span class="math">t</span> позиций. Он переводит позицию <span class="math">i</span> в
+          <span class="math">i+t mod n</span>. Циклы этой перестановки имеют длину <span class="math">n / gcd(n,t)</span>,
+          а число циклов равно <span class="math">gcd(n,t)</span>.
+        </p>
+
+        <div class="proof">
+          <b>Доказательство.</b> Стартуем из позиции <span class="math">i</span> и многократно прибавляем <span class="math">t</span> по модулю <span class="math">n</span>.
+          Вернёмся в <span class="math">i</span>, когда <span class="math">m t ≡ 0 mod n</span>. Минимальное положительное такое <span class="math">m</span>
+          равно <span class="math">n / gcd(n,t)</span>. Значит, длина каждого цикла такая. Всего позиций <span class="math">n</span>, поэтому
+          число циклов равно <span class="math">n / (n/gcd(n,t)) = gcd(n,t)</span>.
+        </div>
+
+        <h3>12.4. Формула для ожерелий с учётом только поворотов</h3>
+        <p>
+          По Бёрнсайду:</p>
+        <div class="formula">
+          <span class="math">N(n,k) = (1/n) Σ<sub>t=0</sub><sup>n-1</sup> k^{gcd(n,t)}.</span>
+        </div>
+
+        <div class="example">
+          <b>Пример: n=4, k=2.</b>
+          <table>
+            <tr><th>Сдвиг t</th><th>gcd(4,t)</th><th>Неподвижных раскрасок</th></tr>
+            <tr><td>0</td><td>4</td><td>2⁴ = 16</td></tr>
+            <tr><td>1</td><td>1</td><td>2¹ = 2</td></tr>
+            <tr><td>2</td><td>2</td><td>2² = 4</td></tr>
+            <tr><td>3</td><td>1</td><td>2¹ = 2</td></tr>
+          </table>
+          Итого:
+          <div class="formula"><span class="math">(16+2+4+2)/4 = 6.</span></div>
+          Значит, бинарных ожерелий длины 4 с точностью до поворота — 6.
+        </div>
+
+        <h3>12.5. Формула через делители</h3>
+        <p>
+          Часто сумму группируют по значению <span class="math">d=gcd(n,t)</span>. Количество <span class="math">t</span>, для которых
+          <span class="math">gcd(n,t)=d</span>, равно <span class="math">φ(n/d)</span>. Тогда:
+        </p>
+        <div class="formula">
+          <span class="math">N(n,k) = (1/n) Σ<sub>d|n</sub> φ(n/d) k^d.</span>
+        </div>
+        <p>Эквивалентно заменой <span class="math">q=n/d</span>:</p>
+        <div class="formula">
+          <span class="math">N(n,k) = (1/n) Σ<sub>q|n</sub> φ(q) k^{n/q}.</span>
+        </div>
+      </section>
+
+      <section id="rectangle">
+        <h2>13. Раскраски прямоугольника по модулю вертикального и горизонтального отражений</h2>
+
+        <h3>13.1. Постановка</h3>
+        <p>
+          Есть прямоугольная таблица размера <span class="math">n×m</span>. Каждую клетку можно покрасить в один из <span class="math">k</span> цветов.
+          Две раскраски считаются одинаковыми, если одна получается из другой отражением относительно вертикальной оси,
+          горизонтальной оси или их композицией.
+        </p>
+
+        <p>
+          Группа симметрий состоит из четырёх элементов:</p>
+        <table>
+          <tr><th>Элемент</th><th>Действие</th></tr>
+          <tr><td><span class="math">e</span></td><td>ничего не делать</td></tr>
+          <tr><td><span class="math">V</span></td><td>отразить относительно вертикальной оси</td></tr>
+          <tr><td><span class="math">H</span></td><td>отразить относительно горизонтальной оси</td></tr>
+          <tr><td><span class="math">VH</span></td><td>сделать оба отражения, то есть поворот на 180° для прямоугольной сетки</td></tr>
+        </table>
+
+        <p>
+          Эта группа изоморфна <span class="math">C_2×C_2</span>. У неё размер 4.
+        </p>
+
+        <h3>13.2. Метод</h3>
+        <p>
+          Нужно посчитать для каждого из четырёх действий количество раскрасок, которые оно фиксирует.
+          Если действие разбивает клетки на <span class="math">c</span> циклов, то неподвижных раскрасок <span class="math">k^c</span>.
+        </p>
+
+        <h3>13.3. Тождественное действие</h3>
+        <p>
+          Ничего не меняет. Каждая клетка — отдельный цикл. Всего циклов:</p>
+        <div class="formula"><span class="math">nm.</span></div>
+        <p>Значит:</p>
+        <div class="formula"><span class="math">|Fix(e)| = k^{nm}.</span></div>
+
+        <h3>13.4. Вертикальное отражение</h3>
+        <p>
+          Вертикальное отражение меняет столбец <span class="math">j</span> на столбец <span class="math">m+1-j</span>.
+          Строка остаётся той же.
+        </p>
+        <p>
+          В каждой строке столбцы разбиваются на пары, а если <span class="math">m</span> нечётно, центральный столбец остаётся на месте.
+          Число независимых позиций в одной строке равно <span class="math">ceil(m/2)</span>.
+          Для <span class="math">n</span> строк получаем:</p>
+        <div class="formula"><span class="math">c(V) = n · ceil(m/2).</span></div>
+        <p>Значит:</p>
+        <div class="formula"><span class="math">|Fix(V)| = k^{n·ceil(m/2)}.</span></div>
+
+        <div class="example">
+          Если <span class="math">m=5</span>, столбцы группируются так:
+          <pre>1 ↔ 5, 2 ↔ 4, 3 ↔ 3</pre>
+          То есть в каждой строке 3 независимых выбора цвета.
+        </div>
+
+        <h3>13.5. Горизонтальное отражение</h3>
+        <p>
+          Аналогично горизонтальное отражение меняет строку <span class="math">i</span> на строку <span class="math">n+1-i</span>,
+          а столбец оставляет тем же.
+        </p>
+        <p>Число циклов:</p>
+        <div class="formula"><span class="math">c(H) = ceil(n/2) · m.</span></div>
+        <p>Значит:</p>
+        <div class="formula"><span class="math">|Fix(H)| = k^{ceil(n/2)·m}.</span></div>
+
+        <h3>13.6. Композиция вертикального и горизонтального отражений</h3>
+        <p>
+          Действие <span class="math">VH</span> переводит клетку <span class="math">(i,j)</span> в:</p>
+        <div class="formula"><span class="math">(n+1-i, m+1-j).</span></div>
+        <p>
+          Это поворот на 180° вокруг центра прямоугольника. Почти все клетки образуют пары. Одиночная неподвижная клетка
+          существует только если и <span class="math">n</span>, и <span class="math">m</span> нечётны, то есть есть центральная клетка.
+        </p>
+
+        <p>
+          Число циклов для такого действия равно:</p>
+        <div class="formula"><span class="math">c(VH) = ceil(nm/2).</span></div>
+        <p>
+          Почему? Действие имеет порядок 2: каждая клетка либо фиксируется, либо образует пару. Если <span class="math">nm</span>
+          нечётно, есть одна центральная клетка и остальные пары. Если <span class="math">nm</span> чётно, все клетки разбиваются на пары.
+          В обоих случаях число циклов равно <span class="math">ceil(nm/2)</span>.
+        </p>
+        <p>Значит:</p>
+        <div class="formula"><span class="math">|Fix(VH)| = k^{ceil(nm/2)}.</span></div>
+
+        <h3>13.7. Итоговая формула</h3>
+        <p>
+          По лемме Бёрнсайда число раскрасок с точностью до этих отражений равно:</p>
+        <div class="formula">
+          <span class="math">
+          Ans = (1/4) · ( k^{nm} + k^{n·ceil(m/2)} + k^{ceil(n/2)·m} + k^{ceil(nm/2)} ).
+          </span>
+        </div>
+
+        <h3>13.8. Проверка на маленьком примере</h3>
+        <p>
+          Пусть <span class="math">n=1, m=2</span>. Это две клетки в ряд. Формула даёт:</p>
+        <div class="formula">
+          <span class="math">
+          Ans = (1/4)(k^2 + k^{1·ceil(2/2)} + k^{ceil(1/2)·2} + k^{ceil(2/2)})
+          = (1/4)(k^2 + k + k^2 + k)
+          = (k^2+k)/2.
+          </span>
+        </div>
+        <p>
+          Это верно: раскраска двух клеток с точностью до отражения — это неупорядоченная пара цветов. Таких пар с повторениями:
+          <span class="math">k(k+1)/2</span>.
+        </p>
+      </section>
+
+      <section id="summary">
+        <h2>14. Шпаргалка</h2>
+
+        <h3>Основные определения</h3>
+        <table>
+          <tr><th>Термин</th><th>Смысл</th></tr>
+          <tr><td>Группа</td><td>Множество действий с композицией, нейтральным элементом и обратными.</td></tr>
+          <tr><td>Действие группы</td><td>Правило <span class="math">g·x</span>, переводящее объект в объект.</td></tr>
+          <tr><td>Орбита</td><td>Все объекты, достижимые из данного действиями группы.</td></tr>
+          <tr><td>Стабилизатор</td><td>Действия, оставляющие объект неподвижным.</td></tr>
+          <tr><td>Неподвижные точки</td><td>Объекты, которые фиксируются данным действием.</td></tr>
+        </table>
+
+        <h3>Формулы</h3>
+        <div class="formula"><span class="math">Orb(x) = {g·x | g∈G}</span></div>
+        <div class="formula"><span class="math">Stab(x) = {g∈G | g·x=x}</span></div>
+        <div class="formula"><span class="math">Fix(g) = {x∈X | g·x=x}</span></div>
+        <div class="formula"><span class="math">Σ<sub>x∈X</sub>|Stab(x)| = Σ<sub>g∈G</sub>|Fix(g)|</span></div>
+        <div class="formula"><span class="math">|Orb(x)|·|Stab(x)| = |G|</span></div>
+        <div class="formula"><span class="math">|X/G| = (1/|G|)Σ<sub>g∈G</sub>|Fix(g)|</span></div>
+        <div class="formula"><span class="math">для раскрасок: |Fix(g)| = k^{число циклов g}</span></div>
+        <div class="formula"><span class="math">Пойа: |X/G| = (1/|G|)Σ<sub>g∈G</sub>k^{c(g)}</span></div>
+
+        <h3>Что чаще всего спрашивают</h3>
+        <ul>
+          <li>Почему нельзя просто делить на размер группы? Потому что орбиты могут иметь разный размер.</li>
+          <li>Что считает <span class="math">Fix(g)</span>? Объекты, не меняющиеся после конкретной симметрии.</li>
+          <li>Почему в Пойа появляется <span class="math">k^{c(g)}</span>? Потому что каждый цикл перестановки должен быть одноцветным.</li>
+          <li>Почему у сдвига на <span class="math">t</span> циклов <span class="math">gcd(n,t)</span>? Потому что длина цикла равна <span class="math">n/gcd(n,t)</span>.</li>
+          <li>Что делать в задачах? Выписать группу симметрий, посчитать число циклов/фиксированных объектов для каждого действия, усреднить.</li>
+        </ul>
+
+        <h3>Мини-шаблон решения задачи</h3>
+        <pre>1. X = множество всех объектов без учета симметрий.
+2. G = группа допустимых симметрий.
+3. Для каждого g из G:
+      найти, какие условия накладывает g·x = x;
+      посчитать |Fix(g)|.
+4. Ответ = сумма |Fix(g)| / |G|.</pre>
+      </section>
+    </div>
+  </div>
+</div>
+</body>
+</html>
