@@ -155,6 +155,17 @@
           ],
           "href": "lectures/algorithms/mobius_dirichlet_lecture12_notes_revised.html",
           "status": "published"
+        },
+        {
+          "title": "Китайская теорема об остатках",
+          "description": "Китайская теорема об остатках: существование и единственность решения системы сравнений, конструктивное восстановление числа по остаткам и обобщение на невзаимно простые модули. Также разбирается алгоритм Гарнера как практический способ восстановления решения в смешанной системе счисления.",
+          "tags": [
+            "garner",
+            "numbertheory",
+            "modulararithmetic"
+          ],
+          "href": "lectures/algorithms/crt_garner_detailed_notes.html",
+          "status": "published"
         }
       ]
     },
