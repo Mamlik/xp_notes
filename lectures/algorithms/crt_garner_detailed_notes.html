@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Китайская теорема об остатках и алгоритм Гарнера</title>
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+  <style>
+    :root {
+      --bg: #f7f7fb;
+      --card: #ffffff;
+      --ink: #1f2937;
+      --muted: #5b6472;
+      --accent: #7c2d12;
+      --accent2: #1d4ed8;
+      --border: #e5e7eb;
+      --code-bg: #111827;
+      --code-ink: #e5e7eb;
+      --soft: #fff7ed;
+      --soft2: #eff6ff;
+      --good: #166534;
+      --warn: #92400e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.65;
+    }
+    header {
+      background: linear-gradient(135deg, #7c2d12, #1e3a8a);
+      color: white;
+      padding: 56px 24px;
+    }
+    header .wrap { max-width: 1120px; margin: 0 auto; }
+    h1 { margin: 0 0 12px; font-size: clamp(32px, 5vw, 54px); line-height: 1.05; }
+    header p { margin: 0; max-width: 900px; font-size: 19px; opacity: .94; }
+    main { max-width: 1120px; margin: 0 auto; padding: 28px 20px 80px; }
+    nav.toc {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 22px 26px;
+      margin: -52px 0 28px;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, .10);
+    }
+    nav.toc h2 { margin-top: 0; }
+    nav.toc ol { columns: 2; column-gap: 36px; padding-left: 20px; }
+    nav.toc li { break-inside: avoid; margin: 6px 0; }
+    a { color: var(--accent2); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 28px;
+      margin: 22px 0;
+      box-shadow: 0 4px 18px rgba(15, 23, 42, .04);
+    }
+    h2 { font-size: 30px; margin: 0 0 18px; color: #111827; }
+    h3 { font-size: 23px; margin: 28px 0 12px; color: #111827; }
+    h4 { font-size: 18px; margin: 20px 0 8px; color: #111827; }
+    .note, .theorem, .proof, .example, .warning, .algo, .definition, .app {
+      border-radius: 16px;
+      padding: 18px 20px;
+      margin: 18px 0;
+      border: 1px solid var(--border);
+    }
+    .definition { background: #f8fafc; border-left: 6px solid #475569; }
+    .theorem { background: var(--soft2); border-left: 6px solid #2563eb; }
+    .proof { background: #f0fdf4; border-left: 6px solid #16a34a; }
+    .example { background: var(--soft); border-left: 6px solid #f97316; }
+    .warning { background: #fffbeb; border-left: 6px solid #f59e0b; }
+    .algo { background: #f5f3ff; border-left: 6px solid #7c3aed; }
+    .app { background: #ecfeff; border-left: 6px solid #0891b2; }
+    .label { font-weight: 800; letter-spacing: .02em; text-transform: uppercase; font-size: 13px; color: var(--muted); display: block; margin-bottom: 6px; }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+    pre {
+      background: var(--code-bg);
+      color: var(--code-ink);
+      border-radius: 14px;
+      padding: 18px;
+      overflow-x: auto;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; overflow: hidden; border-radius: 12px; }
+    th, td { border: 1px solid var(--border); padding: 10px 12px; vertical-align: top; }
+    th { background: #f3f4f6; text-align: left; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+    .small { color: var(--muted); font-size: 14px; }
+    .formula {
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 10px 14px;
+      margin: 14px 0;
+      overflow-x: auto;
+    }
+    .kbd { background: #111827; color: white; padding: 2px 7px; border-radius: 6px; font-size: .9em; }
+    .check { color: var(--good); font-weight: 700; }
+    .bad { color: #b91c1c; font-weight: 700; }
+    footer { max-width: 1120px; margin: 0 auto; padding: 20px; color: var(--muted); }
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>Китайская теорема об остатках и алгоритм Гарнера</h1>
+    <p>Подробный конспект: формулировки, доказательство существования и единственности, конструктивная формула, обобщение на непопарно взаимно простые модули, алгоритм Гарнера, код, примеры и применения.</p>
+  </div>
+</header>
+<main>
+  <nav class="toc">
+    <h2>Содержание</h2>
+    <ol>
+      <li><a href="#problem">Задача восстановления по остаткам</a></li>
+      <li><a href="#defs">Сравнения, модуль, обратный элемент</a></li>
+      <li><a href="#statement">Китайская теорема об остатках</a></li>
+      <li><a href="#uniqueness">Доказательство единственности</a></li>
+      <li><a href="#existence-two">Существование для двух модулей</a></li>
+      <li><a href="#existence-general">Существование для многих модулей</a></li>
+      <li><a href="#constructive">Конструктивная формула CRT</a></li>
+      <li><a href="#merge">Пошаговое объединение сравнений</a></li>
+      <li><a href="#noncoprime">Непопарно взаимно простые модули</a></li>
+      <li><a href="#garner">Алгоритм Гарнера</a></li>
+      <li><a href="#garner-proof">Доказательство алгоритма Гарнера</a></li>
+      <li><a href="#code">Реализации на C++</a></li>
+      <li><a href="#applications">Важные применения</a></li>
+      <li><a href="#pitfalls">Типичные ошибки</a></li>
+      <li><a href="#cheatsheet">Краткая шпаргалка</a></li>
+    </ol>
+  </nav>
+
+  <section id="problem">
+    <h2>1. Задача восстановления по остаткам</h2>
+    <p>Китайская теорема об остатках отвечает на вопрос:</p>
+    <div class="formula">
+      $$
+      \text{Можно ли восстановить число } x \text{ по его остаткам при делении на разные модули?}
+      $$
+    </div>
+    <p>Например, известно:</p>
+    <div class="formula">
+      $$
+      \begin{aligned}
+      x &\equiv 2 \pmod 3,\\
+      x &\equiv 3 \pmod 5,\\
+      x &\equiv 2 \pmod 7.
+      \end{aligned}
+      $$
+    </div>
+    <p>Нужно найти все целые $x$, удовлетворяющие системе.</p>
+    <p>Ответ в таких задачах обычно не одно число, а класс по модулю произведения модулей. Для примера выше произведение модулей равно $3 \cdot 5 \cdot 7 = 105$, и решение будет иметь вид:</p>
+    <div class="formula">
+      $$
+      x \equiv 23 \pmod {105}.
+      $$
+    </div>
+    <p>Это значит, что подходят все числа:</p>
+    <div class="formula">
+      $$
+      \ldots, -187, -82, 23, 128, 233, \ldots
+      $$
+    </div>
+  </section>
+
+  <section id="defs">
+    <h2>2. Базовые определения</h2>
+
+    <div class="definition">
+      <span class="label">Определение: сравнение по модулю</span>
+      <p>Запись</p>
+      <div class="formula">
+        $$a \equiv b \pmod m$$
+      </div>
+      <p>означает, что $a$ и $b$ имеют одинаковый остаток при делении на $m$. Эквивалентно:</p>
+      <div class="formula">
+        $$m \mid (a-b).$$
+      </div>
+    </div>
+
+    <h3>2.1. Свойства сравнений</h3>
+    <p>Если $a \equiv b \pmod m$ и $c \equiv d \pmod m$, то:</p>
+    <div class="formula">
+      $$
+      a+c \equiv b+d \pmod m,
+      $$
+      $$
+      a-c \equiv b-d \pmod m,
+      $$
+      $$
+      ac \equiv bd \pmod m.
+      $$
+    </div>
+    <p>Делить в сравнениях можно не всегда. Например, из</p>
+    <div class="formula">
+      $$2x \equiv 2y \pmod 6$$
+    </div>
+    <p>не следует $x \equiv y \pmod 6$. Можно делить только на число, обратимое по модулю.</p>
+
+    <div class="definition">
+      <span class="label">Определение: обратный элемент по модулю</span>
+      <p>Число $a^{-1}$ называется обратным к $a$ по модулю $m$, если</p>
+      <div class="formula">
+        $$a \cdot a^{-1} \equiv 1 \pmod m.$$
+      </div>
+      <p>Такой обратный элемент существует тогда и только тогда, когда</p>
+      <div class="formula">
+        $$\gcd(a,m)=1.$$
+      </div>
+    </div>
+
+    <div class="proof">
+      <span class="label">Почему обратный существует при gcd = 1</span>
+      <p>По расширенному алгоритму Евклида, если $\gcd(a,m)=1$, то существуют целые $u$ и $v$, такие что:</p>
+      <div class="formula">
+        $$au + mv = 1.$$
+      </div>
+      <p>Переходим к сравнению по модулю $m$:</p>
+      <div class="formula">
+        $$au \equiv 1 \pmod m.$$
+      </div>
+      <p>Значит, $u$ — обратный элемент к $a$ по модулю $m$.</p>
+    </div>
+  </section>
+
+  <section id="statement">
+    <h2>3. Китайская теорема об остатках: основная формулировка</h2>
+    <div class="theorem">
+      <span class="label">Теорема CRT для попарно взаимно простых модулей</span>
+      <p>Пусть модули</p>
+      <div class="formula">
+        $$m_1, m_2, \ldots, m_n$$
+      </div>
+      <p>попарно взаимно просты, то есть для любых $i \ne j$:</p>
+      <div class="formula">
+        $$\gcd(m_i,m_j)=1.$$
+      </div>
+      <p>Тогда для любых остатков</p>
+      <div class="formula">
+        $$a_1, a_2, \ldots, a_n$$
+      </div>
+      <p>система сравнений</p>
+      <div class="formula">
+        $$
+        \begin{aligned}
+        x &\equiv a_1 \pmod {m_1},\\
+        x &\equiv a_2 \pmod {m_2},\\
+        &\vdots\\
+        x &\equiv a_n \pmod {m_n}
+        \end{aligned}
+        $$
+      </div>
+      <p>имеет решение. Более того, это решение единственно по модулю</p>
+      <div class="formula">
+        $$M = m_1m_2\cdots m_n.$$
+      </div>
+      <p>То есть существует ровно одно решение среди чисел:</p>
+      <div class="formula">
+        $$0,1,2,\ldots,M-1.$$
+      </div>
+    </div>
+
+    <div class="note">
+      <span class="label">Интуиция</span>
+      <p>Если модули попарно взаимно просты, то остатки по ним независимы. Остаток по модулю $3$ не навязывает скрытых ограничений на остаток по модулю $5$, и наоборот. Поэтому всего возможных наборов остатков:</p>
+      <div class="formula">
+        $$m_1m_2\cdots m_n=M,$$
+      </div>
+      <p>ровно столько же, сколько классов остатков по модулю $M$.</p>
+    </div>
+  </section>
+
+  <section id="uniqueness">
+    <h2>4. Доказательство единственности</h2>
+    <p>Сначала докажем, что если решение существует, то оно единственно по модулю $M$.</p>
+
+    <div class="proof">
+      <span class="label">Доказательство</span>
+      <p>Пусть $x$ и $y$ — два решения одной и той же системы:</p>
+      <div class="formula">
+        $$x \equiv a_i \pmod {m_i}, \qquad y \equiv a_i \pmod {m_i}$$
+      </div>
+      <p>для всех $i$.</p>
+      <p>Тогда для каждого $i$:</p>
+      <div class="formula">
+        $$x-y \equiv 0 \pmod {m_i},$$
+      </div>
+      <p>то есть</p>
+      <div class="formula">
+        $$m_i \mid (x-y).$$
+      </div>
+      <p>Так как модули попарно взаимно просты, из делимости на каждый $m_i$ следует делимость на их произведение:</p>
+      <div class="formula">
+        $$M=m_1m_2\cdots m_n \mid (x-y).$$
+      </div>
+      <p>Значит:</p>
+      <div class="formula">
+        $$x \equiv y \pmod M.$$
+      </div>
+      <p>То есть все решения отличаются на кратное $M$. Единственность по модулю $M$ доказана.</p>
+    </div>
+
+    <div class="proof">
+      <span class="label">Почему из делимости на все m_i следует делимость на произведение</span>
+      <p>Если числа $m_1,\ldots,m_n$ попарно взаимно просты и каждое $m_i$ делит $N$, то произведение $M$ тоже делит $N$.</p>
+      <p>Для двух чисел это стандартный факт:</p>
+      <div class="formula">
+        $$a \mid N,\quad b \mid N,\quad \gcd(a,b)=1 \quad \Longrightarrow \quad ab \mid N.$$
+      </div>
+      <p>Доказательство: из $a \mid N$ получаем $N=ak$. Так как $b \mid N$, имеем $b \mid ak$. Но $\gcd(a,b)=1$, значит по лемме Евклида $b \mid k$. Тогда $k=bt$, и $N=abt$.</p>
+      <p>Для многих чисел применяем этот аргумент по индукции.</p>
+    </div>
+  </section>
+
+  <section id="existence-two">
+    <h2>5. Доказательство существования для двух модулей</h2>
+    <p>Начнём с системы из двух сравнений:</p>
+    <div class="formula">
+      $$
+      \begin{aligned}
+      x &\equiv a \pmod m,\\
+      x &\equiv b \pmod n,
+      \end{aligned}
+      \qquad \gcd(m,n)=1.
+      $$
+    </div>
+
+    <div class="proof">
+      <span class="label">Конструктивное доказательство</span>
+      <p>Из первого сравнения следует:</p>
+      <div class="formula">
+        $$x = a + mt$$
+      </div>
+      <p>для некоторого целого $t$.</p>
+      <p>Подставим во второе сравнение:</p>
+      <div class="formula">
+        $$a + mt \equiv b \pmod n.$$
+      </div>
+      <p>Переносим $a$:</p>
+      <div class="formula">
+        $$mt \equiv b-a \pmod n.$$
+      </div>
+      <p>Так как $\gcd(m,n)=1$, у $m$ есть обратный элемент по модулю $n$. Умножаем на $m^{-1}$:</p>
+      <div class="formula">
+        $$t \equiv (b-a)m^{-1} \pmod n.$$
+      </div>
+      <p>Такой $t$ существует. Значит, существует и $x=a+mt$.</p>
+    </div>
+
+    <div class="example">
+      <span class="label">Пример</span>
+      <p>Решим:</p>
+      <div class="formula">
+        $$
+        \begin{aligned}
+        x &\equiv 2 \pmod 3,\\
+        x &\equiv 3 \pmod 5.
+        \end{aligned}
+        $$
+      </div>
+      <p>Пишем $x=2+3t$. Подставляем во второе сравнение:</p>
+      <div class="formula">
+        $$2+3t \equiv 3 \pmod 5,$$
+        $$3t \equiv 1 \pmod 5.$$
+      </div>
+      <p>Обратный к $3$ по модулю $5$ равен $2$, потому что $3\cdot2=6\equiv1\pmod5$. Значит:</p>
+      <div class="formula">
+        $$t \equiv 2 \pmod 5.$$
+      </div>
+      <p>Берём $t=2$:</p>
+      <div class="formula">
+        $$x=2+3\cdot2=8.$$
+      </div>
+      <p>Ответ:</p>
+      <div class="formula">
+        $$x \equiv 8 \pmod {15}.$$
+      </div>
+    </div>
+  </section>
+
+  <section id="existence-general">
+    <h2>6. Существование для многих модулей</h2>
+    <p>Для многих модулей можно доказать существование двумя основными способами:</p>
+    <ol>
+      <li>индукцией, объединяя сравнения по одному;</li>
+      <li>сразу выписать явную формулу решения.</li>
+    </ol>
+
+    <div class="proof">
+      <span class="label">Доказательство индукцией</span>
+      <p>Для одного модуля утверждение очевидно.</p>
+      <p>Пусть мы уже умеем решать систему из первых $k-1$ сравнений. Тогда существует решение:</p>
+      <div class="formula">
+        $$x \equiv r \pmod {M_{k-1}},$$
+      </div>
+      <p>где</p>
+      <div class="formula">
+        $$M_{k-1}=m_1m_2\cdots m_{k-1}.$$
+      </div>
+      <p>Теперь нужно совместить это с новым сравнением:</p>
+      <div class="formula">
+        $$x \equiv a_k \pmod {m_k}.$$
+      </div>
+      <p>Так как $m_k$ взаимно просто с каждым из $m_1,\ldots,m_{k-1}$, оно взаимно просто и с их произведением:</p>
+      <div class="formula">
+        $$\gcd(M_{k-1},m_k)=1.$$
+      </div>
+      <p>Значит, по случаю двух модулей система</p>
+      <div class="formula">
+        $$
+        \begin{aligned}
+        x &\equiv r \pmod {M_{k-1}},\\
+        x &\equiv a_k \pmod {m_k}
+        \end{aligned}
+        $$
+      </div>
+      <p>имеет решение по модулю $M_{k-1}m_k$.</p>
+      <p>Индукция завершена.</p>
+    </div>
+  </section>
+
+  <section id="constructive">
+    <h2>7. Конструктивная формула CRT</h2>
+    <p>Пусть дана система:</p>
+    <div class="formula">
+      $$
+      x \equiv a_i \pmod {m_i}, \qquad i=1,2,\ldots,n,
+      $$
+    </div>
+    <p>где модули попарно взаимно просты. Обозначим:</p>
+    <div class="formula">
+      $$M=m_1m_2\cdots m_n.$$
+    </div>
+    <p>Для каждого $i$ положим:</p>
+    <div class="formula">
+      $$M_i=\frac{M}{m_i}.$$
+    </div>
+    <p>Так как $M_i$ содержит все модули кроме $m_i$, а модули попарно взаимно просты, то:</p>
+    <div class="formula">
+      $$\gcd(M_i,m_i)=1.$$
+    </div>
+    <p>Значит, существует обратный элемент к $M_i$ по модулю $m_i$. Обозначим его:</p>
+    <div class="formula">
+      $$N_i \equiv M_i^{-1} \pmod {m_i}.$$
+    </div>
+
+    <div class="theorem">
+      <span class="label">Явная формула решения</span>
+      <div class="formula">
+        $$
+        x \equiv \sum_{i=1}^{n} a_i M_i N_i \pmod M.
+        $$
+      </div>
+    </div>
+
+    <div class="proof">
+      <span class="label">Почему формула работает</span>
+      <p>Рассмотрим слагаемое $a_iM_iN_i$ по модулю $m_j$.</p>
+      <p>Если $j \ne i$, то $M_i$ содержит множитель $m_j$, поэтому:</p>
+      <div class="formula">
+        $$M_i \equiv 0 \pmod {m_j}.$$
+      </div>
+      <p>Значит:</p>
+      <div class="formula">
+        $$a_iM_iN_i \equiv 0 \pmod {m_j}.$$
+      </div>
+      <p>Если же $j=i$, то по определению $N_i$:</p>
+      <div class="formula">
+        $$M_iN_i \equiv 1 \pmod {m_i}.$$
+      </div>
+      <p>Поэтому:</p>
+      <div class="formula">
+        $$a_iM_iN_i \equiv a_i \pmod {m_i}.$$
+      </div>
+      <p>Итак, при рассмотрении всей суммы по модулю $m_j$ все слагаемые зануляются, кроме $j$-го, а оно даёт $a_j$:</p>
+      <div class="formula">
+        $$x \equiv a_j \pmod {m_j}.$$
+      </div>
+      <p>Формула доказана.</p>
+    </div>
+
+    <div class="example">
+      <span class="label">Подробный пример</span>
+      <p>Решим систему:</p>
+      <div class="formula">
+        $$
+        \begin{aligned}
+        x &\equiv 2 \pmod 3,\\
+        x &\equiv 3 \pmod 5,\\
+        x &\equiv 2 \pmod 7.
+        \end{aligned}
+        $$
+      </div>
+      <p>Здесь:</p>
+      <div class="formula">
+        $$M=3\cdot5\cdot7=105.$$
+      </div>
+      <p>Считаем:</p>
+      <table>
+        <thead>
+          <tr><th>$i$</th><th>$m_i$</th><th>$a_i$</th><th>$M_i=M/m_i$</th><th>$N_i=M_i^{-1}\pmod {m_i}$</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>3</td><td>2</td><td>35</td><td>$35\equiv2\pmod3$, обратный к 2 — 2</td></tr>
+          <tr><td>2</td><td>5</td><td>3</td><td>21</td><td>$21\equiv1\pmod5$, обратный к 1 — 1</td></tr>
+          <tr><td>3</td><td>7</td><td>2</td><td>15</td><td>$15\equiv1\pmod7$, обратный к 1 — 1</td></tr>
+        </tbody>
+      </table>
+      <p>Тогда:</p>
+      <div class="formula">
+        $$
+        x \equiv 2\cdot35\cdot2 + 3\cdot21\cdot1 + 2\cdot15\cdot1 \pmod {105}.
+        $$
+      </div>
+      <div class="formula">
+        $$x \equiv 140 + 63 + 30 = 233 \equiv 23 \pmod {105}.$$
+      </div>
+      <p>Ответ:</p>
+      <div class="formula">
+        $$x \equiv 23 \pmod {105}.$$
+      </div>
+    </div>
+
+    <div class="warning">
+      <span class="label">Практическое замечание</span>
+      <p>Эта формула красивая, но произведение $M$ может быть огромным. В задачах с большими модулями нужно либо работать с большими числами, либо использовать алгоритм Гарнера, либо восстанавливать ответ по дополнительному модулю.</p>
+    </div>
+  </section>
+
+  <section id="merge">
+    <h2>8. Пошаговое объединение сравнений</h2>
+    <p>Иногда удобнее объединять сравнения одно за другим.</p>
+    <p>Пусть уже есть:</p>
+    <div class="formula">
+      $$x \equiv r \pmod M,$$
+    </div>
+    <p>и нужно добавить:</p>
+    <div class="formula">
+      $$x \equiv a \pmod m.$$
+    </div>
+    <p>Если $\gcd(M,m)=1$, пишем:</p>
+    <div class="formula">
+      $$x = r + Mt.$$
+    </div>
+    <p>Подставляем:</p>
+    <div class="formula">
+      $$r+Mt \equiv a \pmod m,$$
+      $$Mt \equiv a-r \pmod m.$$
+    </div>
+    <p>Так как $M$ обратим по модулю $m$:</p>
+    <div class="formula">
+      $$t \equiv (a-r)M^{-1} \pmod m.$$
+    </div>
+    <p>После этого новое решение:</p>
+    <div class="formula">
+      $$x \equiv r + Mt \pmod {Mm}.$$
+    </div>
+
+    <div class="algo">
+      <span class="label">Зачем нужен такой подход</span>
+      <p>Пошаговое объединение удобно, когда:</p>
+      <ul>
+        <li>сравнения приходят онлайн;</li>
+        <li>модули не обязательно попарно взаимно просты;</li>
+        <li>нужно быстро проверить противоречивость системы;</li>
+        <li>ответ можно хранить в 128-битном типе или big integer.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="noncoprime">
+    <h2>9. Обобщение: модули не обязательно взаимно просты</h2>
+    <p>Классическая CRT требует попарной взаимной простоты. Но системы сравнений можно решать и в общем случае.</p>
+
+    <div class="theorem">
+      <span class="label">Критерий совместности двух сравнений</span>
+      <p>Система</p>
+      <div class="formula">
+        $$
+        \begin{aligned}
+        x &\equiv a \pmod m,\\
+        x &\equiv b \pmod n
+        \end{aligned}
+        $$
+      </div>
+      <p>имеет решение тогда и только тогда, когда</p>
+      <div class="formula">
+        $$a \equiv b \pmod {\gcd(m,n)}.$$
+      </div>
+      <p>Если решение существует, то оно единственно по модулю</p>
+      <div class="formula">
+        $$\operatorname{lcm}(m,n).$$
+      </div>
+    </div>
+
+    <div class="proof">
+      <span class="label">Необходимость</span>
+      <p>Если $x$ удовлетворяет системе, то:</p>
+      <div class="formula">
+        $$x-a \text{ делится на } m,$$
+        $$x-b \text{ делится на } n.$$
+      </div>
+      <p>Пусть $d=\gcd(m,n)$. Тогда $d$ делит и $m$, и $n$, значит:</p>
+      <div class="formula">
+        $$x \equiv a \pmod d,$$
+        $$x \equiv b \pmod d.$$
+      </div>
+      <p>Следовательно:</p>
+      <div class="formula">
+        $$a \equiv b \pmod d.$$
+      </div>
+    </div>
+
+    <div class="proof">
+      <span class="label">Достаточность</span>
+      <p>Пусть $d=\gcd(m,n)$ и $a\equiv b\pmod d$.</p>
+      <p>Ищем $x$ в виде:</p>
+      <div class="formula">
+        $$x=a+mt.$$
+      </div>
+      <p>Подставляем во второе сравнение:</p>
+      <div class="formula">
+        $$a+mt \equiv b \pmod n,$$
+        $$mt \equiv b-a \pmod n.$$
+      </div>
+      <p>Так как $d$ делит $m$, $n$ и $b-a$, можно разделить сравнение на $d$:</p>
+      <div class="formula">
+        $$\frac{m}{d}t \equiv \frac{b-a}{d} \pmod {\frac{n}{d}}.$$
+      </div>
+      <p>Теперь:</p>
+      <div class="formula">
+        $$\gcd\left(\frac{m}{d},\frac{n}{d}\right)=1.$$
+      </div>
+      <p>Значит, $m/d$ обратимо по модулю $n/d$, и $t$ существует. Следовательно, существует и $x$.</p>
+    </div>
+
+    <div class="example">
+      <span class="label">Пример совместной системы</span>
+      <div class="formula">
+        $$
+        \begin{aligned}
+        x &\equiv 2 \pmod 6,\\
+        x &\equiv 8 \pmod {10}.
+        \end{aligned}
+        $$
+      </div>
+      <p>Здесь $\gcd(6,10)=2$, и $2\equiv8\pmod2$. Система совместна.</p>
+      <p>Решение будет единственно по модулю:</p>
+      <div class="formula">
+        $$\operatorname{lcm}(6,10)=30.$$
+      </div>
+      <p>Проверкой получаем:</p>
+      <div class="formula">
+        $$x \equiv 8 \pmod {30}.$$
+      </div>
+    </div>
+
+    <div class="example">
+      <span class="label">Пример несовместной системы</span>
+      <div class="formula">
+        $$
+        \begin{aligned}
+        x &\equiv 1 \pmod 4,\\
+        x &\equiv 2 \pmod 6.
+        \end{aligned}
+        $$
+      </div>
+      <p>$\gcd(4,6)=2$, но $1\not\equiv2\pmod2$. Система несовместна.</p>
+    </div>
+  </section>
+
+  <section id="garner">
+    <h2>10. Алгоритм Гарнера</h2>
+    <p>Алгоритм Гарнера — это способ восстановить число по остаткам в специальной смешанной системе счисления.</p>
+    <p>Пусть модули $m_1,m_2,\ldots,m_n$ попарно взаимно просты, и известно:</p>
+    <div class="formula">
+      $$x \equiv a_i \pmod {m_i}.$$
+    </div>
+    <p>Вместо прямой формулы CRT Гарнер ищет $x$ в виде:</p>
+    <div class="formula">
+      $$
+      x = c_1 + c_2m_1 + c_3m_1m_2 + c_4m_1m_2m_3 + \cdots + c_nm_1m_2\cdots m_{n-1}.
+      $$
+    </div>
+    <p>Коэффициенты удовлетворяют ограничениям:</p>
+    <div class="formula">
+      $$0 \le c_i < m_i.$$
+    </div>
+
+    <div class="note">
+      <span class="label">Смысл смешанной системы</span>
+      <p>В обычной десятичной системе число записывается как:</p>
+      <div class="formula">
+        $$d_0 + d_1\cdot 10 + d_2\cdot 10^2 + \cdots.$$
+      </div>
+      <p>В системе Гарнера основания разные:</p>
+      <div class="formula">
+        $$1,\quad m_1,\quad m_1m_2,\quad m_1m_2m_3,\ldots$$
+      </div>
+    </div>
+
+    <h3>10.1. Как последовательно найти коэффициенты</h3>
+    <p>Запишем разложение:</p>
+    <div class="formula">
+      $$
+      x = c_1 + c_2m_1 + c_3m_1m_2 + \cdots + c_nm_1m_2\cdots m_{n-1}.
+      $$
+    </div>
+
+    <h4>Первый коэффициент</h4>
+    <p>По модулю $m_1$ все слагаемые кроме $c_1$ делятся на $m_1$. Поэтому:</p>
+    <div class="formula">
+      $$c_1 \equiv a_1 \pmod {m_1}.$$
+    </div>
+    <p>Берём:</p>
+    <div class="formula">
+      $$c_1=a_1.$$
+    </div>
+
+    <h4>Второй коэффициент</h4>
+    <p>По модулю $m_2$:</p>
+    <div class="formula">
+      $$c_1 + c_2m_1 \equiv a_2 \pmod {m_2}.$$
+    </div>
+    <p>Значит:</p>
+    <div class="formula">
+      $$c_2m_1 \equiv a_2-c_1 \pmod {m_2}.$$
+    </div>
+    <p>Так как $m_1$ обратим по модулю $m_2$:</p>
+    <div class="formula">
+      $$c_2 \equiv (a_2-c_1)m_1^{-1} \pmod {m_2}.$$
+    </div>
+
+    <h4>Третий коэффициент</h4>
+    <p>По модулю $m_3$:</p>
+    <div class="formula">
+      $$c_1+c_2m_1+c_3m_1m_2 \equiv a_3 \pmod {m_3}.$$
+    </div>
+    <p>Отсюда:</p>
+    <div class="formula">
+      $$c_3 \equiv \left(a_3-c_1-c_2m_1\right)(m_1m_2)^{-1} \pmod {m_3}.$$
+    </div>
+
+    <h4>Общий вид</h4>
+    <p>Пусть уже найдены $c_1,\ldots,c_{i-1}$. Тогда:</p>
+    <div class="formula">
+      $$
+      c_i \equiv
+      \left(a_i - \sum_{j=1}^{i-1} c_jm_1m_2\cdots m_{j-1}\right)
+      \left(m_1m_2\cdots m_{i-1}\right)^{-1}
+      \pmod {m_i}.
+      $$
+    </div>
+    <p>Здесь пустое произведение $m_1m_2\cdots m_0$ считается равным $1$.</p>
+
+    <div class="warning">
+      <span class="label">Проблема прямого вычисления</span>
+      <p>Если прямо считать произведения $m_1m_2\cdots m_{i-1}$, они могут быстро переполнить тип. Поэтому часто используют более аккуратную форму Гарнера, которая преобразует остатки постепенно и хранит всё по модулям.</p>
+    </div>
+
+    <h3>10.2. Практическая форма Гарнера</h3>
+    <p>Идея: пусть текущие значения $x_i$ сначала равны исходным остаткам $a_i$. Затем мы последовательно превращаем их в коэффициенты $c_i$.</p>
+    <p>Для каждого $i$ после обработки предыдущих коэффициентов значение $x_i$ будет равно будущему $c_i$ по модулю $m_i$.</p>
+
+    <div class="algo">
+      <span class="label">Алгоритм</span>
+      <pre><code>for i = 1..n:
+    c[i] = a[i]
+
+for i = 1..n:
+    c[i] = c[i] mod m[i]
+    for j = i+1..n:
+        c[j] = (c[j] - c[i]) * inverse(m[i], m[j]) mod m[j]</code></pre>
+      <p>После этого массив $c$ содержит коэффициенты смешанного разложения:</p>
+      <div class="formula">
+        $$
+        x = c_1 + c_2m_1 + c_3m_1m_2 + \cdots + c_nm_1m_2\cdots m_{n-1}.
+        $$
+      </div>
+    </div>
+
+    <h3>10.3. Пример Гарнера</h3>
+    <p>Решим систему:</p>
+    <div class="formula">
+      $$
+      \begin{aligned}
+      x &\equiv 2 \pmod 3,\\
+      x &\equiv 3 \pmod 5,\\
+      x &\equiv 2 \pmod 7.
+      \end{aligned}
+      $$
+    </div>
+    <p>Ищем:</p>
+    <div class="formula">
+      $$x=c_1+c_2\cdot3+c_3\cdot3\cdot5.$$
+    </div>
+    <p>Первый коэффициент:</p>
+    <div class="formula">
+      $$c_1=2.$$
+    </div>
+    <p>Второй:</p>
+    <div class="formula">
+      $$2+3c_2\equiv3\pmod5,$$
+      $$3c_2\equiv1\pmod5,$$
+      $$c_2\equiv2\pmod5.$$
+    </div>
+    <p>Значит $c_2=2$.</p>
+    <p>Третий:</p>
+    <div class="formula">
+      $$2+2\cdot3+15c_3\equiv2\pmod7.$$
+    </div>
+    <p>Левая часть без $c_3$ равна $8$, значит:</p>
+    <div class="formula">
+      $$8+15c_3\equiv2\pmod7.$$
+    </div>
+    <p>Сокращаем по модулю $7$:</p>
+    <div class="formula">
+      $$1+c_3\equiv2\pmod7,$$
+      $$c_3\equiv1\pmod7.$$
+    </div>
+    <p>Итого:</p>
+    <div class="formula">
+      $$x=2+2\cdot3+1\cdot15=23.$$
+    </div>
+  </section>
+
+  <section id="garner-proof">
+    <h2>11. Доказательство алгоритма Гарнера</h2>
+
+    <div class="proof">
+      <span class="label">Шаг 1: единственность смешанного представления</span>
+      <p>Покажем, что каждое число $0\le x<M$, где $M=m_1m_2\cdots m_n$, единственным образом представляется в виде:</p>
+      <div class="formula">
+        $$
+        x=c_1+c_2m_1+c_3m_1m_2+\cdots+c_nm_1m_2\cdots m_{n-1},
+        $$
+      </div>
+      <p>где $0\le c_i<m_i$.</p>
+      <p>Это аналог обычной записи числа в позиционной системе счисления, только основания меняются. Можно строить коэффициенты делением:</p>
+      <div class="formula">
+        $$c_1 = x \bmod m_1,$$
+        $$\frac{x-c_1}{m_1} = c_2 + c_3m_2 + \cdots.$$
+      </div>
+      <p>Потом берём остаток по $m_2$, получаем $c_2$, и так далее.</p>
+      <p>Единственность следует из того, что на каждом шаге остаток по очередному модулю однозначно задаёт очередную цифру.</p>
+    </div>
+
+    <div class="proof">
+      <span class="label">Шаг 2: почему коэффициенты можно находить последовательно</span>
+      <p>Подставим смешанное разложение в сравнение по модулю $m_i$:</p>
+      <div class="formula">
+        $$
+        c_1+c_2m_1+\cdots+c_i m_1m_2\cdots m_{i-1}+\cdots \equiv a_i \pmod {m_i}.
+        $$
+      </div>
+      <p>Все слагаемые после $c_i$ содержат множитель $m_i$, потому что в них есть произведение $m_1m_2\cdots m_i$. Поэтому они равны нулю по модулю $m_i$.</p>
+      <p>Остаётся:</p>
+      <div class="formula">
+        $$
+        c_1+c_2m_1+\cdots+c_i m_1m_2\cdots m_{i-1} \equiv a_i \pmod {m_i}.
+        $$
+      </div>
+      <p>Коэффициенты $c_1,\ldots,c_{i-1}$ уже известны. Значит, это линейное сравнение относительно $c_i$:</p>
+      <div class="formula">
+        $$
+        c_i \cdot (m_1m_2\cdots m_{i-1}) \equiv
+        a_i - \sum_{j=1}^{i-1} c_jm_1m_2\cdots m_{j-1}
+        \pmod {m_i}.
+        $$
+      </div>
+      <p>Так как модули попарно взаимно просты, произведение $m_1m_2\cdots m_{i-1}$ обратимо по модулю $m_i$. Поэтому $c_i$ находится однозначно.</p>
+    </div>
+
+    <div class="proof">
+      <span class="label">Шаг 3: почему практическая форма с обновлением остатков работает</span>
+      <p>Сначала у нас есть система:</p>
+      <div class="formula">
+        $$x \equiv a_j \pmod {m_j}.$$
+      </div>
+      <p>Пусть мы нашли $c_1$. Тогда:</p>
+      <div class="formula">
+        $$x=c_1+m_1y.$$
+      </div>
+      <p>Для каждого $j>1$ подставляем в сравнение по модулю $m_j$:</p>
+      <div class="formula">
+        $$c_1+m_1y\equiv a_j\pmod {m_j}.$$
+      </div>
+      <p>Отсюда:</p>
+      <div class="formula">
+        $$y\equiv (a_j-c_1)m_1^{-1}\pmod {m_j}.$$
+      </div>
+      <p>Именно это делает обновление:</p>
+      <div class="formula">
+        $$a_j \leftarrow (a_j-c_1)m_1^{-1}\pmod {m_j}.$$
+      </div>
+      <p>После этого мы решаем такую же задачу, но уже для $y$ и модулей $m_2,\ldots,m_n$. Повторяя процесс, получаем все коэффициенты.</p>
+    </div>
+  </section>
+
+  <section id="code">
+    <h2>12. Реализации на C++</h2>
+
+    <h3>12.1. Расширенный алгоритм Евклида и обратный элемент</h3>
+    <pre><code>using long long = long long;</code></pre>
+    <pre><code>long long extgcd(long long a, long long b, long long &x, long long &y) {
+    if (b == 0) {
+        x = 1;
+        y = 0;
+        return a;
+    }
+    long long x1, y1;
+    long long g = extgcd(b, a % b, x1, y1);
+    x = y1;
+    y = x1 - (a / b) * y1;
+    return g;
+}
+
+long long mod_norm(long long x, long long mod) {
+    x %= mod;
+    if (x < 0) x += mod;
+    return x;
+}
+
+long long inv_mod(long long a, long long mod) {
+    long long x, y;
+    long long g = extgcd(a, mod, x, y);
+    if (g != 1) {
+        throw runtime_error("inverse does not exist");
+    }
+    return mod_norm(x, mod);
+}</code></pre>
+
+    <h3>12.2. CRT для попарно взаимно простых модулей через формулу</h3>
+    <pre><code>long long crt_coprime_formula(const vector&lt;long long&gt;& a,
+                              const vector&lt;long long&gt;& m) {
+    int n = (int)a.size();
+    __int128 M = 1;
+    for (long long mod : m) {
+        M *= mod;
+    }
+
+    __int128 ans = 0;
+
+    for (int i = 0; i &lt; n; i++) {
+        __int128 Mi = M / m[i];
+        long long Mi_mod = (long long)(Mi % m[i]);
+        long long Ni = inv_mod(Mi_mod, m[i]);
+        ans = (ans + (__int128)a[i] * Mi % M * Ni) % M;
+    }
+
+    long long res = (long long)(ans % M);
+    if (res &lt; 0) res += (long long)M;
+    return res;
+}</code></pre>
+    <div class="warning">
+      <span class="label">Осторожно</span>
+      <p>Этот код использует <code>__int128</code>, но если произведение модулей не помещается даже в 128 бит, нужен big integer или другой подход.</p>
+    </div>
+
+    <h3>12.3. Общее объединение двух сравнений</h3>
+    <p>Функция возвращает пару $(r, M)$, означающую:</p>
+    <div class="formula">
+      $$x \equiv r \pmod M.$$
+    </div>
+    <p>Если система несовместна, возвращает <code>false</code>.</p>
+
+    <pre><code>struct Congruence {
+    long long r;
+    long long m;
+};
+
+bool merge_congruence(Congruence a, Congruence b, Congruence &res) {
+    // x = a.r mod a.m
+    // x = b.r mod b.m
+    long long r1 = a.r, m1 = a.m;
+    long long r2 = b.r, m2 = b.m;
+
+    long long x, y;
+    long long g = extgcd(m1, m2, x, y);
+
+    if ((r2 - r1) % g != 0) {
+        return false;
+    }
+
+    long long m2_g = m2 / g;
+
+    // t = ((r2-r1)/g) * inverse(m1/g mod m2/g)
+    __int128 t = (__int128)(r2 - r1) / g * x;
+    t = t % m2_g;
+    if (t &lt; 0) t += m2_g;
+
+    __int128 lcm = (__int128)m1 / g * m2;
+    __int128 rr = (__int128)r1 + (__int128)m1 * t;
+    rr %= lcm;
+    if (rr &lt; 0) rr += lcm;
+
+    res.r = (long long)rr;
+    res.m = (long long)lcm;
+    return true;
+}</code></pre>
+
+    <h3>12.4. Алгоритм Гарнера</h3>
+    <p>Базовая версия для попарно взаимно простых модулей и результата, помещающегося в 64 бита.</p>
+    <pre><code>long long garner(vector&lt;long long&gt; a, vector&lt;long long&gt; m) {
+    int n = (int)a.size();
+    vector&lt;long long&gt; c = a;
+
+    for (int i = 0; i &lt; n; i++) {
+        c[i] = mod_norm(c[i], m[i]);
+        for (int j = i + 1; j &lt; n; j++) {
+            long long inv = inv_mod(m[i] % m[j], m[j]);
+            c[j] = mod_norm((__int128)(c[j] - c[i]) * inv, m[j]);
+        }
+    }
+
+    __int128 x = 0;
+    __int128 mult = 1;
+    for (int i = 0; i &lt; n; i++) {
+        x += (__int128)c[i] * mult;
+        mult *= m[i];
+    }
+
+    return (long long)x;
+}</code></pre>
+
+    <h3>12.5. Гарнер для восстановления по дополнительному модулю</h3>
+    <p>Частая олимпиадная задача: число $x$ огромное, но нужно найти его по модулю $P$.</p>
+    <p>Тогда добавляют $P$ как дополнительный модуль в конец и запускают Гарнера. Но это корректно напрямую только если $P$ взаимно прост с исходными модулями.</p>
+    <pre><code>long long garner_mod(vector&lt;long long&gt; a, vector&lt;long long&gt; m, long long MOD) {
+    int n = (int)a.size();
+
+    // Добавляем фиктивное сравнение x = 0 mod MOD.
+    // Его коэффициент в смешанной записи даст x mod MOD.
+    a.push_back(0);
+    m.push_back(MOD);
+    n++;
+
+    vector&lt;long long&gt; c = a;
+
+    for (int i = 0; i &lt; n; i++) {
+        c[i] = mod_norm(c[i], m[i]);
+        for (int j = i + 1; j &lt; n; j++) {
+            long long inv = inv_mod(m[i] % m[j], m[j]);
+            c[j] = mod_norm((__int128)(c[j] - c[i]) * inv, m[j]);
+        }
+    }
+
+    // Восстанавливаем только по MOD.
+    long long result = 0;
+    long long mult = 1 % MOD;
+    for (int i = 0; i + 1 &lt; n; i++) {
+        result = (result + (__int128)c[i] * mult) % MOD;
+        mult = (__int128)mult * (m[i] % MOD) % MOD;
+    }
+    return result;
+}</code></pre>
+  </section>
+
+  <section id="applications">
+    <h2>13. Важные применения CRT и Гарнера</h2>
+
+    <div class="app">
+      <span class="label">1. Работа с большими числами через остатки</span>
+      <p>Можно хранить огромное число не в десятичной записи, а как набор остатков:</p>
+      <div class="formula">
+        $$x \mapsto (x\bmod m_1, x\bmod m_2, \ldots, x\bmod m_n).$$
+      </div>
+      <p>Сложение и умножение выполняются покомпонентно:</p>
+      <div class="formula">
+        $$(x+y)\bmod m_i = ((x\bmod m_i)+(y\bmod m_i))\bmod m_i,$$
+        $$(xy)\bmod m_i = ((x\bmod m_i)(y\bmod m_i))\bmod m_i.$$
+      </div>
+      <p>CRT гарантирует, что если произведение модулей достаточно велико, то число можно восстановить однозначно.</p>
+    </div>
+
+    <div class="app">
+      <span class="label">2. Ускорение умножения больших чисел и полиномов</span>
+      <p>В FFT/NTT иногда считают свёртку по нескольким удобным простым модулям, а потом восстанавливают точные коэффициенты через CRT.</p>
+      <p>Например, если один модуль не даёт достаточного диапазона, используют несколько NTT-friendly простых модулей и собирают результат обратно.</p>
+    </div>
+
+    <div class="app">
+      <span class="label">3. RSA и криптография</span>
+      <p>В RSA секретный модуль имеет вид:</p>
+      <div class="formula">
+        $$N=pq.$$
+      </div>
+      <p>Вместо вычисления степени по модулю $N$ можно отдельно считать по модулям $p$ и $q$, а затем восстановить ответ по CRT. Это значительно быстрее, потому что операции с числами примерно вдвое меньшей длины дешевле.</p>
+    </div>
+
+    <div class="app">
+      <span class="label">4. Системы периодов и расписания</span>
+      <p>Задачи вида:</p>
+      <div class="formula">
+        $$t \equiv a \pmod m, \qquad t \equiv b \pmod n$$
+      </div>
+      <p>естественно возникают при совмещении циклических событий: расписаний, периодических процессов, календарных условий.</p>
+    </div>
+
+    <div class="app">
+      <span class="label">5. Хеширование и проверка равенства больших значений</span>
+      <p>Иногда значение проверяют по нескольким модулям. Если остатки совпадают по нескольким взаимно простым модулям, то разность делится на их произведение. Чем больше произведение, тем сильнее гарантия.</p>
+    </div>
+
+    <div class="app">
+      <span class="label">6. Диофантовы уравнения и линейные сравнения</span>
+      <p>CRT тесно связана с решением линейных сравнений и систем ограничений на целые числа. Обобщённая CRT даёт критерий совместности систем с непопарно взаимно простыми модулями.</p>
+    </div>
+
+    <div class="app">
+      <span class="label">7. Абстрактная алгебра</span>
+      <p>CRT имеет кольцевую формулировку:</p>
+      <div class="formula">
+        $$
+        \mathbb Z / M\mathbb Z \cong
+        \mathbb Z / m_1\mathbb Z \times \cdots \times \mathbb Z / m_n\mathbb Z
+        $$
+      </div>
+      <p>при попарно взаимно простых $m_i$ и $M=m_1m_2\cdots m_n$.</p>
+      <p>Это означает, что арифметика по модулю $M$ эквивалентна покомпонентной арифметике по модулям $m_i$.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>14. Типичные ошибки</h2>
+
+    <div class="warning">
+      <span class="label">Ошибка 1: забыть условие взаимной простоты</span>
+      <p>Формула CRT через $M_i^{-1}$ работает только если $M_i$ обратим по модулю $m_i$. Для этого нужны попарно взаимно простые модули.</p>
+    </div>
+
+    <div class="warning">
+      <span class="label">Ошибка 2: считать, что решение всегда существует</span>
+      <p>Для непопарно взаимно простых модулей система может быть противоречивой. Нужно проверять:</p>
+      <div class="formula">
+        $$a_i \equiv a_j \pmod {\gcd(m_i,m_j)}.$$
+      </div>
+    </div>
+
+    <div class="warning">
+      <span class="label">Ошибка 3: отрицательные остатки</span>
+      <p>В C++ операция <code>%</code> может вернуть отрицательное число. Лучше нормализовать:</p>
+      <pre><code>x %= mod;
+if (x &lt; 0) x += mod;</code></pre>
+    </div>
+
+    <div class="warning">
+      <span class="label">Ошибка 4: переполнение произведения модулей</span>
+      <p>Даже если каждый модуль помещается в <code>long long</code>, их произведение может не помещаться. Используйте <code>__int128</code>, big integer или Гарнера по дополнительному модулю.</p>
+    </div>
+
+    <div class="warning">
+      <span class="label">Ошибка 5: неверный порядок в Гарнере</span>
+      <p>Коэффициенты Гарнера зависят от порядка модулей. Это не ошибка: смешанная система счисления строится в выбранном порядке. Итоговое число всё равно будет тем же по модулю произведения, если всё посчитано корректно.</p>
+    </div>
+  </section>
+
+  <section id="cheatsheet">
+    <h2>15. Краткая шпаргалка</h2>
+
+    <div class="grid">
+      <div class="note">
+        <span class="label">CRT</span>
+        <p>Если $m_i$ попарно взаимно просты, то система</p>
+        <div class="formula">
+          $$x\equiv a_i\pmod {m_i}$$
+        </div>
+        <p>имеет единственное решение по модулю $M=m_1\cdots m_n$.</p>
+      </div>
+
+      <div class="note">
+        <span class="label">Явная формула</span>
+        <div class="formula">
+          $$M_i=\frac{M}{m_i},\qquad N_i\equiv M_i^{-1}\pmod {m_i}$$
+          $$x\equiv\sum_i a_iM_iN_i\pmod M$$
+        </div>
+      </div>
+
+      <div class="note">
+        <span class="label">Два не взаимно простых модуля</span>
+        <p>Система</p>
+        <div class="formula">
+          $$x\equiv a\pmod m,\qquad x\equiv b\pmod n$$
+        </div>
+        <p>совместна тогда и только тогда, когда</p>
+        <div class="formula">
+          $$a\equiv b\pmod {\gcd(m,n)}.$$
+        </div>
+      </div>
+
+      <div class="note">
+        <span class="label">Гарнер</span>
+        <p>Ищем:</p>
+        <div class="formula">
+          $$x=c_1+c_2m_1+c_3m_1m_2+\cdots$$
+        </div>
+        <p>Коэффициенты находятся последовательно по модулям.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Источники и ориентиры</h2>
+    <p>Конспект опирается на стандартные формулировки CRT, конструктивную формулу через обратные элементы, обобщение на непопарно взаимно простые модули и описание алгоритма Гарнера. В качестве ориентиров использованы материалы e-maxx/CP-algorithms-подхода, Algolist и справочные формулировки теоремы.</p>
+    <ul>
+      <li>e-maxx: «Китайская теорема об остатках».</li>
+      <li>Algolist: разделы «Алгоритм Гаусса» и «Алгоритм Гарнера».</li>
+      <li>Справочная формулировка китайской теоремы об остатках.</li>
+    </ul>
+  </section>
+</main>
+<footer>
+  Конспект подготовлен для повторения алгоритмов и доказательств. Все формулы набраны через MathJax; при открытии файла с интернетом они отрисуются в читаемом виде.
+</footer>
+</body>
+</html>
