@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Лекция №12 — Обращение Мёбиуса, свёртка Дирихле</title>
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']],
+    displayMath: [['$$', '$$'], ['\\[', '\\]']],
+    processEscapes: true
+  },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<style>
+:root{
+  --bg:#f7fafc; --card:#ffffff; --ink:#172033; --muted:#5b667a; --accent:#7b1e1e;
+  --blue:#edf5ff; --blue-border:#5b8fd8; --green:#ecfdf3; --green-border:#22a55a;
+  --yellow:#fff8e6; --yellow-border:#e4ad25; --purple:#f5f0ff; --purple-border:#8b5cf6;
+  --gray:#f3f5f8; --border:#d9dee8; --code:#111827;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.62;font-size:18px}
+.wrapper{max-width:1180px;margin:0 auto;padding:32px 22px 80px}
+header{background:linear-gradient(135deg,#6b1111,#a83232);color:white;padding:34px 38px;border-radius:28px;margin-bottom:28px;box-shadow:0 18px 36px rgba(80,0,0,.18)}
+h1{font-size:42px;line-height:1.13;margin:0 0 12px;font-weight:800}
+header p{margin:8px 0 0;font-size:20px;opacity:.95;max-width:950px}
+nav{background:white;border:1px solid var(--border);border-radius:20px;padding:22px 26px;margin-bottom:28px;box-shadow:0 8px 26px rgba(20,30,60,.06)}
+nav h2{margin-top:0;font-size:24px;color:var(--accent)}
+nav ol{columns:2;column-gap:42px;margin-bottom:0}
+nav li{break-inside:avoid;margin:6px 0}
+a{color:#8a1f1f;text-decoration:none} a:hover{text-decoration:underline}
+section{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:30px 34px;margin:24px 0;box-shadow:0 12px 30px rgba(20,30,60,.055)}
+h2{font-size:32px;margin:0 0 18px;color:var(--accent);line-height:1.2}
+h3{font-size:25px;margin:26px 0 12px;color:#243047}
+h4{font-size:21px;margin:20px 0 8px;color:#2d3b55}.lead{font-size:20px;color:#303a4e}.muted{color:var(--muted)}
+.box{border-radius:18px;padding:18px 22px;margin:18px 0;border:1px solid var(--border);background:var(--gray)}
+.def{background:var(--blue);border-left:8px solid var(--blue-border)}
+.thm{background:var(--green);border-left:8px solid var(--green-border)}
+.warn{background:var(--yellow);border-left:8px solid var(--yellow-border)}
+.alg{background:var(--purple);border-left:8px solid var(--purple-border)}
+.proof{background:#eefaf2;border-left:8px solid #16a34a}.box-title{text-transform:uppercase;font-weight:800;letter-spacing:.04em;color:#4b5563;margin-bottom:10px}
+.mathblock{background:#f8fafc;border:1px solid #dfe4ed;border-radius:16px;padding:16px;margin:15px 0;overflow-x:auto;text-align:center}
+code{background:#eef1f6;padding:2px 6px;border-radius:6px;font-family:"SFMono-Regular",Consolas,monospace;font-size:.94em}
+pre{background:#111827;color:#e5e7eb;border-radius:16px;padding:18px 20px;overflow-x:auto;font-size:15px;line-height:1.48}pre code{background:transparent;color:inherit;padding:0}
+table{width:100%;border-collapse:collapse;margin:18px 0;border-radius:14px;overflow:hidden}th,td{border:1px solid #dfe4ed;padding:12px 14px;text-align:left;vertical-align:top}th{background:#f1f4f9;color:#30394d}.center{text-align:center}.small{font-size:15px}.tag{display:inline-block;background:#f1f5f9;border:1px solid #d7dde8;border-radius:999px;padding:3px 10px;margin:2px 4px;color:#48546a;font-size:15px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.grid .box{margin:0}.toc-note{font-size:15px;color:#617087;margin-top:8px}.nowrap{white-space:nowrap}
+@media(max-width:850px){nav ol{columns:1}.grid{grid-template-columns:1fr}body{font-size:16px}.wrapper{padding:18px 12px}section{padding:22px 18px}h1{font-size:32px}h2{font-size:27px}}
+</style>
+</head>
+<body>
+<div class="wrapper">
+<header>
+<h1>Лекция №12. Обращение Мёбиуса, свёртка Дирихле</h1>
+<p>Подробный конспект: функция Мёбиуса, формула обращения, свёртка Дирихле, мультипликативные функции, функция Эйлера, включения-исключения, подсчёт взаимно простых пар и идея вычисления префиксных сумм мультипликативных функций.</p>
+</header>
+<nav>
+<h2>Оглавление</h2>
+<ol>
+<li><a href="#intro">Что изучаем и зачем</a></li>
+<li><a href="#arith-func">Арифметические функции</a></li>
+<li><a href="#mobius">Функция Мёбиуса</a></li>
+<li><a href="#chi">Функция $\chi_1$ и сумма $\sum_{d\mid n}\mu(d)$</a></li>
+<li><a href="#mobius-inversion">Формула обращения Мёбиуса</a></li>
+<li><a href="#dirichlet">Свёртка Дирихле</a></li>
+<li><a href="#ring">Кольцо Дирихле: что такое кольцо и где тут мультипликативные функции</a></li>
+<li><a href="#multiplicative">Мультипликативные функции</a></li>
+<li><a href="#euler">Функция Эйлера</a></li>
+<li><a href="#inclusion">Связь с включениями-исключениями</a></li>
+<li><a href="#coprime-pairs">Количество взаимно простых пар</a></li>
+<li><a href="#prefix">Префиксные суммы мультипликативных функций</a></li>
+<li><a href="#floor">Полезные факты про делители и floor</a></li>
+<li><a href="#complexities">Идея $O(n^{3/4})$ и $O(n^{2/3})$</a></li>
+<li><a href="#cheatsheet">Шпаргалка</a></li>
+</ol>
+<div class="toc-note">Формулы отображаются через MathJax. Если страница открыта без интернета, может потребоваться локальная версия MathJax или подключение к сети.</div>
+</nav>
+
+<section id="intro">
+<h2>1. Что изучаем и зачем</h2>
+<p>В этой лекции рассматриваются арифметические функции — функции, заданные на натуральных числах. Например:</p>
+<div class="mathblock">$$f:\mathbb N\to \mathbb C \quad \text{или чаще } f:\mathbb N\to \mathbb Z.$$</div>
+<p>Главная идея: многие задачи о делителях, взаимной простоте, количестве пар с заданным НОД и суммах по делителям удобно переписывать через специальную операцию — <strong>свёртку Дирихле</strong>. А функция Мёбиуса играет роль обратного элемента к постоянной единице относительно этой свёртки.</p>
+<div class="box def"><div class="box-title">Главная схема</div>
+<p>Если есть сумма по делителям</p>
+<div class="mathblock">$$g(n)=\sum_{d\mid n} f(d),$$</div>
+<p>то функция Мёбиуса позволяет восстановить исходную функцию:</p>
+<div class="mathblock">$$f(n)=\sum_{d\mid n}\mu(d)\,g\!\left(\frac nd\right).$$</div>
+<p>Это и есть <strong>обращение Мёбиуса</strong>.</p>
+</div>
+</section>
+
+<section id="arith-func">
+<h2>2. Арифметические функции</h2>
+<div class="box def"><div class="box-title">Определение</div>
+<p><strong>Арифметическая функция</strong> — это функция, заданная на натуральных числах:</p>
+<div class="mathblock">$$f(n),\qquad n=1,2,3,\dots$$</div>
+</div>
+<p>Примеры:</p>
+<table>
+<tr><th>Обозначение</th><th>Определение</th><th>Комментарий</th></tr>
+<tr><td>$\mathbf 1(n)$</td><td>$1$ для всех $n$</td><td>Постоянная единица</td></tr>
+<tr><td>$\chi_1(n)$</td><td>$1$, если $n=1$, иначе $0$</td><td>Единица для свёртки Дирихле</td></tr>
+<tr><td>$\operatorname{id}(n)$</td><td>$n$</td><td>Тождественная функция</td></tr>
+<tr><td>$\tau(n)$</td><td>количество делителей $n$</td><td>$\tau(n)=\sum_{d\mid n}1$</td></tr>
+<tr><td>$\sigma(n)$</td><td>сумма делителей $n$</td><td>$\sigma(n)=\sum_{d\mid n}d$</td></tr>
+<tr><td>$\varphi(n)$</td><td>количество $1\le a\le n$, взаимно простых с $n$</td><td>Функция Эйлера</td></tr>
+<tr><td>$\mu(n)$</td><td>функция Мёбиуса</td><td>Инвертирует суммы по делителям</td></tr>
+</table>
+</section>
+
+<section id="mobius">
+<h2>3. Функция Мёбиуса $\mu(n)$</h2>
+<div class="box def"><div class="box-title">Определение</div>
+<p>Функция Мёбиуса задаётся так:</p>
+<div class="mathblock">$$
+\mu(n)=
+\begin{cases}
+1, & n=1,\\
+0, & \text{если } n \text{ делится на квадрат простого числа},\\
+(-1)^k, & \text{если } n=p_1p_2\cdots p_k \text{ — произведение } k \text{ различных простых}.
+\end{cases}
+$$</div>
+</div>
+<p>Иначе говоря, если разложение числа имеет вид</p>
+<div class="mathblock">$$n=p_1^{\alpha_1}p_2^{\alpha_2}\cdots p_r^{\alpha_r},$$</div>
+<p>то:</p>
+<ul>
+<li>если хотя бы одна степень $\alpha_i\ge 2$, то $\mu(n)=0$;</li>
+<li>если все степени равны $1$, то $\mu(n)=(-1)^r$.</li>
+</ul>
+<h3>Примеры</h3>
+<table>
+<tr><th>$n$</th><th>Разложение</th><th>$\mu(n)$</th><th>Почему</th></tr>
+<tr><td>$1$</td><td>пустое произведение</td><td>$1$</td><td>По определению</td></tr>
+<tr><td>$2$</td><td>$2$</td><td>$-1$</td><td>Один простой множитель</td></tr>
+<tr><td>$6$</td><td>$2\cdot3$</td><td>$1$</td><td>Два разных простых множителя</td></tr>
+<tr><td>$12$</td><td>$2^2\cdot3$</td><td>$0$</td><td>Есть квадрат $2^2$</td></tr>
+<tr><td>$30$</td><td>$2\cdot3\cdot5$</td><td>$-1$</td><td>Три разных простых множителя</td></tr>
+</table>
+<h3>Интуиция</h3>
+<p>Функция Мёбиуса является числовой версией знака во включениях-исключениях:</p>
+<div class="mathblock">$$(-1)^{\text{число выбранных простых делителей}}.$$</div>
+<p>Но если число содержит квадрат простого, то оно не соответствует выбору <em>множества</em> простых делителей, поэтому вклад обнуляется.</p>
+</section>
+
+<section id="chi">
+<h2>4. Функция $\chi_1$ и ключевая сумма по делителям</h2>
+<div class="box def"><div class="box-title">Функция $\chi_1$</div>
+<p>Определим функцию:</p>
+<div class="mathblock">$$
+\chi_1(n)=
+\begin{cases}
+1, & n=1,\\
+0, & n>1.
+\end{cases}
+$$</div>
+<p>Она играет роль единицы в кольце Дирихле.</p>
+</div>
+<div class="box thm"><div class="box-title">Ключевая лемма</div>
+<div class="mathblock">$$\sum_{d\mid n}\mu(d)=\chi_1(n).$$</div>
+<p>То есть:</p>
+<div class="mathblock">$$
+\sum_{d\mid n}\mu(d)=
+\begin{cases}
+1, & n=1,\\
+0, & n>1.
+\end{cases}
+$$</div>
+</div>
+<h3>Доказательство</h3>
+<div class="box proof"><div class="box-title">Доказательство через простые делители</div>
+<p>Если $n=1$, то единственный делитель $d=1$, поэтому:</p>
+<div class="mathblock">$$\sum_{d\mid 1}\mu(d)=\mu(1)=1.$$</div>
+<p>Теперь пусть $n>1$. Пусть различные простые делители числа $n$ — это</p>
+<div class="mathblock">$$p_1,p_2,\dots,p_k.$$</div>
+<p>В сумме $\sum_{d\mid n}\mu(d)$ ненулевой вклад дают только квадратсвободные делители $d$, то есть числа вида</p>
+<div class="mathblock">$$d=\prod_{i\in S}p_i,$$</div>
+<p>где $S$ — некоторое подмножество множества простых делителей. Для такого $d$:</p>
+<div class="mathblock">$$\mu(d)=(-1)^{|S|}.$$</div>
+<p>Тогда сумма равна:</p>
+<div class="mathblock">$$\sum_{S\subseteq \{1,\dots,k\}}(-1)^{|S|}.$$</div>
+<p>Но это биномиальная сумма:</p>
+<div class="mathblock">$$\sum_{j=0}^{k}\binom{k}{j}(-1)^j=(1-1)^k=0,$$</div>
+<p>так как $k\ge 1$. Значит, при $n>1$ сумма равна нулю.</p>
+</div>
+</section>
+
+<section id="mobius-inversion">
+<h2>5. Формула обращения Мёбиуса</h2>
+<p>Обращение Мёбиуса позволяет “отменять” суммирование по делителям.</p>
+<div class="box thm"><div class="box-title">Формула обращения Мёбиуса</div>
+<p>Если функции $f$ и $g$ связаны соотношением</p>
+<div class="mathblock">$$g(n)=\sum_{d\mid n} f(d),$$</div>
+<p>то</p>
+<div class="mathblock">$$f(n)=\sum_{d\mid n}\mu(d)\,g\!\left(\frac nd\right).$$</div>
+<p>Эквивалентная форма:</p>
+<div class="mathblock">$$f(n)=\sum_{d\mid n}\mu\!\left(\frac nd\right)g(d).$$</div>
+</div>
+<h3>Доказательство напрямую</h3>
+<div class="box proof"><div class="box-title">Доказательство</div>
+<p>Начинаем с правой части:</p>
+<div class="mathblock">$$\sum_{d\mid n}\mu(d)\,g\!\left(\frac nd\right).$$</div>
+<p>По условию:</p>
+<div class="mathblock">$$g\!\left(\frac nd\right)=\sum_{e\mid n/d} f(e).$$</div>
+<p>Подставляем:</p>
+<div class="mathblock">$$\sum_{d\mid n}\mu(d)\sum_{e\mid n/d}f(e).$$</div>
+<p>Пары $(d,e)$ здесь такие, что $d e\mid n$. Поэтому можно поменять порядок суммирования. Зафиксируем $e$:</p>
+<div class="mathblock">$$\sum_{e\mid n} f(e)\sum_{d\mid n/e}\mu(d).$$</div>
+<p>Внутренняя сумма равна $\chi_1(n/e)$:</p>
+<div class="mathblock">$$\sum_{d\mid n/e}\mu(d)=\chi_1\!\left(\frac ne\right).$$</div>
+<p>Она равна $1$ только когда $n/e=1$, то есть $e=n$, и равна $0$ иначе. Поэтому остаётся только один член:</p>
+<div class="mathblock">$$f(n).$$</div>
+<p>Значит:</p>
+<div class="mathblock">$$\sum_{d\mid n}\mu(d)\,g\!\left(\frac nd\right)=f(n).$$</div>
+</div>
+<h3>Смысл</h3>
+<p>Если $g(n)$ содержит накопленную информацию по всем делителям числа $n$, то $\mu$ позволяет извлечь точный вклад $f(n)$.</p>
+</section>
+
+<section id="dirichlet">
+<h2>6. Свёртка Дирихле</h2>
+<div class="box def"><div class="box-title">Определение</div>
+<p>Свёрткой Дирихле арифметических функций $f$ и $g$ называется функция</p>
+<div class="mathblock">$$
+(f*g)(n)=\sum_{d\mid n}f(d)\,g\!\left(\frac nd\right).
+$$</div>
+</div>
+<h3>Примеры</h3>
+<p>Пусть $\mathbf 1(n)=1$ для всех $n$.</p>
+<div class="mathblock">$$
+(f*\mathbf 1)(n)=\sum_{d\mid n} f(d).
+$$</div>
+<p>Тогда формула обращения Мёбиуса становится очень короткой:</p>
+<div class="mathblock">$$g=f*\mathbf 1 \quad \Longrightarrow \quad f=g*\mu.$$</div>
+<p>Потому что:</p>
+<div class="mathblock">$$\mu*\mathbf 1=\chi_1.$$</div>
+<h3>Коммутативность</h3>
+<div class="box proof"><div class="box-title">Доказательство коммутативности</div>
+<div class="mathblock">$$
+(f*g)(n)=\sum_{d\mid n}f(d)g\!\left(\frac nd\right).
+$$</div>
+<p>Сделаем замену $e=n/d$. Когда $d$ пробегает все делители $n$, $e$ тоже пробегает все делители $n$:</p>
+<div class="mathblock">$$
+(f*g)(n)=\sum_{e\mid n}f\!\left(\frac ne\right)g(e)=\sum_{e\mid n}g(e)f\!\left(\frac ne\right)=(g*f)(n).
+$$</div>
+</div>
+<h3>Ассоциативность</h3>
+<div class="box proof"><div class="box-title">Доказательство ассоциативности</div>
+<p>Нужно доказать:</p>
+<div class="mathblock">$$(f*g)*h=f*(g*h).$$</div>
+<p>Посчитаем левую часть:</p>
+<div class="mathblock">$$
+((f*g)*h)(n)=\sum_{ab=n}(f*g)(a)h(b).
+$$</div>
+<p>А</p>
+<div class="mathblock">$$(f*g)(a)=\sum_{uv=a}f(u)g(v).$$</div>
+<p>Тогда:</p>
+<div class="mathblock">$$
+((f*g)*h)(n)=\sum_{uvb=n}f(u)g(v)h(b).
+$$</div>
+<p>Правая часть:</p>
+<div class="mathblock">$$
+(f*(g*h))(n)=\sum_{uc=n}f(u)(g*h)(c)=\sum_{uvb=n}f(u)g(v)h(b).
+$$</div>
+<p>Суммы одинаковые, значит операция ассоциативна.</p>
+</div>
+<h3>Дистрибутивность относительно сложения</h3>
+<div class="mathblock">$$(f*(g+h))(n)=\sum_{d\mid n}f(d)(g+h)\!\left(\frac nd\right)=(f*g)(n)+(f*h)(n).$$</div>
+</section>
+
+<section id="ring">
+<h2>7. Кольцо Дирихле: что такое кольцо и где тут мультипликативные функции</h2>
+<div class="box def"><div class="box-title">Что такое кольцо</div>
+<p><strong>Кольцо</strong> — это множество объектов, на котором заданы две операции: сложение и умножение. Они должны вести себя похоже на обычные сложение и умножение чисел.</p>
+<p>Точнее, множество $R$ с операциями $+$ и $\cdot$ называется кольцом, если:</p>
+<ul>
+<li>относительно сложения $R$ является абелевой группой: есть ноль, есть противоположный элемент $-a$, сложение ассоциативно и коммутативно;</li>
+<li>умножение ассоциативно: $(ab)c=a(bc)$;</li>
+<li>умножение дистрибутивно относительно сложения: $a(b+c)=ab+ac$ и $(a+b)c=ac+bc$.</li>
+</ul>
+<p>Если умножение коммутативно, то кольцо называется <strong>коммутативным</strong>. Если есть элемент $1$, такой что $1\cdot a=a\cdot1=a$, то говорят, что кольцо имеет единицу.</p>
+</div>
+<p>В этой лекции роль объектов играют <strong>арифметические функции</strong> $f:\mathbb N	o \mathbb C$ или $f:\mathbb N	o \mathbb Z$. Их можно складывать поточечно и умножать через свёртку Дирихле.</p>
+<div class="box def"><div class="box-title">Операции</div>
+<p><strong>Поточечное сложение:</strong></p>
+<div class="mathblock">$$(f+g)(n)=f(n)+g(n).$$</div>
+<p><strong>Умножение:</strong></p>
+<div class="mathblock">$$(f*g)(n)=\sum_{d\mid n}f(d)g\!\left(\frac nd\right).$$</div>
+</div>
+<h3>Почему это действительно коммутативное кольцо</h3>
+<ul>
+<li>Сложение арифметических функций поточечно, поэтому оно ассоциативно, коммутативно, имеет ноль $0(n)=0$, и у каждой функции есть противоположная $(-f)(n)=-f(n)$.</li>
+<li>Свёртка Дирихле ассоциативна и коммутативна; доказательства были даны выше через перестановку делителей и суммирование по тройкам множителей.</li>
+<li>Свёртка дистрибутивна относительно поточечного сложения, потому что сумма раскрывается под знаком суммы по делителям.</li>
+<li>Единицей умножения является $\chi_1$.</li>
+</ul>
+<p>Именно поэтому это кольцо похоже на обычные числа, только «числами» здесь являются функции, а умножением является свёртка Дирихле.</p>
+<h3>Ноль и единица</h3>
+<p>Нулевой элемент — тождественно нулевая функция:</p>
+<div class="mathblock">$$0(n)=0.$$</div>
+<p>Единица относительно свёртки Дирихле — функция $\chi_1$:</p>
+<div class="mathblock">$$
+\chi_1(n)=
+\begin{cases}
+1,&n=1,\\
+0,&n>1.
+\end{cases}
+$$</div>
+<div class="box proof"><div class="box-title">Почему $\chi_1$ — единица</div>
+<div class="mathblock">$$
+(f*\chi_1)(n)=\sum_{d\mid n}f(d)\chi_1\!\left(\frac nd\right).
+$$</div>
+<p>Функция $\chi_1(n/d)$ равна $1$ только при $n/d=1$, то есть $d=n$. Поэтому:</p>
+<div class="mathblock">$$(f*\chi_1)(n)=f(n).$$</div>
+<p>По коммутативности также $\chi_1*f=f$.</p>
+</div>
+<h3>Обратимые элементы</h3>
+<p>Арифметическая функция $f$ имеет обратную относительно свёртки Дирихле тогда и только тогда, когда $f(1)\ne 0$.</p>
+<div class="box proof"><div class="box-title">Почему</div>
+<p>Если $g$ — обратная к $f$, то:</p>
+<div class="mathblock">$$(f*g)(1)=f(1)g(1)=\chi_1(1)=1.$$</div>
+<p>Значит, $f(1)\ne 0$.</p>
+<p>Обратно, если $f(1)\ne 0$, можно рекурсивно найти $g$ из условия $f*g=\chi_1$:</p>
+<div class="mathblock">$$g(1)=\frac1{f(1)},$$</div>
+<p>а для $n>1$:</p>
+<div class="mathblock">$$
+0=(f*g)(n)=f(1)g(n)+\sum_{\substack{d\mid n\\d>1}}f(d)g\!\left(\frac nd\right),
+$$</div>
+<p>откуда:</p>
+<div class="mathblock">$$
+g(n)=-\frac1{f(1)}\sum_{\substack{d\mid n\\d>1}}f(d)g\!\left(\frac nd\right).
+$$</div>
+<p>В правой части значения $g$ берутся на меньших аргументах, поэтому рекурсия корректна.</p>
+</div>
+<h3>Примеры в кольце</h3>
+<table>
+<tr><th>Равенство</th><th>Пояснение</th></tr>
+<tr><td>$\mu * \mathbf 1=\chi_1$</td><td>Мёбиус — обратная к постоянной единице</td></tr>
+<tr><td>$\tau=\mathbf 1*\mathbf 1$</td><td>Количество делителей</td></tr>
+<tr><td>$\sigma=\operatorname{id}*\mathbf 1$</td><td>Сумма делителей</td></tr>
+<tr><td>$\varphi*\mathbf 1=\operatorname{id}$</td><td>$\sum_{d\mid n}\varphi(d)=n$</td></tr>
+<tr><td>$\varphi=\operatorname{id}*\mu$</td><td>По обращению Мёбиуса</td></tr>
+</table>
+<div class="box def"><div class="box-title">Примеры элементов кольца</div>
+<p>В этом кольце можно воспринимать равенства как обычные алгебраические равенства, но с умножением $*$:</p>
+<ul>
+<li>$\mathbf 1$ — постоянная единица, не единица кольца, а функция, равная $1$ на всех $n$;</li>
+<li>$\chi_1$ — настоящая единица кольца относительно свёртки;</li>
+<li>$\mu$ — обратный элемент к $\mathbf 1$, потому что $\mu*\mathbf 1=\chi_1$;</li>
+<li>$	au=\mathbf 1*\mathbf 1$ показывает, что количество делителей — это квадрат постоянной единицы в кольце Дирихле;</li>
+<li>$arphi=\operatorname{id}*\mu$ получается из равенства $arphi*\mathbf 1=\operatorname{id}$ обращением Мёбиуса.</li>
+</ul>
+</div>
+</section>
+
+<section id="multiplicative">
+<h2>8. Мультипликативные и вполне мультипликативные функции</h2>
+<div class="box def"><div class="box-title">Мультипликативная функция</div>
+<p>Функция $f$ называется <strong>мультипликативной</strong>, если:</p>
+<div class="mathblock">$$f(1)=1,$$</div>
+<p>и для любых взаимно простых $a$ и $b$:</p>
+<div class="mathblock">$$\gcd(a,b)=1\quad\Longrightarrow\quad f(ab)=f(a)f(b).$$</div>
+</div>
+<div class="box def"><div class="box-title">Вполне мультипликативная функция</div>
+<p>Функция $f$ называется <strong>вполне мультипликативной</strong>, если:</p>
+<div class="mathblock">$$f(ab)=f(a)f(b)$$</div>
+<p>для любых натуральных $a,b$, без требования взаимной простоты.</p>
+</div>
+<h3>Примеры</h3>
+<table>
+<tr><th>Функция</th><th>Мультипликативна?</th><th>Вполне мультипликативна?</th></tr>
+<tr><td>$\mathbf 1(n)=1$</td><td>Да</td><td>Да</td></tr>
+<tr><td>$\operatorname{id}(n)=n$</td><td>Да</td><td>Да</td></tr>
+<tr><td>$\mu(n)$</td><td>Да</td><td>Нет</td></tr>
+<tr><td>$\varphi(n)$</td><td>Да</td><td>Нет</td></tr>
+<tr><td>$\tau(n)$</td><td>Да</td><td>Нет</td></tr>
+<tr><td>$\sigma(n)$</td><td>Да</td><td>Нет</td></tr>
+</table>
+<h3>Почему $\mu$ мультипликативна</h3>
+<div class="box proof"><div class="box-title">Доказательство</div>
+<p>Пусть $\gcd(a,b)=1$. Тогда простые множители $a$ и $b$ не пересекаются.</p>
+<p>Если $a$ или $b$ делится на квадрат простого, то $ab$ тоже делится на квадрат, и обе стороны равны нулю.</p>
+<p>Если оба числа квадратсвободны, пусть $a$ содержит $r$ простых множителей, а $b$ содержит $s$ простых множителей. Тогда $ab$ содержит $r+s$ различных простых множителей:</p>
+<div class="mathblock">$$\mu(ab)=(-1)^{r+s}=(-1)^r(-1)^s=\mu(a)\mu(b).$$</div>
+</div>
+<h3>Свёртка сохраняет мультипликативность</h3>
+<div class="box thm"><div class="box-title">Теорема</div>
+<p>Если $f$ и $g$ мультипликативны, то $f*g$ тоже мультипликативна.</p>
+</div>
+<div class="box proof"><div class="box-title">Доказательство</div>
+<p>Пусть $\gcd(a,b)=1$. Тогда каждый делитель $d$ числа $ab$ единственным образом раскладывается как:</p>
+<div class="mathblock">$$d=d_1d_2,\qquad d_1\mid a,\quad d_2\mid b.$$</div>
+<p>Тогда:</p>
+<div class="mathblock">$$
+(f*g)(ab)=\sum_{d\mid ab} f(d)g\!\left(\frac{ab}{d}\right).
+$$</div>
+<p>Заменяем $d=d_1d_2$:</p>
+<div class="mathblock">$$
+(f*g)(ab)=\sum_{d_1\mid a}\sum_{d_2\mid b} f(d_1d_2)g\!\left(\frac a{d_1}\cdot\frac b{d_2}\right).
+$$</div>
+<p>Так как множители взаимно просты, по мультипликативности:</p>
+<div class="mathblock">$$
+f(d_1d_2)=f(d_1)f(d_2),
+$$</div>
+<div class="mathblock">$$
+g\!\left(\frac a{d_1}\cdot\frac b{d_2}\right)=g\!\left(\frac a{d_1}\right)g\!\left(\frac b{d_2}\right).
+$$</div>
+<p>Тогда двойная сумма распадается:</p>
+<div class="mathblock">$$
+(f*g)(ab)=
+\left(\sum_{d_1\mid a}f(d_1)g\!\left(\frac a{d_1}\right)\right)
+\left(\sum_{d_2\mid b}f(d_2)g\!\left(\frac b{d_2}\right)\right).
+$$</div>
+<p>То есть:</p>
+<div class="mathblock">$$(f*g)(ab)=(f*g)(a)(f*g)(b).$$</div>
+</div>
+<h3>Значения мультипликативной функции задаются на степенях простых</h3>
+<p>Если</p>
+<div class="mathblock">$$n=p_1^{\alpha_1}\cdots p_k^{\alpha_k},$$</div>
+<p>то для мультипликативной $f$:</p>
+<div class="mathblock">$$f(n)=\prod_{i=1}^k f(p_i^{\alpha_i}).$$</div>
+<p>Именно поэтому многие формулы сводятся к анализу простых степеней.</p>
+</section>
+
+<section id="euler">
+<h2>9. Функция Эйлера $\varphi(n)$</h2>
+<div class="box def"><div class="box-title">Определение</div>
+<p>Функция Эйлера $\varphi(n)$ — это количество чисел от $1$ до $n$, взаимно простых с $n$:</p>
+<div class="mathblock">$$\varphi(n)=\left|\{1\le a\le n:\gcd(a,n)=1\}\right|.$$</div>
+</div>
+<h3>Примеры</h3>
+<table>
+<tr><th>$n$</th><th>Числа $1\le a\le n$, взаимно простые с $n$</th><th>$\varphi(n)$</th></tr>
+<tr><td>$1$</td><td>$1$</td><td>$1$</td></tr>
+<tr><td>$6$</td><td>$1,5$</td><td>$2$</td></tr>
+<tr><td>$10$</td><td>$1,3,7,9$</td><td>$4$</td></tr>
+<tr><td>$12$</td><td>$1,5,7,11$</td><td>$4$</td></tr>
+</table>
+<h3>Формула для простых степеней</h3>
+<p>Пусть $n=p^a$. Тогда числа, не взаимно простые с $p^a$, — это числа, делящиеся на $p$.</p>
+<p>Всего чисел от $1$ до $p^a$:</p>
+<div class="mathblock">$$p^a.$$</div>
+<p>Кратных $p$ среди них:</p>
+<div class="mathblock">$$p^{a-1}.$$</div>
+<p>Значит:</p>
+<div class="mathblock">$$\varphi(p^a)=p^a-p^{a-1}=p^a\left(1-\frac1p\right).$$</div>
+<h3>Мультипликативность функции Эйлера</h3>
+<div class="box thm"><div class="box-title">Теорема</div>
+<p>Если $\gcd(a,b)=1$, то:</p>
+<div class="mathblock">$$\varphi(ab)=\varphi(a)\varphi(b).$$</div>
+</div>
+<div class="box proof"><div class="box-title">Доказательство через КТО</div>
+<p>Рассмотрим остатки по модулю $ab$. По китайской теореме об остатках каждому классу по модулю $ab$ соответствует пара классов:</p>
+<div class="mathblock">$$x\pmod{ab}\quad \Longleftrightarrow\quad (x\pmod a,\,x\pmod b).$$</div>
+<p>Число $x$ взаимно просто с $ab$ тогда и только тогда, когда оно взаимно просто и с $a$, и с $b$:</p>
+<div class="mathblock">$$\gcd(x,ab)=1\quad\Longleftrightarrow\quad \gcd(x,a)=1 \text{ и } \gcd(x,b)=1.$$</div>
+<p>Поэтому число обратимых классов по модулю $ab$ равно произведению числа обратимых классов по модулю $a$ и по модулю $b$:</p>
+<div class="mathblock">$$\varphi(ab)=\varphi(a)\varphi(b).$$</div>
+</div>
+<h3>Общая формула</h3>
+<p>Пусть</p>
+<div class="mathblock">$$n=p_1^{\alpha_1}p_2^{\alpha_2}\cdots p_k^{\alpha_k}.$$</div>
+<p>Так как $\varphi$ мультипликативна:</p>
+<div class="mathblock">$$\varphi(n)=\prod_{i=1}^{k}\varphi(p_i^{\alpha_i}).$$</div>
+<p>Подставляем формулу для простых степеней:</p>
+<div class="mathblock">$$\varphi(n)=\prod_{i=1}^{k}p_i^{\alpha_i}\left(1-\frac1{p_i}\right).$$</div>
+<p>Так как $\prod p_i^{\alpha_i}=n$, получаем:</p>
+<div class="mathblock">$$\boxed{\varphi(n)=n\prod_{p\mid n}\left(1-\frac1p\right).}$$</div>
+<h3>Вычисление за $O(\sqrt n)$</h3>
+<div class="box alg"><div class="box-title">Алгоритм</div>
+<pre><code>long long phi(long long n) {
+    long long result = n;
+
+    for (long long p = 2; p * p <= n; p++) {
+        if (n % p == 0) {
+            while (n % p == 0) {
+                n /= p;
+            }
+            result -= result / p;
+        }
+    }
+
+    if (n > 1) {
+        result -= result / n;
+    }
+
+    return result;
+}</code></pre>
+</div>
+<p>Почему работает: при нахождении простого делителя $p$ мы умножаем ответ на $(1-1/p)$, что в целых числах удобно записать как:</p>
+<div class="mathblock">$$\text{result}\leftarrow \text{result}-\frac{\text{result}}p.$$</div>
+</section>
+
+<section id="inclusion">
+<h2>10. Связь с формулой включений-исключений</h2>
+<p>Формула для $\varphi(n)$ может быть получена включениями-исключениями.</p>
+<p>Пусть простые делители $n$:</p>
+<div class="mathblock">$$p_1,p_2,
+\dots,p_k.$$</div>
+<p>Нужно посчитать числа от $1$ до $n$, которые не делятся ни на один из этих простых делителей.</p>
+<p>По включениям-исключениям:</p>
+<div class="mathblock">$$
+\varphi(n)=n-\\sum_i \frac n{p_i}
++\sum_{i<j}\frac n{p_ip_j}
+-\sum_{i<j<\ell}\frac n{p_ip_jp_\ell}+\cdots.
+$$</div>
+<p>Это можно записать через функцию Мёбиуса:</p>
+<div class="mathblock">$$\varphi(n)=\sum_{d\mid n}\mu(d)\frac nd.$$</div>
+<p>Поскольку $\mu(d)$ ненулева только для квадратсвободных $d$, она ровно кодирует выбор подмножества простых делителей.</p>
+<div class="box def"><div class="box-title">Маски и знак Мёбиуса</div>
+<p>Если квадратсвободное число $d$ соответствует маске выбранных простых делителей, то:</p>
+<div class="mathblock">$$\mu(d)=(-1)^{\operatorname{popcount}(\text{mask})}.$$</div>
+<p>То есть количество единичных битов в маске задаёт знак во включениях-исключениях.</p>
+</div>
+<h3>Связь со свёрткой Дирихле</h3>
+<p>Формула</p>
+<div class="mathblock">$$\varphi(n)=\sum_{d\mid n}\mu(d)\frac nd$$</div>
+<p>это ровно:</p>
+<div class="mathblock">$$\varphi=\mu*\operatorname{id}.$$</div>
+<p>А так как свёртка коммутативна:</p>
+<div class="mathblock">$$\varphi=\operatorname{id}*\mu.$$</div>
+<p>Отсюда следует:</p>
+<div class="mathblock">$$\varphi*\mathbf 1=\operatorname{id}*(\mu*\mathbf 1)=\operatorname{id}*\chi_1=\operatorname{id}.$$</div>
+<p>То есть:</p>
+<div class="mathblock">$$\boxed{\sum_{d\mid n}\varphi(d)=n.}$$</div>
+</section>
+
+<section id="coprime-pairs">
+<h2>11. Количество пар взаимно простых чисел не больше $N$</h2>
+<p>Задача: посчитать количество пар</p>
+<div class="mathblock">$$(a,b),\qquad 1\le a,b\le N,$$</div>
+<p>таких что:</p>
+<div class="mathblock">$$\gcd(a,b)=1.$$</div>
+<h3>11.1. Решение через функцию Мёбиуса</h3>
+<p>Используем индикатор взаимной простоты:</p>
+<div class="mathblock">$$[\gcd(a,b)=1].$$</div>
+<p>По ключевой лемме:</p>
+<div class="mathblock">$$[g=1]=\sum_{d\mid g}\mu(d).$$</div>
+<p>Значит:</p>
+<div class="mathblock">$$[\gcd(a,b)=1]=\sum_{d\mid \gcd(a,b)}\mu(d).$$</div>
+<p>Но $d\mid \gcd(a,b)$ означает, что $d\mid a$ и $d\mid b$. Тогда:</p>
+<div class="mathblock">$$
+\sum_{1\le a,b\le N}[\gcd(a,b)=1]
+=\sum_{1\le a,b\le N}\sum_{d\mid a,\,d\mid b}\mu(d).
+$$</div>
+<p>Меняем порядок суммирования:</p>
+<div class="mathblock">$$
+=\sum_{d=1}^{N}\mu(d)\cdot\#\{a\le N:d\mid a\}\cdot\#\{b\le N:d\mid b\}.
+$$</div>
+<p>Количество чисел $\le N$, делящихся на $d$, равно $\left\lfloor N/d\right\rfloor$. Поэтому:</p>
+<div class="mathblock">$$\boxed{\sum_{d=1}^{N}\mu(d)\left\lfloor\frac Nd\right\rfloor^2.}$$</div>
+<h3>11.2. Альтернативный взгляд через включения-исключения</h3>
+<p>Пара $(a,b)$ не взаимно проста, если у них есть общий простой делитель. Для каждого простого $p$ событие:</p>
+<div class="mathblock">$$p\mid a \text{ и } p\mid b.$$</div>
+<p>Включения-исключения по простым делителям общего НОД дают ту же сумму с $\mu(d)$. Квадратсвободное $d$ соответствует набору выбранных простых, а знак задаётся $\mu(d)$.</p>
+<h3>11.3. Альтернативное решение через функцию Эйлера</h3>
+<p>Если считать <strong>упорядоченные пары</strong> $(a,b)$ с $1\le a,b\le N$, то можно рассуждать по максимуму.</p>
+<p>Для каждого $b\ge 2$ количество $1\le a<b$, взаимно простых с $b$, равно $\varphi(b)$.</p>
+<p>Пары с разными числами можно учитывать симметрично:</p>
+<div class="mathblock">$$\#\{(a,b):1\le a,b\le N,\gcd(a,b)=1\}=1+2\sum_{b=2}^{N}\varphi(b).$$</div>
+<p>Почему:</p>
+<ul>
+<li>пара $(1,1)$ даёт $1$;</li>
+<li>для каждого $b\ge2$ есть $\varphi(b)$ чисел $a$ от $1$ до $b$ взаимно простых с $b$; среди них $a=b$ не подходит при $b>1$, значит это фактически $a<b$;</li>
+<li>пары $(a,b)$ с $a<b$ и $b<a$ симметричны, поэтому умножаем на $2$.</li>
+</ul>
+<div class="box warn"><div class="box-title">Важно</div>
+<p>Если задача считает неупорядоченные пары или пары с $a<b$, формула будет другой. Всегда уточняй, что именно требуется считать.</p>
+</div>
+<h3>11.4. Мотивация свёртки Дирихле</h3>
+<p>Формулы вида</p>
+<div class="mathblock">$$\sum_{d\mid n} f(d)g\!\left(\frac nd\right)$$</div>
+<p>появляются естественно, когда мы группируем объекты по делителям: по общему делителю, по НОД, по кратности, по разложению $n=de$. Свёртка Дирихле — это язык, который превращает такие рассуждения в алгебру функций.</p>
+</section>
+
+<section id="prefix">
+<h2>12. Префиксные суммы мультипликативных функций</h2>
+<p>Пусть нужно посчитать:</p>
+<div class="mathblock">$$S_f(n)=\sum_{i=1}^{n}f(i).$$</div>
+<p>Иногда напрямую это дорого. Лекция указывает важный приём:</p>
+<div class="box thm"><div class="box-title">Идея</div>
+<p>Если мы умеем быстро считать</p>
+<div class="mathblock">$$S_g(n)=\sum_{i\le n}g(i)$$</div>
+<p>и</p>
+<div class="mathblock">$$S_{f*g}(n)=\sum_{i\le n}(f*g)(i),$$</div>
+<p>то можно выразить $S_f(n)$.</p>
+</div>
+<h3>Вывод формулы</h3>
+<p>По определению свёртки:</p>
+<div class="mathblock">$$
+(f*g)(n)=\sum_{d\mid n}f(d)g\!\left(\frac nd\right).
+$$</div>
+<p>Суммируем по $n\le N$:</p>
+<div class="mathblock">$$
+S_{f*g}(N)=\sum_{n\le N}\sum_{d\mid n}f(d)g\!\left(\frac nd\right).
+$$</div>
+<p>Запишем $n=dk$:</p>
+<div class="mathblock">$$
+S_{f*g}(N)=\sum_{d\le N}f(d)\sum_{k\le N/d}g(k).
+$$</div>
+<p>То есть:</p>
+<div class="mathblock">$$
+S_{f*g}(N)=\sum_{d\le N}f(d)S_g\!\left(\left\lfloor\frac Nd\right\rfloor\right).
+$$</div>
+<p>Выделим член $d=1$. Обычно для мультипликативных функций $g(1)=1$, значит $S_g(N)$ известно, но для рекурсии по $S_f$ удобнее выделять диапазоны. Если $g(1)=1$, то из этой формулы можно получить:</p>
+<div class="mathblock">$$
+S_f(N)=S_{f*g}(N)-\sum_{d=2}^{N}f(d)S_g\!\left(\left\lfloor\frac Nd\right\rfloor\right)
+$$</div>
+<p>но это всё ещё содержит отдельные $f(d)$. Более полезная форма получается, если группировать по значению $\left\lfloor N/d\right\rfloor$ и использовать уже найденные значения $S_f$ на меньших аргументах.</p>
+<h3>Классическая рекурсивная форма</h3>
+<p>Начинаем с:</p>
+<div class="mathblock">$$
+S_{f*g}(N)=\sum_{i=1}^{N}g(i)S_f\!\left(\left\lfloor\frac Ni\right\rfloor\right).
+$$</div>
+<p>Почему это верно? В предыдущей формуле можно поменять роли делителей: пусть $n=ij$, тогда:</p>
+<div class="mathblock">$$
+S_{f*g}(N)=\sum_{i\le N}g(i)\sum_{j\le N/i}f(j)=\sum_{i=1}^{N}g(i)S_f\!\left(\left\lfloor\frac Ni\right\rfloor\right).
+$$</div>
+<p>Выделяем $i=1$:</p>
+<div class="mathblock">$$
+S_{f*g}(N)=g(1)S_f(N)+\sum_{i=2}^{N}g(i)S_f\!\left(\left\lfloor\frac Ni\right\rfloor\right).
+$$</div>
+<p>Если $g(1)=1$, то:</p>
+<div class="mathblock">$$\boxed{
+S_f(N)=S_{f*g}(N)-\sum_{i=2}^{N}g(i)S_f\!\left(\left\lfloor\frac Ni\right\rfloor\right).
+}$$</div>
+<p>Дальше сумму по $i$ считают блоками одинакового значения $\left\lfloor N/i\right\rfloor$:</p>
+<div class="mathblock">$$
+\sum_{i=l}^{r}g(i)S_f\!\left(\left\lfloor\frac Ni\right\rfloor\right)=
+\left(S_g(r)-S_g(l-1)\right)S_f\!\left(\left\lfloor\frac Nl\right\rfloor\right),
+$$</div>
+<p>если на всём отрезке $\left\lfloor N/i\right\rfloor$ одинаково.</p>
+<h3>Пример: вычисление префикса $\varphi$</h3>
+<p>Мы знаем:</p>
+<div class="mathblock">$$\varphi*\mathbf 1=\operatorname{id}.$$</div>
+<p>Значит, берём:</p>
+<div class="mathblock">$$f=\varphi,\qquad g=\mathbf 1,\qquad f*g=\operatorname{id}.$$</div>
+<p>Тогда:</p>
+<div class="mathblock">$$S_{\operatorname{id}}(N)=\sum_{i=1}^{N}i=\frac{N(N+1)}2,$$</div>
+<p>а</p>
+<div class="mathblock">$$S_{\mathbf 1}(N)=N.$$</div>
+<p>По формуле:</p>
+<div class="mathblock">$$
+S_{\varphi}(N)=\frac{N(N+1)}2-\sum_{i=2}^{N}S_\varphi\!\left(\left\lfloor\frac Ni\right\rfloor\right).
+$$</div>
+<p>Так как $g(i)=1$, коэффициенты простые. Группируя одинаковые $\left\lfloor N/i\right\rfloor$, получаем быстрый рекурсивный алгоритм с мемоизацией.</p>
+<div class="box alg"><div class="box-title">Скелет рекурсии для $\sum_{i\le n}\varphi(i)$</div>
+<pre><code>long long solve_phi_sum(long long n) {
+    if (n <= PRECOMP_LIMIT) return pref_phi[n];
+    if (memo.count(n)) return memo[n];
+
+    long long ans = n * (n + 1) / 2;
+
+    for (long long l = 2; l <= n; ) {
+        long long q = n / l;
+        long long r = n / q;
+        ans -= (r - l + 1) * solve_phi_sum(q);
+        l = r + 1;
+    }
+
+    return memo[n] = ans;
+}</code></pre>
+<p>В реальном коде нужно следить за переполнением и модулем, если ответ берётся по модулю.</p>
+</div>
+</section>
+
+<section id="floor">
+<h2>13. Полезные факты: делители и floor</h2>
+<h3>13.1. Делителей числа $n$ не больше $2\sqrt n$</h3>
+<div class="box thm"><div class="box-title">Факт</div>
+<p>Количество делителей числа $n$ не превосходит $2\sqrt n$.</p>
+</div>
+<div class="box proof"><div class="box-title">Доказательство</div>
+<p>Каждый делитель $d$ числа $n$ образует пару:</p>
+<div class="mathblock">$$d\cdot \frac nd=n.$$</div>
+<p>В каждой паре хотя бы один элемент не превосходит $\sqrt n$.</p>
+<p>Действительно, если бы оба были больше $\sqrt n$, их произведение было бы больше $n$.</p>
+<p>Значит, каждому делителю $d>\sqrt n$ соответствует уникальный делитель $n/d<\sqrt n$. Поэтому делителей не больше чем удвоенное количество чисел от $1$ до $\sqrt n$:</p>
+<div class="mathblock">$$\tau(n)\le 2\lfloor\sqrt n\rfloor.$$</div>
+</div>
+<h3>13.2. Тождество floor</h3>
+<div class="box thm"><div class="box-title">Факт</div>
+<div class="mathblock">$$\left\lfloor\frac{\left\lfloor a/b\right\rfloor}{c}\right\rfloor=\left\lfloor\frac a{bc}\right\rfloor.$$</div>
+<p>Для натуральных $b,c$.</p>
+</div>
+<div class="box proof"><div class="box-title">Доказательство</div>
+<p>Пусть:</p>
+<div class="mathblock">$$q=\left\lfloor\frac ab\right\rfloor.$$</div>
+<p>Тогда:</p>
+<div class="mathblock">$$q\le \frac ab < q+1.$$</div>
+<p>Умножим на $b$:</p>
+<div class="mathblock">$$bq\le a < b(q+1).$$</div>
+<p>Разделим на $bc$:</p>
+<div class="mathblock">$$\frac q c\le \frac a{bc}<\frac{q+1}{c}.$$</div>
+<p>Но проще доказать через деление с остатком. Запишем:</p>
+<div class="mathblock">$$a=bq+r,\qquad 0\le r<b.$$</div>
+<p>Тогда:</p>
+<div class="mathblock">$$\frac a{bc}=\frac q c+\frac r{bc}.$$</div>
+<p>Так как $0\le r<b$, то:</p>
+<div class="mathblock">$$0\le \frac r{bc}<\frac1c.$$</div>
+<p>Пусть $q=ct+s$, где $0\le s<c$. Тогда:</p>
+<div class="mathblock">$$\frac q c=t+\frac s c.$$</div>
+<p>Получаем:</p>
+<div class="mathblock">$$\frac a{bc}=t+\frac{s}{c}+\frac r{bc}.$$</div>
+<p>Так как $s\le c-1$ и $r\le b-1$:</p>
+<div class="mathblock">$$\frac{s}{c}+\frac r{bc}\le \frac{c-1}{c}+\frac{b-1}{bc}=1-\frac1c+\frac1c-\frac1{bc}<1.$$</div>
+<p>Значит:</p>
+<div class="mathblock">$$\left\lfloor\frac a{bc}\right\rfloor=t=\left\lfloor\frac q c\right\rfloor=\left\lfloor\frac{\lfloor a/b\rfloor}{c}\right\rfloor.$$</div>
+</div>
+<h3>13.3. Группировка одинаковых значений $\left\lfloor n/i\right\rfloor$</h3>
+<p>Значение $\left\lfloor n/i\right\rfloor$ меняется только $O(\sqrt n)$ раз.</p>
+<div class="box alg"><div class="box-title">Стандартный цикл</div>
+<pre><code>for (long long l = 1; l <= n; ) {
+    long long q = n / l;
+    long long r = n / q;
+
+    // для всех i от l до r значение floor(n / i) равно q
+
+    l = r + 1;
+}</code></pre>
+</div>
+<p>Это ключевой технический приём для быстрых сумм.</p>
+</section>
+
+<section id="complexities">
+<h2>14. Решения за $O(n^{3/4})$ и $O(n^{2/3})$</h2>
+<p>В лекции упоминаются оценки $O(n^{3/4})$ и $O(n^{2/3})$ без доказательства асимптотики интегралами. Здесь дадим содержательную идею, не углубляясь в строгий анализ.</p>
+<h3>14.1. Что обычно хотят ускорить</h3>
+<p>Типичная цель — быстро считать префиксную сумму мультипликативной функции:</p>
+<div class="mathblock">$$S_f(n)=\sum_{i=1}^{n}f(i),$$</div>
+<p>если есть хорошая связь через свёртку:</p>
+<div class="mathblock">$$f*g=h.$$</div>
+<p>Тогда можно использовать рекурсию:</p>
+<div class="mathblock">$$S_f(n)=S_h(n)-\sum_{i=2}^{n}g(i)S_f\!\left(\left\lfloor\frac ni\right\rfloor\right),$$</div>
+<p>или её блочную форму через $S_g$.</p>
+<h3>14.2. Почему появляется ускорение</h3>
+<p>Вместо перебора всех $i$ от $1$ до $n$ группируют одинаковые значения:</p>
+<div class="mathblock">$$q=\left\lfloor\frac ni\right\rfloor.$$</div>
+<p>Различных $q$ всего порядка $2\sqrt n$.</p>
+<p>Дальше используют мемоизацию: значения $S_f(\lfloor n/i\rfloor)$ повторяются, поэтому их не пересчитывают заново.</p>
+<h3>14.3. Разделение на малые и большие значения</h3>
+<p>Чтобы получить более сильные оценки, выбирают порог $B$:</p>
+<ul>
+<li>для малых аргументов $\le B$ значения $f$ и префиксы предвычисляют решетом;</li>
+<li>для больших аргументов используют рекурсивную формулу и группировку floor.</li>
+</ul>
+<p>Разные выборы $B$ дают разные балансы:</p>
+<div class="mathblock">$$B\approx n^{2/3}\quad \text{или}\quad B\approx n^{3/4},$$</div>
+<p>в зависимости от конкретной функции и реализации.</p>
+<div class="box warn"><div class="box-title">Что важно для контрольной</div>
+<p>Если в лекции сказано “без доказательства асимптотики интегралами”, то обычно достаточно понимать:</p>
+<ol>
+<li>формулу через свёртку;</li>
+<li>группировку одинаковых $\lfloor n/i\rfloor$;</li>
+<li>мемоизацию больших значений;</li>
+<li>предвычисление малых значений решетом;</li>
+<li>почему это радикально быстрее, чем $O(n)$ или $O(n\sqrt n)$.</li>
+</ol>
+</div>
+</section>
+
+<section id="cheatsheet">
+<h2>15. Шпаргалка</h2>
+<div class="grid">
+<div class="box def"><div class="box-title">Функция Мёбиуса</div>
+<div class="mathblock">$$
+\mu(n)=
+\begin{cases}
+1,&n=1,\\
+0,&p^2\mid n \text{ для некоторого простого }p,\\
+(-1)^k,&n\text{ — произведение }k\text{ различных простых}.
+\end{cases}
+$$</div>
+</div>
+<div class="box def"><div class="box-title">Ключевая сумма</div>
+<div class="mathblock">$$\sum_{d\mid n}\mu(d)=\chi_1(n).$$</div>
+</div>
+<div class="box thm"><div class="box-title">Обращение Мёбиуса</div>
+<div class="mathblock">$$g(n)=\sum_{d\mid n}f(d)\quad\Longleftrightarrow\quad f(n)=\sum_{d\mid n}\mu(d)g\!\left(\frac nd\right).$$</div>
+</div>
+<div class="box thm"><div class="box-title">Свёртка Дирихле</div>
+<div class="mathblock">$$(f*g)(n)=\sum_{d\mid n}f(d)g\!\left(\frac nd\right).$$</div>
+</div>
+<div class="box thm"><div class="box-title">Единица свёртки</div>
+<div class="mathblock">$$\chi_1(n)= [n=1],\qquad f*\chi_1=f.$$</div>
+</div>
+<div class="box thm"><div class="box-title">Мёбиус как обратная</div>
+<div class="mathblock">$$\mu*\mathbf 1=\chi_1.$$</div>
+</div>
+<div class="box thm"><div class="box-title">Функция Эйлера</div>
+<div class="mathblock">$$\varphi(n)=n\prod_{p\mid n}\left(1-\frac1p\right).$$</div>
+</div>
+<div class="box thm"><div class="box-title">Пары взаимно простых</div>
+<div class="mathblock">$$\#\{a,b\le N:\gcd(a,b)=1\}=\sum_{d=1}^{N}\mu(d)\left\lfloor\frac Nd\right\rfloor^2.$$</div>
+</div>
+</div>
+<h3>Основные равенства в кольце Дирихле</h3>
+<div class="mathblock">$$\tau=\mathbf 1*\mathbf 1,$$</div>
+<div class="mathblock">$$\sigma=\operatorname{id}*\mathbf 1,$$</div>
+<div class="mathblock">$$\varphi*\mathbf 1=\operatorname{id},$$</div>
+<div class="mathblock">$$\varphi=\operatorname{id}*\mu.$$</div>
+<h3>Типичные ошибки</h3>
+<ul>
+<li>Путать $\mathbf 1(n)=1$ и $\chi_1(n)=[n=1]$.</li>
+<li>Думать, что мультипликативность означает $f(ab)=f(a)f(b)$ всегда. Это верно только для вполне мультипликативных функций; для обычных мультипликативных требуется $\gcd(a,b)=1$.</li>
+<li>Забывать, что $\mu(n)=0$, если $n$ содержит квадрат простого.</li>
+<li>В задачах на пары не уточнять, считаются ли пары упорядоченными.</li>
+<li>Писать сумму по делителям как сумму по всем $d$ без условия $d\mid n$.</li>
+</ul>
+</section>
+</div>
+</body>
+</html>
