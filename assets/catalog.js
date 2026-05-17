@@ -145,6 +145,16 @@ window.LECTURE_CATALOG = {
           ],
           "href": "lectures/algorithms/burnside_polya_lecture10_notes.html",
           "status": "published"
+        },
+        {
+          "title": "Обращение Мебиуса. Свертка Дирихле",
+          "description": "Лекция посвящена функции Мёбиуса, обращению Мёбиуса и свёртке Дирихле как алгебраическому языку для сумм по делителям. Также разбираются мультипликативные функции, функция Эйлера, подсчёт взаимно простых пар и быстрые методы вычисления префиксных сумм арифметических функций.",
+          "tags": [
+            "mobius",
+            "dirichlet"
+          ],
+          "href": "lectures/algorithms/mobius_dirichlet_lecture12_notes_revised.html",
+          "status": "published"
         }
       ]
     },
